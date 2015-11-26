@@ -22,7 +22,6 @@ public class ShaderFunctions {
 
         // If the compilation failed, delete the shader.
         if (compileStatus[0] == 0) {
-            //Log.e(TAG, "Error compiling shader: " + GLES20.glGetShaderInfoLog(shader));
             GLES20.glDeleteShader(shader);
             shader = 0;
         }

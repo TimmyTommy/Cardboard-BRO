@@ -40,170 +40,130 @@ import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
-/**
- * A Cardboard sample application.
- */
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
+    private static final int CYLINDER_SEGMENTS = 32;
+    private static final String TAG = "MainActivity";
+    private static final float Z_NEAR = 0.1f;
+    private static final float Z_FAR = 100.0f;
+    private static final float CAMERA_Z = 0.01f;//0.01f;
+    private static final float TIME_DELTA = 0.3f;
 
-  private static final int CYLINDER_SEGMENTS = 32;
+    private static final float YAW_LIMIT = 0.12f;
+    private static final float PITCH_LIMIT = 0.12f;
 
-  private static final String TAG = "MainActivity";
+    private static final int COORDS_PER_VERTEX = 3;
 
-  private static final float Z_NEAR = 0.1f;
-  private static final float Z_FAR = 100.0f;
+    // We keep the light always position just above the user.
+    private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
+    private final float[] lightPosInEyeSpace = new float[4];
 
-  private static final float CAMERA_Z = 0.01f;
-  private static final float TIME_DELTA = 0.3f;
+    private FloatBuffer floorVertices;
+    private FloatBuffer floorColors;
+    private FloatBuffer floorNormals;
 
-  private static final float YAW_LIMIT = 0.12f;
-  private static final float PITCH_LIMIT = 0.12f;
+    private FloatBuffer cylinderVertices;
+    private FloatBuffer cylinderColors;
+    private FloatBuffer cylinderNormals;
 
-  private static final int COORDS_PER_VERTEX = 3;
+    private FloatBuffer cubeVertices;
+    private FloatBuffer cubeColors;
+    private FloatBuffer cubeFoundColors;
+    private FloatBuffer cubeNormals;
 
-  // We keep the light always position just above the user.
-  private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
+    private int cubeProgram;
+    private int floorProgram;
+    private int cylinderProgram;
 
-  private final float[] lightPosInEyeSpace = new float[4];
+    private int cubePositionParam;
+    private int cubeNormalParam;
+    private int cubeColorParam;
+    private int cubeModelParam;
+    private int cubeModelViewParam;
+    private int cubeModelViewProjectionParam;
+    private int cubeLightPosParam;
 
-  private FloatBuffer floorVertices;
-  private FloatBuffer floorColors;
-  private FloatBuffer floorNormals;
+    private int floorPositionParam;
+    private int floorNormalParam;
+    private int floorColorParam;
+    private int floorModelParam;
+    private int floorModelViewParam;
+    private int floorModelViewProjectionParam;
+    private int floorLightPosParam;
 
-  private FloatBuffer cylinderVertices;
-  private FloatBuffer cylinderColors;
-  private FloatBuffer cylinderNormals;
+    private int cylinderPositionParam;
+    private int cylinderNormalParam;
+    private int cylinderColorParam;
+    private int cylinderModelParam;
+    private int cylinderModelViewParam;
+    private int cylinderModelViewProjectionParam;
+    private int cylinderLightPosParam;
 
-  private FloatBuffer cubeVertices;
-  private FloatBuffer cubeColors;
-  private FloatBuffer cubeFoundColors;
-  private FloatBuffer cubeNormals;
+    private float[] modelCube;
+    private float[] camera;
+    private float[] view;
+    private float[] headView;
+    private float[] modelViewProjection;
+    private float[] modelView;
+    private float[] modelFloor;
+    private float[] modelCylinder;
 
-  private int cubeProgram;
-  private int floorProgram;
-  private int cylinderProgram;
+    private int score = 0;
+    private float objectDistance = 12f;
+    private float floorDepth = 10f;
 
-  private int cubePositionParam;
-  private int cubeNormalParam;
-  private int cubeColorParam;
-  private int cubeModelParam;
-  private int cubeModelViewParam;
-  private int cubeModelViewProjectionParam;
-  private int cubeLightPosParam;
+    private Vibrator vibrator;
+    private CardboardOverlayView overlayView;
 
-  private int floorPositionParam;
-  private int floorNormalParam;
-  private int floorColorParam;
-  private int floorModelParam;
-  private int floorModelViewParam;
-  private int floorModelViewProjectionParam;
-  private int floorLightPosParam;
-
-  private int cylinderPositionParam;
-  private int cylinderNormalParam;
-  private int cylinderColorParam;
-  private int cylinderModelParam;
-  private int cylinderModelViewParam;
-  private int cylinderModelViewProjectionParam;
-  private int cylinderLightPosParam;
-
-  private float[] modelCube;
-  private float[] camera;
-  private float[] view;
-  private float[] headView;
-  private float[] modelViewProjection;
-  private float[] modelView;
-  private float[] modelFloor;
-  private float[] modelCylinder;
-
-  private int score = 0;
-  private float objectDistance = 12f;
-  private float floorDepth = 10f;
-
-  private Vibrator vibrator;
-  private CardboardOverlayView overlayView;
-
-  /**
-   * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
-   *
-   * @param type The type of shader we will be creating.
-   * @param resId The resource ID of the raw text file about to be turned into a shader.
-   * @return The shader object handler.
-   */
-  private int loadGLShader(int type, int resId) {
-    String code = readRawTextFile(resId);
-    int shader = GLES20.glCreateShader(type);
-    GLES20.glShaderSource(shader, code);
-    GLES20.glCompileShader(shader);
-
-    // Get the compilation status.
-    final int[] compileStatus = new int[1];
-    GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
-
-    // If the compilation failed, delete the shader.
-    if (compileStatus[0] == 0) {
-      Log.e(TAG, "Error compiling shader: " + GLES20.glGetShaderInfoLog(shader));
-      GLES20.glDeleteShader(shader);
-      shader = 0;
+    /**
+    * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
+    *
+    * @param label Label to report in case of error.
+    */
+    private static void checkGLError(String label) {
+        int error;
+        while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+            Log.e(TAG, label + ": glError " + error);
+            throw new RuntimeException(label + ": glError " + error);
+        }
     }
 
-    if (shader == 0) {
-      throw new RuntimeException("Error creating shader.");
+     /**
+     * Sets the view to our CardboardView and initializes the transformation matrices we will use
+     * to render our scene.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.common_ui);
+        CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
+        cardboardView.setRestoreGLStateEnabled(false);
+        cardboardView.setRenderer(this);
+        setCardboardView(cardboardView);
+
+        modelCylinder = new float[16];
+        modelCube = new float[16];
+        camera = new float[16];
+        view = new float[16];
+        modelViewProjection = new float[16];
+        modelView = new float[16];
+        modelFloor = new float[16];
+        headView = new float[16];
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
+        overlayView.show3DToast("Pull the magnet when you find an object.");
     }
 
-    return shader;
-  }
-
-  /**
-   * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
-   *
-   * @param label Label to report in case of error.
-   */
-  private static void checkGLError(String label) {
-    int error;
-    while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-      Log.e(TAG, label + ": glError " + error);
-      throw new RuntimeException(label + ": glError " + error);
+    @Override
+    public void onRendererShutdown() {
+        Log.i(TAG, "onRendererShutdown");
     }
-  }
 
-  /**
-   * Sets the view to our CardboardView and initializes the transformation matrices we will use
-   * to render our scene.
-   */
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-
-    setContentView(R.layout.common_ui);
-    CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-    cardboardView.setRestoreGLStateEnabled(false);
-    cardboardView.setRenderer(this);
-    setCardboardView(cardboardView);
-
-    modelCylinder = new float[16];
-    modelCube = new float[16];
-    camera = new float[16];
-    view = new float[16];
-    modelViewProjection = new float[16];
-    modelView = new float[16];
-    modelFloor = new float[16];
-    headView = new float[16];
-    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-
-    overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-    overlayView.show3DToast("Pull the magnet when you find an object.");
-  }
-
-  @Override
-  public void onRendererShutdown() {
-    Log.i(TAG, "onRendererShutdown");
-  }
-
-  @Override
-  public void onSurfaceChanged(int width, int height) {
-    Log.i(TAG, "onSurfaceChanged");
-  }
+    @Override
+    public void onSurfaceChanged(int width, int height) {
+        Log.i(TAG, "onSurfaceChanged");
+    }
 
     private float[] calcCylinderSurfaceBasePoints(float mX, float mZ, float radius, float fromAngle, float toAngle){
         float[] basePoints = new float[6];
@@ -232,7 +192,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         cylinderFace[6] = basePoints[3];
         cylinderFace[7] = basePoints[4];
         cylinderFace[8] = basePoints[5];
-
         //Triangle 2 //P1
         cylinderFace[9] = basePoints[3];
         cylinderFace[10]= basePoints[4];
@@ -245,500 +204,439 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         cylinderFace[15] = basePoints[0];
         cylinderFace[16] = basePoints[1] + height;
         cylinderFace[17] = basePoints[2];
-
         return cylinderFace;
-    }
+     }
 
     private float[] calcAngles(int cycleEdgesCount, int edgeIndex /*begins with 1*/){
         float fromAngle = (float)(2*Math.PI*(1.0*edgeIndex/cycleEdgesCount));
         float toAngle = (float)(2*Math.PI*((1.0*edgeIndex+1)/cycleEdgesCount));
-
         float[] angles = new float[2];
         angles[0] = fromAngle;
         angles[1] = toAngle;
-
         return angles;
-    }
+     }
 
     private float[] calcCylinderSurfaceCoords(float mX, float mZ, float radius, float height, int cycleEdgesCount){
-        int coordsCount = cycleEdgesCount*6*3;
-        float[] coords = new float[coordsCount];
-        for (int i=0; i<cycleEdgesCount; i++){
-            float[] angles = calcAngles(cycleEdgesCount, i);
-            float[] cylinderFace = calcOneCylinderFace(mX, mZ, radius, angles[0], angles[1], height);
-            for (int j=0; j<18; j++){
-                coords[i*18+j] = cylinderFace[j];
-            }
-        }
-        return coords;
+         int coordsCount = cycleEdgesCount*6*3;
+         float[] coords = new float[coordsCount];
+         for (int i=0; i<cycleEdgesCount; i++){
+             float[] angles = calcAngles(cycleEdgesCount, i);
+             float[] cylinderFace = calcOneCylinderFace(mX, mZ, radius, angles[0], angles[1], height);
+             for (int j=0; j<18; j++){
+                 coords[i*18+j] = cylinderFace[j];
+             }
+         }
+         return coords;
     }
 
     public float[] calcNormale(float[] v1, float[] v2, float[] v3){
-        float[] v1v2, v1v3, kreuz;
-//        double betrag;
+         float[] v1v2, v1v3, kreuz;
+         //Vorbereitung
+         v1v2=new float[3];
+         v1v2[0]= v2[0]-v1[0];
+         v1v2[1]= v2[1]-v1[1];
+         v1v2[2]= v2[2]-v1[2];
 
-        //Vorbereitung
-        v1v2=new float[3];
-        v1v2[0]= v2[0]-v1[0];
-        v1v2[1]= v2[1]-v1[1];
-        v1v2[2]= v2[2]-v1[2];
+         v1v3=new float[3];
+         v1v3[0]= v3[0]-v1[0];
+         v1v3[1]= v3[1]-v1[1];
+         v1v3[2]= v3[2]-v1[2];
 
-        v1v3=new float[3];
-        v1v3[0]= v3[0]-v1[0];
-        v1v3[1]= v3[1]-v1[1];
-        v1v3[2]= v3[2]-v1[2];
+         //Berechnung des Kreuz
+         double x=+((v1v2[1]*v1v3[2])-(v1v2[2]*v1v3[1]));
+         double y=-((v1v2[0]*v1v3[2])-(v1v2[2]*v1v3[0]));
+         double z=+((v1v2[0]*v1v3[1])-(v1v2[1]*v1v3[0]));
+         kreuz=new float[3];
+         kreuz[0]=(float)x;
+         kreuz[1]=(float)y;
+         kreuz[2]=(float)z;
 
-        //Berechnung des Kreuz
-        double x=+((v1v2[1]*v1v3[2])-(v1v2[2]*v1v3[1]));
-        double y=-((v1v2[0]*v1v3[2])-(v1v2[2]*v1v3[0]));
-        double z=+((v1v2[0]*v1v3[1])-(v1v2[1]*v1v3[0]));
-        kreuz=new float[3];
-        kreuz[0]=(float)x;
-        kreuz[1]=(float)y;
-        kreuz[2]=(float)z;
-
-        //prüfen des Vectors
-//        betrag=Math.sqrt(Math.pow(kreuz[0], 2.0)+Math.pow(kreuz[1], 2.0)+Math.pow(kreuz[2], 2.0));
-//        if(betrag==0.0){
-//            return null;
-//        }
-        //return
-        return kreuz;
+         return kreuz;
     }
 
-  /**
-   * Creates the buffers we use to store information about the 3D world.
-   *
-   * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
-   * Hence we use ByteBuffers.
-   *
-   * @param config The EGL configuration used when creating the surface.
-   */
-  @Override
-  public void onSurfaceCreated(EGLConfig config) {
-    Log.i(TAG, "onSurfaceCreated");
-    GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
+    /**
+    * Creates the buffers we use to store information about the 3D world.
+    *
+    * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
+    * Hence we use ByteBuffers.
+    *
+    * @param config The EGL configuration used when creating the surface.
+    */
+    @Override
+    public void onSurfaceCreated(EGLConfig config) {
+        Log.i(TAG, "onSurfaceCreated");
+        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
 
-    float[] cylinderCoords;
-    cylinderCoords = calcCylinderSurfaceCoords(0, 0, 30f, 50, CYLINDER_SEGMENTS);
+        float[] cylinderCoords;
+        cylinderCoords = calcCylinderSurfaceCoords(0, 0, 30f, 50, CYLINDER_SEGMENTS);
 
-    ByteBuffer bbCylinderVertices = ByteBuffer.allocateDirect(cylinderCoords.length * 4);
-    bbCylinderVertices.order(ByteOrder.nativeOrder());
-    cylinderVertices = bbCylinderVertices.asFloatBuffer();
-    cylinderVertices.put(cylinderCoords);
-    cylinderVertices.position(0);
+        ByteBuffer bbCylinderVertices = ByteBuffer.allocateDirect(cylinderCoords.length * 4);
+        bbCylinderVertices.order(ByteOrder.nativeOrder());
+        cylinderVertices = bbCylinderVertices.asFloatBuffer();
+        cylinderVertices.put(cylinderCoords);
+        cylinderVertices.position(0);
 
-    ByteBuffer bbCylinderNormals = ByteBuffer.allocateDirect(cylinderCoords.length * 4);
-    bbCylinderNormals.order(ByteOrder.nativeOrder());
-    cylinderNormals = bbCylinderNormals.asFloatBuffer();
-    float[] normalArray = new float[cylinderCoords.length];
-    for (int i=0; i<CYLINDER_SEGMENTS; i++){
-        float[] v1 = new float[3];
-        v1[0] = cylinderCoords[i*18+0];
-        v1[1] = cylinderCoords[i*18+1];
-        v1[2] = cylinderCoords[i*18+2];
+        ByteBuffer bbCylinderNormals = ByteBuffer.allocateDirect(cylinderCoords.length * 4);
+        bbCylinderNormals.order(ByteOrder.nativeOrder());
+        cylinderNormals = bbCylinderNormals.asFloatBuffer();
+        float[] normalArray = new float[cylinderCoords.length];
+        for (int i=0; i<CYLINDER_SEGMENTS; i++){
+            float[] v1 = new float[3];
+            v1[0] = cylinderCoords[i*18+0];
+            v1[1] = cylinderCoords[i*18+1];
+            v1[2] = cylinderCoords[i*18+2];
 
-        float[] v2 = new float[3];
-        v2[0] = cylinderCoords[i*18+3];
-        v2[1] = cylinderCoords[i*18+4];
-        v2[2] = cylinderCoords[i*18+5];
+            float[] v2 = new float[3];
+            v2[0] = cylinderCoords[i*18+3];
+            v2[1] = cylinderCoords[i*18+4];
+            v2[2] = cylinderCoords[i*18+5];
 
-        float[] v3 = new float[3];
-        v3[0] = cylinderCoords[i*18+6];
-        v3[1] = cylinderCoords[i*18+7];
-        v3[2] = cylinderCoords[i*18+8];
+            float[] v3 = new float[3];
+            v3[0] = cylinderCoords[i*18+6];
+            v3[1] = cylinderCoords[i*18+7];
+            v3[2] = cylinderCoords[i*18+8];
 
-        float[] normal = calcNormale(v1, v2, v3);
-        for (int j=0; j<6; j++){
-            normalArray[i*18+j*3+0]=normal[0];
-            normalArray[i*18+j*3+1]=normal[1];
-            normalArray[i*18+j*3+2]=normal[2];
+            float[] normal = calcNormale(v1, v2, v3);
+            for (int j=0; j<6; j++){
+                normalArray[i*18+j*3+0]=normal[0];
+                normalArray[i*18+j*3+1]=normal[1];
+                normalArray[i*18+j*3+2]=normal[2];
+            }
         }
-    }
-    cylinderNormals.put(normalArray);
-    cylinderNormals.position(0);
+        cylinderNormals.put(normalArray);
+        cylinderNormals.position(0);
 
-    ByteBuffer bbCylinderColors = ByteBuffer.allocateDirect(WorldLayoutData.CYLINDER_COLOR.length *6*CYLINDER_SEGMENTS * 4);
-    bbCylinderColors.order(ByteOrder.nativeOrder());
-    cylinderColors = bbCylinderColors.asFloatBuffer();
-    float[] colorArray = new float[4*6*CYLINDER_SEGMENTS];
-    for (int i=0; i<6*CYLINDER_SEGMENTS; i++){
-        colorArray[i*4+0] = WorldLayoutData.CYLINDER_COLOR[0];
-        colorArray[i*4+1] = WorldLayoutData.CYLINDER_COLOR[1];
-        colorArray[i*4+2] = WorldLayoutData.CYLINDER_COLOR[2];
-        colorArray[i*4+3] = WorldLayoutData.CYLINDER_COLOR[3];
-    }
-    cylinderColors.put(colorArray);
-    cylinderColors.position(0);
+        ByteBuffer bbCylinderColors = ByteBuffer.allocateDirect(WorldLayoutData.CYLINDER_COLOR.length *6*CYLINDER_SEGMENTS * 4);
+        bbCylinderColors.order(ByteOrder.nativeOrder());
+        cylinderColors = bbCylinderColors.asFloatBuffer();
+        float[] colorArray = new float[4*6*CYLINDER_SEGMENTS];
+        for (int i=0; i<6*CYLINDER_SEGMENTS; i++){
+            colorArray[i*4+0] = WorldLayoutData.CYLINDER_COLOR[0];
+            colorArray[i*4+1] = WorldLayoutData.CYLINDER_COLOR[1];
+            colorArray[i*4+2] = WorldLayoutData.CYLINDER_COLOR[2];
+            colorArray[i*4+3] = WorldLayoutData.CYLINDER_COLOR[3];
+        }
+        cylinderColors.put(colorArray);
+        cylinderColors.position(0);
 
-    ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
-    bbVertices.order(ByteOrder.nativeOrder());
-    cubeVertices = bbVertices.asFloatBuffer();
-    cubeVertices.put(WorldLayoutData.CUBE_COORDS);
-    cubeVertices.position(0);
+        ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
+        bbVertices.order(ByteOrder.nativeOrder());
+        cubeVertices = bbVertices.asFloatBuffer();
+        cubeVertices.put(WorldLayoutData.CUBE_COORDS);
+        cubeVertices.position(0);
 
-    ByteBuffer bbColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COLORS.length * 4);
-    bbColors.order(ByteOrder.nativeOrder());
-    cubeColors = bbColors.asFloatBuffer();
-    cubeColors.put(WorldLayoutData.CUBE_COLORS);
-    cubeColors.position(0);
+        ByteBuffer bbColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COLORS.length * 4);
+        bbColors.order(ByteOrder.nativeOrder());
+        cubeColors = bbColors.asFloatBuffer();
+        cubeColors.put(WorldLayoutData.CUBE_COLORS);
+        cubeColors.position(0);
 
-    ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(
+        ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(
         WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
-    bbFoundColors.order(ByteOrder.nativeOrder());
-    cubeFoundColors = bbFoundColors.asFloatBuffer();
-    cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
-    cubeFoundColors.position(0);
+        bbFoundColors.order(ByteOrder.nativeOrder());
+        cubeFoundColors = bbFoundColors.asFloatBuffer();
+        cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
+        cubeFoundColors.position(0);
 
-    ByteBuffer bbNormals = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_NORMALS.length * 4);
-    bbNormals.order(ByteOrder.nativeOrder());
-    cubeNormals = bbNormals.asFloatBuffer();
-    cubeNormals.put(WorldLayoutData.CUBE_NORMALS);
-    cubeNormals.position(0);
+        ByteBuffer bbNormals = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_NORMALS.length * 4);
+        bbNormals.order(ByteOrder.nativeOrder());
+        cubeNormals = bbNormals.asFloatBuffer();
+        cubeNormals.put(WorldLayoutData.CUBE_NORMALS);
+        cubeNormals.position(0);
 
-    // make a floor
-    ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
-    bbFloorVertices.order(ByteOrder.nativeOrder());
-    floorVertices = bbFloorVertices.asFloatBuffer();
-    floorVertices.put(WorldLayoutData.FLOOR_COORDS);
-    floorVertices.position(0);
+         // make a floor
+        ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
+        bbFloorVertices.order(ByteOrder.nativeOrder());
+        floorVertices = bbFloorVertices.asFloatBuffer();
+        floorVertices.put(WorldLayoutData.FLOOR_COORDS);
+        floorVertices.position(0);
 
-    ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_NORMALS.length * 4);
-    bbFloorNormals.order(ByteOrder.nativeOrder());
-    floorNormals = bbFloorNormals.asFloatBuffer();
-    floorNormals.put(WorldLayoutData.FLOOR_NORMALS);
-    floorNormals.position(0);
+        ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_NORMALS.length * 4);
+        bbFloorNormals.order(ByteOrder.nativeOrder());
+        floorNormals = bbFloorNormals.asFloatBuffer();
+        floorNormals.put(WorldLayoutData.FLOOR_NORMALS);
+        floorNormals.position(0);
 
-    ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COLORS.length * 4);
-    bbFloorColors.order(ByteOrder.nativeOrder());
-    floorColors = bbFloorColors.asFloatBuffer();
-    floorColors.put(WorldLayoutData.FLOOR_COLORS);
-    floorColors.position(0);
+        ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COLORS.length * 4);
+        bbFloorColors.order(ByteOrder.nativeOrder());
+        floorColors = bbFloorColors.asFloatBuffer();
+        floorColors.put(WorldLayoutData.FLOOR_COLORS);
+        floorColors.position(0);
 
-    int vertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
-    int gridShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
-    int passthroughShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
+        int vertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
+        int gridShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
+        int passthroughShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
 
+        cylinderProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(cylinderProgram, vertexShader);
+        GLES20.glAttachShader(cylinderProgram, passthroughShader);
+        GLES20.glLinkProgram(cylinderProgram);
+        GLES20.glUseProgram(cylinderProgram);
 
-//    int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
-//    int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
-//    //int smallGridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.smallgrid_fragment);
-//    int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
+        checkGLError("cylinder program");
 
-    cylinderProgram = GLES20.glCreateProgram();
-    GLES20.glAttachShader(cylinderProgram, vertexShader);
-    GLES20.glAttachShader(cylinderProgram, passthroughShader);
-    GLES20.glLinkProgram(cylinderProgram);
-    GLES20.glUseProgram(cylinderProgram);
+        cylinderPositionParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Position");
+        cylinderNormalParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Normal");
+        cylinderColorParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Color");
 
-    checkGLError("cylinder program");
+        cylinderModelParam = GLES20.glGetUniformLocation(cylinderProgram, "u_Model");
+        cylinderModelViewParam = GLES20.glGetUniformLocation(cylinderProgram, "u_MVMatrix");
+        cylinderModelViewProjectionParam = GLES20.glGetUniformLocation(cylinderProgram, "u_MVP");
+        cylinderLightPosParam = GLES20.glGetUniformLocation(cylinderProgram, "u_LightPos");
 
-    cylinderPositionParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Position");
-    cylinderNormalParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Normal");
-    cylinderColorParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Color");
+        GLES20.glEnableVertexAttribArray(cylinderPositionParam);
+        GLES20.glEnableVertexAttribArray(cylinderNormalParam);
+        GLES20.glEnableVertexAttribArray(cylinderColorParam);
 
-    cylinderModelParam = GLES20.glGetUniformLocation(cylinderProgram, "u_Model");
-    cylinderModelViewParam = GLES20.glGetUniformLocation(cylinderProgram, "u_MVMatrix");
-    cylinderModelViewProjectionParam = GLES20.glGetUniformLocation(cylinderProgram, "u_MVP");
-    cylinderLightPosParam = GLES20.glGetUniformLocation(cylinderProgram, "u_LightPos");
+        checkGLError("cylinder program params");
 
-    GLES20.glEnableVertexAttribArray(cylinderPositionParam);
-    GLES20.glEnableVertexAttribArray(cylinderNormalParam);
-    GLES20.glEnableVertexAttribArray(cylinderColorParam);
+        cubeProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(cubeProgram, vertexShader);
+        GLES20.glAttachShader(cubeProgram, passthroughShader);
+        GLES20.glLinkProgram(cubeProgram);
+        GLES20.glUseProgram(cubeProgram);
 
-    checkGLError("cylinder program params");
+        checkGLError("Cube program");
 
-    cubeProgram = GLES20.glCreateProgram();
-    GLES20.glAttachShader(cubeProgram, vertexShader);
-    GLES20.glAttachShader(cubeProgram, passthroughShader);
-    GLES20.glLinkProgram(cubeProgram);
-    GLES20.glUseProgram(cubeProgram);
+        cubePositionParam = GLES20.glGetAttribLocation(cubeProgram, "a_Position");
+        cubeNormalParam = GLES20.glGetAttribLocation(cubeProgram, "a_Normal");
+        cubeColorParam = GLES20.glGetAttribLocation(cubeProgram, "a_Color");
 
-    checkGLError("Cube program");
+        cubeModelParam = GLES20.glGetUniformLocation(cubeProgram, "u_Model");
+        cubeModelViewParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVMatrix");
+        cubeModelViewProjectionParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVP");
+        cubeLightPosParam = GLES20.glGetUniformLocation(cubeProgram, "u_LightPos");
 
-    cubePositionParam = GLES20.glGetAttribLocation(cubeProgram, "a_Position");
-    cubeNormalParam = GLES20.glGetAttribLocation(cubeProgram, "a_Normal");
-    cubeColorParam = GLES20.glGetAttribLocation(cubeProgram, "a_Color");
+        GLES20.glEnableVertexAttribArray(cubePositionParam);
+        GLES20.glEnableVertexAttribArray(cubeNormalParam);
+        GLES20.glEnableVertexAttribArray(cubeColorParam);
 
-    cubeModelParam = GLES20.glGetUniformLocation(cubeProgram, "u_Model");
-    cubeModelViewParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVMatrix");
-    cubeModelViewProjectionParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVP");
-    cubeLightPosParam = GLES20.glGetUniformLocation(cubeProgram, "u_LightPos");
+        checkGLError("Cube program params");
 
-    GLES20.glEnableVertexAttribArray(cubePositionParam);
-    GLES20.glEnableVertexAttribArray(cubeNormalParam);
-    GLES20.glEnableVertexAttribArray(cubeColorParam);
+        floorProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(floorProgram, vertexShader);
+        GLES20.glAttachShader(floorProgram, gridShader);
+        GLES20.glLinkProgram(floorProgram);
+        GLES20.glUseProgram(floorProgram);
 
-    checkGLError("Cube program params");
+        checkGLError("Floor program");
 
-    floorProgram = GLES20.glCreateProgram();
-    GLES20.glAttachShader(floorProgram, vertexShader);
-    GLES20.glAttachShader(floorProgram, gridShader);
-    GLES20.glLinkProgram(floorProgram);
-    GLES20.glUseProgram(floorProgram);
+        floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
+        floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
+        floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
+        floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
 
-    checkGLError("Floor program");
+        floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
+        floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
+        floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
 
-    floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
-    floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
-    floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
-    floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
+        GLES20.glEnableVertexAttribArray(floorPositionParam);
+        GLES20.glEnableVertexAttribArray(floorNormalParam);
+        GLES20.glEnableVertexAttribArray(floorColorParam);
 
-    floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
-    floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
-    floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
+        checkGLError("Floor program params");
 
-    GLES20.glEnableVertexAttribArray(floorPositionParam);
-    GLES20.glEnableVertexAttribArray(floorNormalParam);
-    GLES20.glEnableVertexAttribArray(floorColorParam);
+        // Object first appears directly in front of user.
+        Matrix.setIdentityM(modelCube, 0);
+        Matrix.translateM(modelCube, 0, 0.08f, -0.09f, -0.15f);
+        Matrix.scaleM(modelCube, 0, 0.012f, 0.012f, 0.003f);
 
-    checkGLError("Floor program params");
+        Matrix.setIdentityM(modelFloor, 0);
+        Matrix.translateM(modelFloor, 0, 0, -floorDepth, 0); // Floor appears below user.
 
-    // Object first appears directly in front of user.
-    Matrix.setIdentityM(modelCube, 0);
-    Matrix.translateM(modelCube, 0, 0.08f, -0.09f, -0.15f);
-    Matrix.scaleM(modelCube, 0, 0.012f, 0.012f, 0.003f);
-    //Matrix.scaleM(modelCube, 0, 0, 0, 0);
+        Matrix.setIdentityM(modelCylinder, 0);
+        Matrix.translateM(modelCylinder, 0, 0, -2*floorDepth, 0); // Cylinder is on floor
 
-//    Matrix.translateM(modelCube, 0, 1f, 1f, -1f);
-
-    Matrix.setIdentityM(modelFloor, 0);
-    Matrix.translateM(modelFloor, 0, 0, -floorDepth, 0); // Floor appears below user.
-
-    Matrix.setIdentityM(modelCylinder, 0);
-    Matrix.translateM(modelCylinder, 0, 0, -2*floorDepth, 0); // Cylinder is on floor
-
-    checkGLError("onSurfaceCreated");
-  }
-
-  /**
-   * Converts a raw text file into a string.
-   *
-   * @param resId The resource ID of the raw text file about to be turned into a shader.
-   * @return The context of the text file, or null in case of error.
-   */
-  private String readRawTextFile(int resId) {
-    InputStream inputStream = getResources().openRawResource(resId);
-    try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-      StringBuilder sb = new StringBuilder();
-      String line;
-      while ((line = reader.readLine()) != null) {
-        sb.append(line).append("\n");
-      }
-      reader.close();
-      return sb.toString();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
-  /**
-   * Prepares OpenGL ES before we draw a frame.
-   *
-   * @param headTransform The head transformation in the new frame.
-   */
-  @Override
-  public void onNewFrame(HeadTransform headTransform) {
-    // Build the Model part of the ModelView matrix.
-    //Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
-
-//    // Build the camera matrix and apply it to the ModelView.
-    Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-//
-    headTransform.getHeadView(headView, 0);
-//
-    checkGLError("onReadyToDraw");
-  }
-
-  /**
-   * Draws a frame for an eye.
-   *
-   * @param eye The eye to render. Includes all required transformations.
-   */
-  @Override
-  public void onDrawEye(Eye eye) {
-      GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-      GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-      checkGLError("colorParam");
-
-    // Apply the eye transformation to the camera.
-      Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
-
-    // Set the position of the light
-      Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, LIGHT_POS_IN_WORLD_SPACE, 0);
-
-    // Build the ModelView and ModelViewProjection matrices
-    // for calculating cube position and light.
-      float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
-//      Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
-      Matrix.multiplyMM(modelView, 0, camera, 0, modelCube, 0);
-      Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-      drawCube();
-
-    // Set modelView for the floor, so we draw floor in the correct location
-      Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
-      Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-      drawFloor();
-
-    // Set modelView for the cylinder, so we draw cylinder in the correct location
-      Matrix.multiplyMM(modelView, 0, view, 0, modelCylinder, 0);
-      Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-      drawCylinder();
-  }
-
-  public void drawCylinder(){
-      GLES20.glUseProgram(cylinderProgram);
-
-      GLES20.glUniform3fv(cylinderLightPosParam, 1, lightPosInEyeSpace, 0);
-
-      // Set the Model in the shader, used to calculate lighting
-      GLES20.glUniformMatrix4fv(cylinderModelParam, 1, false, modelCylinder, 0);
-
-      // Set the ModelView in the shader, used to calculate lighting
-      GLES20.glUniformMatrix4fv(cylinderModelViewParam, 1, false, modelView, 0);
-
-      // Set the position of the cube
-      GLES20.glVertexAttribPointer(cylinderPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
-              false, 0, cylinderVertices);
-
-      // Set the ModelViewProjection matrix in the shader.
-      GLES20.glUniformMatrix4fv(cylinderModelViewProjectionParam, 1, false, modelViewProjection, 0);
-
-      // Set the normal positions of the cube, again for shading
-      GLES20.glVertexAttribPointer(cylinderNormalParam, 3, GLES20.GL_FLOAT, false, 0, cylinderNormals);
-      GLES20.glVertexAttribPointer(cylinderColorParam, 4, GLES20.GL_FLOAT, false, 0, cylinderColors);
-
-      GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, CYLINDER_SEGMENTS*6);
-      checkGLError("Drawing cube");
-  }
-
-  @Override
-  public void onFinishFrame(Viewport viewport) {
-  }
-
-  /**
-   * Draw the cube.
-   *
-   * <p>We've set all of our transformation matrices. Now we simply pass them into the shader.
-   */
-  public void drawCube() {
-    GLES20.glUseProgram(cubeProgram);
-
-    GLES20.glUniform3fv(cubeLightPosParam, 1, lightPosInEyeSpace, 0);
-
-    // Set the Model in the shader, used to calculate lighting
-    GLES20.glUniformMatrix4fv(cubeModelParam, 1, false, modelCube, 0);
-
-    // Set the ModelView in the shader, used to calculate lighting
-    GLES20.glUniformMatrix4fv(cubeModelViewParam, 1, false, modelView, 0);
-
-    // Set the position of the cube
-    GLES20.glVertexAttribPointer(cubePositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
-        false, 0, cubeVertices);
-
-    // Set the ModelViewProjection matrix in the shader.
-    GLES20.glUniformMatrix4fv(cubeModelViewProjectionParam, 1, false, modelViewProjection, 0);
-
-    // Set the normal positions of the cube, again for shading
-    GLES20.glVertexAttribPointer(cubeNormalParam, 3, GLES20.GL_FLOAT, false, 0, cubeNormals);
-    GLES20.glVertexAttribPointer(cubeColorParam, 4, GLES20.GL_FLOAT, false, 0,
-        isLookingAtObject() ? cubeFoundColors : cubeColors);
-
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
-    checkGLError("Drawing cube");
-  }
-
-  /**
-   * Draw the floor.
-   *
-   * <p>This feeds in data for the floor into the shader. Note that this doesn't feed in data about
-   * position of the light, so if we rewrite our code to draw the floor first, the lighting might
-   * look strange.
-   */
-  public void drawFloor() {
-    GLES20.glUseProgram(floorProgram);
-
-    // Set ModelView, MVP, position, normals, and color.
-    GLES20.glUniform3fv(floorLightPosParam, 1, lightPosInEyeSpace, 0);
-    GLES20.glUniformMatrix4fv(floorModelParam, 1, false, modelFloor, 0);
-    GLES20.glUniformMatrix4fv(floorModelViewParam, 1, false, modelView, 0);
-    GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false, modelViewProjection, 0);
-    GLES20.glVertexAttribPointer(floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, floorVertices);
-    GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0, floorNormals);
-    GLES20.glVertexAttribPointer(floorColorParam, 4, GLES20.GL_FLOAT, false, 0, floorColors);
-
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-
-    checkGLError("drawing floor");
-  }
-
-  /**
-   * Called when the Cardboard trigger is pulled.
-   */
-  @Override
-  public void onCardboardTrigger() {
-    Log.i(TAG, "onCardboardTrigger");
-
-    if (isLookingAtObject()) {
-      score++;
-      overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
-      hideObject();
-    } else {
-      overlayView.show3DToast("Look around to find the object!");
+        checkGLError("onSurfaceCreated");
     }
 
-    // Always give user feedback.
-    vibrator.vibrate(50);
-  }
+    /**
+    * Prepares OpenGL ES before we draw a frame.
+    *
+    * @param headTransform The head transformation in the new frame.
+    */
+    @Override
+    public void onNewFrame(HeadTransform headTransform) {
+        // Build the Model part of the ModelView matrix.
+        //Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
 
-  /**
-   * Find a new random position for the object.
-   *
-   * <p>We'll rotate it around the Y-axis so it's out of sight, and then up or down by a little bit.
-   */
-  private void hideObject() {
-    float[] rotationMatrix = new float[16];
-    float[] posVec = new float[4];
+        // Build the camera matrix and apply it to the ModelView.
+        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
+        headTransform.getHeadView(headView, 0);
+        checkGLError("onReadyToDraw");
+    }
 
-    // First rotate in XZ plane, between 90 and 270 deg away, and scale so that we vary
-    // the object's distance from the user.
-    float angleXZ = (float) Math.random() * 180 + 90;
-    Matrix.setRotateM(rotationMatrix, 0, angleXZ, 0f, 1f, 0f);
-    float oldObjectDistance = objectDistance;
-    objectDistance = (float) Math.random() * 15 + 5;
-    float objectScalingFactor = objectDistance / oldObjectDistance;
-    Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor,
-        objectScalingFactor);
-    Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
+    /**
+    * Draws a frame for an eye.
+    *
+    * @param eye The eye to render. Includes all required transformations.
+    */
+    @Override
+    public void onDrawEye(Eye eye) {
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-    // Now get the up or down angle, between -20 and 20 degrees.
-    float angleY = (float) Math.random() * 80 - 40; // Angle in Y plane, between -40 and 40.
-    angleY = (float) Math.toRadians(angleY);
-    float newY = (float) Math.tan(angleY) * objectDistance;
+        checkGLError("colorParam");
 
-    Matrix.setIdentityM(modelCube, 0);
-    Matrix.translateM(modelCube, 0, posVec[0], newY, posVec[2]);
-  }
+        // Apply the eye transformation to the camera.
+        Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
 
-  /**
-   * Check if user is looking at object by calculating where the object is in eye-space.
-   *
-   * @return true if the user is looking at the object.
-   */
-  private boolean isLookingAtObject() {
-    float[] initVec = { 0, 0, 0, 1.0f };
-    float[] objPositionVec = new float[4];
+        // Set the position of the light
+        Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, LIGHT_POS_IN_WORLD_SPACE, 0);
 
-    // Convert object space to camera space. Use the headView from onNewFrame.
-    Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
-    Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
+        // Build the ModelView and ModelViewProjection matrices
+        // for calculating cube position and light.
+        float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
+//        Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
+        Matrix.multiplyMM(modelView, 0, camera, 0, modelCube, 0);
+        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+        drawCube();
 
-    float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
-    float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
+       // Set modelView for the floor, so we draw floor in the correct location
+        Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
+        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+        drawFloor();
 
-    return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
-  }
+       // Set modelView for the cylinder, so we draw cylinder in the correct location
+        Matrix.multiplyMM(modelView, 0, view, 0, modelCylinder, 0);
+        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+        drawCylinder();
+    }
+
+    public void drawCylinder(){
+        GLES20.glUseProgram(cylinderProgram);
+        GLES20.glUniform3fv(cylinderLightPosParam, 1, lightPosInEyeSpace, 0);
+
+        // Set the Model in the shader, used to calculate lighting
+        GLES20.glUniformMatrix4fv(cylinderModelParam, 1, false, modelCylinder, 0);
+
+        // Set the ModelView in the shader, used to calculate lighting
+        GLES20.glUniformMatrix4fv(cylinderModelViewParam, 1, false, modelView, 0);
+
+        // Set the position of the cube
+        GLES20.glVertexAttribPointer(cylinderPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cylinderVertices);
+
+        // Set the ModelViewProjection matrix in the shader.
+        GLES20.glUniformMatrix4fv(cylinderModelViewProjectionParam, 1, false, modelViewProjection, 0);
+
+        // Set the normal positions of the cube, again for shading
+        GLES20.glVertexAttribPointer(cylinderNormalParam, 3, GLES20.GL_FLOAT, false, 0, cylinderNormals);
+        GLES20.glVertexAttribPointer(cylinderColorParam, 4, GLES20.GL_FLOAT, false, 0, cylinderColors);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, CYLINDER_SEGMENTS*6);
+        checkGLError("Drawing cube");
+    }
+
+    @Override
+    public void onFinishFrame(Viewport viewport) {}
+
+    public void drawCube() {
+        GLES20.glUseProgram(cubeProgram);
+
+        GLES20.glUniform3fv(cubeLightPosParam, 1, lightPosInEyeSpace, 0);
+
+        // Set the Model in the shader, used to calculate lighting
+        GLES20.glUniformMatrix4fv(cubeModelParam, 1, false, modelCube, 0);
+
+        // Set the ModelView in the shader, used to calculate lighting
+        GLES20.glUniformMatrix4fv(cubeModelViewParam, 1, false, modelView, 0);
+
+        // Set the position of the cube
+        GLES20.glVertexAttribPointer(cubePositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cubeVertices);
+
+        // Set the ModelViewProjection matrix in the shader.
+        GLES20.glUniformMatrix4fv(cubeModelViewProjectionParam, 1, false, modelViewProjection, 0);
+
+        // Set the normal positions of the cube, again for shading
+        GLES20.glVertexAttribPointer(cubeNormalParam, 3, GLES20.GL_FLOAT, false, 0, cubeNormals);
+        GLES20.glVertexAttribPointer(cubeColorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject() ? cubeFoundColors : cubeColors);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+        checkGLError("Drawing cube");
+    }
+
+    /**
+    * Draw the floor.
+    *
+    * <p>This feeds in data for the floor into the shader. Note that this doesn't feed in data about
+    * position of the light, so if we rewrite our code to draw the floor first, the lighting might
+    * look strange.
+    */
+    public void drawFloor() {
+        GLES20.glUseProgram(floorProgram);
+        // Set ModelView, MVP, position, normals, and color.
+        GLES20.glUniform3fv(floorLightPosParam, 1, lightPosInEyeSpace, 0);
+        GLES20.glUniformMatrix4fv(floorModelParam, 1, false, modelFloor, 0);
+        GLES20.glUniformMatrix4fv(floorModelViewParam, 1, false, modelView, 0);
+        GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false, modelViewProjection, 0);
+        GLES20.glVertexAttribPointer(floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, floorVertices);
+        GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0, floorNormals);
+        GLES20.glVertexAttribPointer(floorColorParam, 4, GLES20.GL_FLOAT, false, 0, floorColors);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
+
+        checkGLError("drawing floor");
+    }
+
+
+    @Override
+    public void onCardboardTrigger() {
+        Log.i(TAG, "onCardboardTrigger");
+
+        if (isLookingAtObject()) {
+            score++;
+            overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
+            hideObject();
+        } else {
+            overlayView.show3DToast("Look around to find the object!");
+        }
+        // Always give user feedback.
+        vibrator.vibrate(50);
+    }
+
+    /**
+    * Find a new random position for the object.
+    *
+    * <p>We'll rotate it around the Y-axis so it's out of sight, and then up or down by a little bit.
+    */
+    private void hideObject() {
+        float[] rotationMatrix = new float[16];
+        float[] posVec = new float[4];
+        // First rotate in XZ plane, between 90 and 270 deg away, and scale so that we vary
+        // the object's distance from the user.
+        float angleXZ = (float) Math.random() * 180 + 90;
+        Matrix.setRotateM(rotationMatrix, 0, angleXZ, 0f, 1f, 0f);
+        float oldObjectDistance = objectDistance;
+        objectDistance = (float) Math.random() * 15 + 5;
+        float objectScalingFactor = objectDistance / oldObjectDistance;
+        Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
+        Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
+
+        // Now get the up or down angle, between -20 and 20 degrees.
+        float angleY = (float) Math.random() * 80 - 40; // Angle in Y plane, between -40 and 40.
+        angleY = (float) Math.toRadians(angleY);
+        float newY = (float) Math.tan(angleY) * objectDistance;
+
+        Matrix.setIdentityM(modelCube, 0);
+        Matrix.translateM(modelCube, 0, posVec[0], newY, posVec[2]);
+    }
+
+    /**
+    * Check if user is looking at object by calculating where the object is in eye-space.
+    *
+    * @return true if the user is looking at the object.
+    */
+    private boolean isLookingAtObject() {
+        float[] initVec = { 0, 0, 0, 1.0f };
+        float[] objPositionVec = new float[4];
+
+        // Convert object space to camera space. Use the headView from onNewFrame.
+        Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
+        Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
+
+        float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
+        float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
+
+        return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
+    }
 }
