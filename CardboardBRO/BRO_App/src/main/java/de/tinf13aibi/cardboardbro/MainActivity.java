@@ -21,7 +21,6 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.util.FloatMath;
 import android.util.Log;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
@@ -30,83 +29,34 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
+import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
+import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
+import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
+import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
+import de.tinf13aibi.cardboardbro.Entities.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.LineEntity;
+
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
-    private static final int CYLINDER_SEGMENTS = 32;
+    private List<IEntity> mEntityList;
     private static final String TAG = "MainActivity";
-    private static final float Z_NEAR = 0.1f;
-    private static final float Z_FAR = 100.0f;
-    private static final float CAMERA_Z = 0.01f;//0.01f;
-    private static final float TIME_DELTA = 0.3f;
-
-    private static final float YAW_LIMIT = 0.12f;
-    private static final float PITCH_LIMIT = 0.12f;
-
-    private static final int COORDS_PER_VERTEX = 3;
 
     // We keep the light always position just above the user.
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
     private final float[] lightPosInEyeSpace = new float[4];
 
-    private FloatBuffer floorVertices;
-    private FloatBuffer floorColors;
-    private FloatBuffer floorNormals;
-
-    private FloatBuffer cylinderVertices;
-    private FloatBuffer cylinderColors;
-    private FloatBuffer cylinderNormals;
-
-    private FloatBuffer cubeVertices;
-    private FloatBuffer cubeColors;
-    private FloatBuffer cubeFoundColors;
-    private FloatBuffer cubeNormals;
-
-    private int cubeProgram;
-    private int floorProgram;
-    private int cylinderProgram;
-
-    private int cubePositionParam;
-    private int cubeNormalParam;
-    private int cubeColorParam;
-    private int cubeModelParam;
-    private int cubeModelViewParam;
-    private int cubeModelViewProjectionParam;
-    private int cubeLightPosParam;
-
-    private int floorPositionParam;
-    private int floorNormalParam;
-    private int floorColorParam;
-    private int floorModelParam;
-    private int floorModelViewParam;
-    private int floorModelViewProjectionParam;
-    private int floorLightPosParam;
-
-    private int cylinderPositionParam;
-    private int cylinderNormalParam;
-    private int cylinderColorParam;
-    private int cylinderModelParam;
-    private int cylinderModelViewParam;
-    private int cylinderModelViewProjectionParam;
-    private int cylinderLightPosParam;
-
     private float[] modelCube;
     private float[] camera;
     private float[] view;
     private float[] headView;
-    private float[] modelViewProjection;
     private float[] modelView;
-    private float[] modelFloor;
-    private float[] modelCylinder;
 
+    private int rotationPos = 0;
+    private Boolean rotationDir = true;
     private int score = 0;
     private float objectDistance = 12f;
     private float floorDepth = 10f;
@@ -141,13 +91,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         cardboardView.setRenderer(this);
         setCardboardView(cardboardView);
 
-        modelCylinder = new float[16];
         modelCube = new float[16];
         camera = new float[16];
         view = new float[16];
-        modelViewProjection = new float[16];
         modelView = new float[16];
-        modelFloor = new float[16];
         headView = new float[16];
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -165,95 +112,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onSurfaceChanged");
     }
 
-    private float[] calcCylinderSurfaceBasePoints(float mX, float mZ, float radius, float fromAngle, float toAngle){
-        float[] basePoints = new float[6];
-        basePoints[0] = mX + radius * FloatMath.sin(fromAngle);
-        basePoints[1] = 0;
-        basePoints[2] = mZ + radius * FloatMath.cos(fromAngle);
-
-        basePoints[3] = mX + radius * FloatMath.sin(toAngle);
-        basePoints[4] = 0;
-        basePoints[5] = mZ + radius * FloatMath.cos(toAngle);
-        return basePoints;
-    }
-
-    private float[] calcOneCylinderFace(float mX, float mZ, float radius, float fromAngle, float toAngle, float height){
-        float[] basePoints = calcCylinderSurfaceBasePoints(mX, mZ, radius, fromAngle, toAngle);
-        float[] cylinderFace = new float[6*3];
-        //Triangle 1 //P1
-        cylinderFace[0] = basePoints[0];
-        cylinderFace[1] = basePoints[1] + height;
-        cylinderFace[2] = basePoints[2];
-        //P2
-        cylinderFace[3] = basePoints[0];
-        cylinderFace[4] = basePoints[1];
-        cylinderFace[5] = basePoints[2];
-        //P3
-        cylinderFace[6] = basePoints[3];
-        cylinderFace[7] = basePoints[4];
-        cylinderFace[8] = basePoints[5];
-        //Triangle 2 //P1
-        cylinderFace[9] = basePoints[3];
-        cylinderFace[10]= basePoints[4];
-        cylinderFace[11]= basePoints[5];
-        //P2
-        cylinderFace[12] = basePoints[3];
-        cylinderFace[13] = basePoints[4] + height;
-        cylinderFace[14] = basePoints[5];
-        //P3
-        cylinderFace[15] = basePoints[0];
-        cylinderFace[16] = basePoints[1] + height;
-        cylinderFace[17] = basePoints[2];
-        return cylinderFace;
-     }
-
-    private float[] calcAngles(int cycleEdgesCount, int edgeIndex /*begins with 1*/){
-        float fromAngle = (float)(2*Math.PI*(1.0*edgeIndex/cycleEdgesCount));
-        float toAngle = (float)(2*Math.PI*((1.0*edgeIndex+1)/cycleEdgesCount));
-        float[] angles = new float[2];
-        angles[0] = fromAngle;
-        angles[1] = toAngle;
-        return angles;
-     }
-
-    private float[] calcCylinderSurfaceCoords(float mX, float mZ, float radius, float height, int cycleEdgesCount){
-         int coordsCount = cycleEdgesCount*6*3;
-         float[] coords = new float[coordsCount];
-         for (int i=0; i<cycleEdgesCount; i++){
-             float[] angles = calcAngles(cycleEdgesCount, i);
-             float[] cylinderFace = calcOneCylinderFace(mX, mZ, radius, angles[0], angles[1], height);
-             for (int j=0; j<18; j++){
-                 coords[i*18+j] = cylinderFace[j];
-             }
-         }
-         return coords;
-    }
-
-    public float[] calcNormale(float[] v1, float[] v2, float[] v3){
-         float[] v1v2, v1v3, kreuz;
-         //Vorbereitung
-         v1v2=new float[3];
-         v1v2[0]= v2[0]-v1[0];
-         v1v2[1]= v2[1]-v1[1];
-         v1v2[2]= v2[2]-v1[2];
-
-         v1v3=new float[3];
-         v1v3[0]= v3[0]-v1[0];
-         v1v3[1]= v3[1]-v1[1];
-         v1v3[2]= v3[2]-v1[2];
-
-         //Berechnung des Kreuz
-         double x=+((v1v2[1]*v1v3[2])-(v1v2[2]*v1v3[1]));
-         double y=-((v1v2[0]*v1v3[2])-(v1v2[2]*v1v3[0]));
-         double z=+((v1v2[0]*v1v3[1])-(v1v2[1]*v1v3[0]));
-         kreuz=new float[3];
-         kreuz[0]=(float)x;
-         kreuz[1]=(float)y;
-         kreuz[2]=(float)z;
-
-         return kreuz;
-    }
-
     /**
     * Creates the buffers we use to store information about the 3D world.
     *
@@ -267,186 +125,51 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
 
-        float[] cylinderCoords;
-        cylinderCoords = calcCylinderSurfaceCoords(0, 0, 30f, 50, CYLINDER_SEGMENTS);
+        String VertexShaderCode =
+                // This matrix member variable provides a hook to manipulate
+                // the coordinates of the objects that use this vertex shader
+                "uniform mat4 uMVPMatrix;" +
 
-        ByteBuffer bbCylinderVertices = ByteBuffer.allocateDirect(cylinderCoords.length * 4);
-        bbCylinderVertices.order(ByteOrder.nativeOrder());
-        cylinderVertices = bbCylinderVertices.asFloatBuffer();
-        cylinderVertices.put(cylinderCoords);
-        cylinderVertices.position(0);
+                        "attribute vec4 vPosition;" +
+                        "void main() {" +
+                        // the matrix must be included as a modifier of gl_Position
+                        "  gl_Position = uMVPMatrix * vPosition;" +
+                        "}";
 
-        ByteBuffer bbCylinderNormals = ByteBuffer.allocateDirect(cylinderCoords.length * 4);
-        bbCylinderNormals.order(ByteOrder.nativeOrder());
-        cylinderNormals = bbCylinderNormals.asFloatBuffer();
-        float[] normalArray = new float[cylinderCoords.length];
-        for (int i=0; i<CYLINDER_SEGMENTS; i++){
-            float[] v1 = new float[3];
-            v1[0] = cylinderCoords[i*18+0];
-            v1[1] = cylinderCoords[i*18+1];
-            v1[2] = cylinderCoords[i*18+2];
-
-            float[] v2 = new float[3];
-            v2[0] = cylinderCoords[i*18+3];
-            v2[1] = cylinderCoords[i*18+4];
-            v2[2] = cylinderCoords[i*18+5];
-
-            float[] v3 = new float[3];
-            v3[0] = cylinderCoords[i*18+6];
-            v3[1] = cylinderCoords[i*18+7];
-            v3[2] = cylinderCoords[i*18+8];
-
-            float[] normal = calcNormale(v1, v2, v3);
-            for (int j=0; j<6; j++){
-                normalArray[i*18+j*3+0]=normal[0];
-                normalArray[i*18+j*3+1]=normal[1];
-                normalArray[i*18+j*3+2]=normal[2];
-            }
-        }
-        cylinderNormals.put(normalArray);
-        cylinderNormals.position(0);
-
-        ByteBuffer bbCylinderColors = ByteBuffer.allocateDirect(WorldLayoutData.CYLINDER_COLOR.length *6*CYLINDER_SEGMENTS * 4);
-        bbCylinderColors.order(ByteOrder.nativeOrder());
-        cylinderColors = bbCylinderColors.asFloatBuffer();
-        float[] colorArray = new float[4*6*CYLINDER_SEGMENTS];
-        for (int i=0; i<6*CYLINDER_SEGMENTS; i++){
-            colorArray[i*4+0] = WorldLayoutData.CYLINDER_COLOR[0];
-            colorArray[i*4+1] = WorldLayoutData.CYLINDER_COLOR[1];
-            colorArray[i*4+2] = WorldLayoutData.CYLINDER_COLOR[2];
-            colorArray[i*4+3] = WorldLayoutData.CYLINDER_COLOR[3];
-        }
-        cylinderColors.put(colorArray);
-        cylinderColors.position(0);
-
-        ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
-        bbVertices.order(ByteOrder.nativeOrder());
-        cubeVertices = bbVertices.asFloatBuffer();
-        cubeVertices.put(WorldLayoutData.CUBE_COORDS);
-        cubeVertices.position(0);
-
-        ByteBuffer bbColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COLORS.length * 4);
-        bbColors.order(ByteOrder.nativeOrder());
-        cubeColors = bbColors.asFloatBuffer();
-        cubeColors.put(WorldLayoutData.CUBE_COLORS);
-        cubeColors.position(0);
-
-        ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(
-        WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
-        bbFoundColors.order(ByteOrder.nativeOrder());
-        cubeFoundColors = bbFoundColors.asFloatBuffer();
-        cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
-        cubeFoundColors.position(0);
-
-        ByteBuffer bbNormals = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_NORMALS.length * 4);
-        bbNormals.order(ByteOrder.nativeOrder());
-        cubeNormals = bbNormals.asFloatBuffer();
-        cubeNormals.put(WorldLayoutData.CUBE_NORMALS);
-        cubeNormals.position(0);
-
-         // make a floor
-        ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
-        bbFloorVertices.order(ByteOrder.nativeOrder());
-        floorVertices = bbFloorVertices.asFloatBuffer();
-        floorVertices.put(WorldLayoutData.FLOOR_COORDS);
-        floorVertices.position(0);
-
-        ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_NORMALS.length * 4);
-        bbFloorNormals.order(ByteOrder.nativeOrder());
-        floorNormals = bbFloorNormals.asFloatBuffer();
-        floorNormals.put(WorldLayoutData.FLOOR_NORMALS);
-        floorNormals.position(0);
-
-        ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COLORS.length * 4);
-        bbFloorColors.order(ByteOrder.nativeOrder());
-        floorColors = bbFloorColors.asFloatBuffer();
-        floorColors.put(WorldLayoutData.FLOOR_COLORS);
-        floorColors.position(0);
-
+        String FragmentShaderCode =
+                "precision mediump float;" +
+                        "uniform vec4 vColor;" +
+                        "void main() {" +
+                        "  gl_FragColor = vColor;" +
+                        "}";
         int vertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
         int gridShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
         int passthroughShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
 
-        cylinderProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(cylinderProgram, vertexShader);
-        GLES20.glAttachShader(cylinderProgram, passthroughShader);
-        GLES20.glLinkProgram(cylinderProgram);
-        GLES20.glUseProgram(cylinderProgram);
+        mEntityList = new ArrayList<>();
+        //Create Cylinder Canvas
+        BaseEntity mEntity = new CylinderCanvasEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 0, -2 * floorDepth, 0);
+        mEntityList.add(mEntity);
+        //Create Floor
+        mEntity = new FloorEntity(vertexShader, gridShader);
+        Matrix.translateM(mEntity.getModel(), 0, 0, -floorDepth, 0);
+        mEntityList.add(mEntity);
+        //Create Buttons
+        for (int i=0; i<7; i++) {
+            mEntity = new CuboidEntity(vertexShader, passthroughShader);
+            Matrix.translateM(mEntity.getModel(), 0, 0.09f-0.03f*i, -0.09f, -0.15f);
+            Matrix.scaleM(mEntity.getModel(), 0, 0.012f, 0.012f, 0.003f);
+            mEntityList.add(mEntity);
+        }
 
-        checkGLError("cylinder program");
+        //Test Lines
+        int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, VertexShaderCode);
+        int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, FragmentShaderCode);
 
-        cylinderPositionParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Position");
-        cylinderNormalParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Normal");
-        cylinderColorParam = GLES20.glGetAttribLocation(cylinderProgram, "a_Color");
-
-        cylinderModelParam = GLES20.glGetUniformLocation(cylinderProgram, "u_Model");
-        cylinderModelViewParam = GLES20.glGetUniformLocation(cylinderProgram, "u_MVMatrix");
-        cylinderModelViewProjectionParam = GLES20.glGetUniformLocation(cylinderProgram, "u_MVP");
-        cylinderLightPosParam = GLES20.glGetUniformLocation(cylinderProgram, "u_LightPos");
-
-        GLES20.glEnableVertexAttribArray(cylinderPositionParam);
-        GLES20.glEnableVertexAttribArray(cylinderNormalParam);
-        GLES20.glEnableVertexAttribArray(cylinderColorParam);
-
-        checkGLError("cylinder program params");
-
-        cubeProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(cubeProgram, vertexShader);
-        GLES20.glAttachShader(cubeProgram, passthroughShader);
-        GLES20.glLinkProgram(cubeProgram);
-        GLES20.glUseProgram(cubeProgram);
-
-        checkGLError("Cube program");
-
-        cubePositionParam = GLES20.glGetAttribLocation(cubeProgram, "a_Position");
-        cubeNormalParam = GLES20.glGetAttribLocation(cubeProgram, "a_Normal");
-        cubeColorParam = GLES20.glGetAttribLocation(cubeProgram, "a_Color");
-
-        cubeModelParam = GLES20.glGetUniformLocation(cubeProgram, "u_Model");
-        cubeModelViewParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVMatrix");
-        cubeModelViewProjectionParam = GLES20.glGetUniformLocation(cubeProgram, "u_MVP");
-        cubeLightPosParam = GLES20.glGetUniformLocation(cubeProgram, "u_LightPos");
-
-        GLES20.glEnableVertexAttribArray(cubePositionParam);
-        GLES20.glEnableVertexAttribArray(cubeNormalParam);
-        GLES20.glEnableVertexAttribArray(cubeColorParam);
-
-        checkGLError("Cube program params");
-
-        floorProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(floorProgram, vertexShader);
-        GLES20.glAttachShader(floorProgram, gridShader);
-        GLES20.glLinkProgram(floorProgram);
-        GLES20.glUseProgram(floorProgram);
-
-        checkGLError("Floor program");
-
-        floorModelParam = GLES20.glGetUniformLocation(floorProgram, "u_Model");
-        floorModelViewParam = GLES20.glGetUniformLocation(floorProgram, "u_MVMatrix");
-        floorModelViewProjectionParam = GLES20.glGetUniformLocation(floorProgram, "u_MVP");
-        floorLightPosParam = GLES20.glGetUniformLocation(floorProgram, "u_LightPos");
-
-        floorPositionParam = GLES20.glGetAttribLocation(floorProgram, "a_Position");
-        floorNormalParam = GLES20.glGetAttribLocation(floorProgram, "a_Normal");
-        floorColorParam = GLES20.glGetAttribLocation(floorProgram, "a_Color");
-
-        GLES20.glEnableVertexAttribArray(floorPositionParam);
-        GLES20.glEnableVertexAttribArray(floorNormalParam);
-        GLES20.glEnableVertexAttribArray(floorColorParam);
-
-        checkGLError("Floor program params");
-
-        // Object first appears directly in front of user.
-        Matrix.setIdentityM(modelCube, 0);
-        Matrix.translateM(modelCube, 0, 0.08f, -0.09f, -0.15f);
-        Matrix.scaleM(modelCube, 0, 0.012f, 0.012f, 0.003f);
-
-        Matrix.setIdentityM(modelFloor, 0);
-        Matrix.translateM(modelFloor, 0, 0, -floorDepth, 0); // Floor appears below user.
-
-        Matrix.setIdentityM(modelCylinder, 0);
-        Matrix.translateM(modelCylinder, 0, 0, -2*floorDepth, 0); // Cylinder is on floor
-
+        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
+        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -objectDistance/3);
+        mEntityList.add(mEntity);
         checkGLError("onSurfaceCreated");
     }
 
@@ -458,10 +181,22 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onNewFrame(HeadTransform headTransform) {
         // Build the Model part of the ModelView matrix.
+        for (IEntity entity : mEntityList) {
+            if (entity instanceof CuboidEntity) {
+                if (rotationPos < -150){
+                    rotationDir = true;
+                } else if (rotationPos > 150) {
+                    rotationDir = false;
+                }
+                int direction = rotationDir ? 1 : -1;
+                rotationPos += direction;
+                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0f, direction, 0f);
+            }
+        }
         //Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
 
         // Build the camera matrix and apply it to the ModelView.
-        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
+        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
         headTransform.getHeadView(headView, 0);
         checkGLError("onReadyToDraw");
     }
@@ -475,109 +210,27 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onDrawEye(Eye eye) {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
         checkGLError("colorParam");
-
         // Apply the eye transformation to the camera.
         Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
-
         // Set the position of the light
         Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, LIGHT_POS_IN_WORLD_SPACE, 0);
+        // Build the ModelView and ModelViewProjection matrices for calculating cube position and light.
+        float[] perspective = eye.getPerspective(Constants.Z_NEAR, Constants.Z_FAR);
 
-        // Build the ModelView and ModelViewProjection matrices
-        // for calculating cube position and light.
-        float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
-//        Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
-        Matrix.multiplyMM(modelView, 0, camera, 0, modelCube, 0);
-        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-        drawCube();
-
-       // Set modelView for the floor, so we draw floor in the correct location
-        Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
-        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-        drawFloor();
-
-       // Set modelView for the cylinder, so we draw cylinder in the correct location
-        Matrix.multiplyMM(modelView, 0, view, 0, modelCylinder, 0);
-        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-        drawCylinder();
-    }
-
-    public void drawCylinder(){
-        GLES20.glUseProgram(cylinderProgram);
-        GLES20.glUniform3fv(cylinderLightPosParam, 1, lightPosInEyeSpace, 0);
-
-        // Set the Model in the shader, used to calculate lighting
-        GLES20.glUniformMatrix4fv(cylinderModelParam, 1, false, modelCylinder, 0);
-
-        // Set the ModelView in the shader, used to calculate lighting
-        GLES20.glUniformMatrix4fv(cylinderModelViewParam, 1, false, modelView, 0);
-
-        // Set the position of the cube
-        GLES20.glVertexAttribPointer(cylinderPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cylinderVertices);
-
-        // Set the ModelViewProjection matrix in the shader.
-        GLES20.glUniformMatrix4fv(cylinderModelViewProjectionParam, 1, false, modelViewProjection, 0);
-
-        // Set the normal positions of the cube, again for shading
-        GLES20.glVertexAttribPointer(cylinderNormalParam, 3, GLES20.GL_FLOAT, false, 0, cylinderNormals);
-        GLES20.glVertexAttribPointer(cylinderColorParam, 4, GLES20.GL_FLOAT, false, 0, cylinderColors);
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, CYLINDER_SEGMENTS*6);
-        checkGLError("Drawing cube");
+        for (IEntity entity : mEntityList) {
+            if (entity instanceof CuboidEntity) {
+                entity.draw(camera, perspective, lightPosInEyeSpace);
+            } else if (entity instanceof LineEntity) {
+                entity.draw(view, perspective, lightPosInEyeSpace);
+            } else {
+                entity.draw(view, perspective, lightPosInEyeSpace);
+            }
+        }
     }
 
     @Override
     public void onFinishFrame(Viewport viewport) {}
-
-    public void drawCube() {
-        GLES20.glUseProgram(cubeProgram);
-
-        GLES20.glUniform3fv(cubeLightPosParam, 1, lightPosInEyeSpace, 0);
-
-        // Set the Model in the shader, used to calculate lighting
-        GLES20.glUniformMatrix4fv(cubeModelParam, 1, false, modelCube, 0);
-
-        // Set the ModelView in the shader, used to calculate lighting
-        GLES20.glUniformMatrix4fv(cubeModelViewParam, 1, false, modelView, 0);
-
-        // Set the position of the cube
-        GLES20.glVertexAttribPointer(cubePositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cubeVertices);
-
-        // Set the ModelViewProjection matrix in the shader.
-        GLES20.glUniformMatrix4fv(cubeModelViewProjectionParam, 1, false, modelViewProjection, 0);
-
-        // Set the normal positions of the cube, again for shading
-        GLES20.glVertexAttribPointer(cubeNormalParam, 3, GLES20.GL_FLOAT, false, 0, cubeNormals);
-        GLES20.glVertexAttribPointer(cubeColorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject() ? cubeFoundColors : cubeColors);
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
-        checkGLError("Drawing cube");
-    }
-
-    /**
-    * Draw the floor.
-    *
-    * <p>This feeds in data for the floor into the shader. Note that this doesn't feed in data about
-    * position of the light, so if we rewrite our code to draw the floor first, the lighting might
-    * look strange.
-    */
-    public void drawFloor() {
-        GLES20.glUseProgram(floorProgram);
-        // Set ModelView, MVP, position, normals, and color.
-        GLES20.glUniform3fv(floorLightPosParam, 1, lightPosInEyeSpace, 0);
-        GLES20.glUniformMatrix4fv(floorModelParam, 1, false, modelFloor, 0);
-        GLES20.glUniformMatrix4fv(floorModelViewParam, 1, false, modelView, 0);
-        GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false, modelViewProjection, 0);
-        GLES20.glVertexAttribPointer(floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, floorVertices);
-        GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0, floorNormals);
-        GLES20.glVertexAttribPointer(floorColorParam, 4, GLES20.GL_FLOAT, false, 0, floorColors);
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-
-        checkGLError("drawing floor");
-    }
-
 
     @Override
     public void onCardboardTrigger() {
@@ -637,6 +290,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
         float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
 
-        return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
+        return Math.abs(pitch) < Constants.PITCH_LIMIT && Math.abs(yaw) < Constants.YAW_LIMIT;
     }
 }

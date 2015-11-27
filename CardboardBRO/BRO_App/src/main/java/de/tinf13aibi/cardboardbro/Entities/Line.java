@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.Entities;
 
 import android.opengl.GLES20;
 
@@ -97,7 +97,7 @@ public class Line {
         GLES20.glUseProgram(GlProgram);
 
         // get handle to vertex shader's vPosition member
-        PositionHandle = GLES20.glGetAttribLocation(GlProgram, "vPosition");
+//        PositionHandle = GLES20.glGetAttribLocation(GlProgram, "vPosition");
 
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(PositionHandle);
@@ -108,13 +108,13 @@ public class Line {
                 VertexStride, VertexBuffer);
 
         // get handle to fragment shader's vColor member
-        ColorHandle = GLES20.glGetUniformLocation(GlProgram, "vColor");
+//        ColorHandle = GLES20.glGetUniformLocation(GlProgram, "vColor");
 
         // Set color for drawing the triangle
         GLES20.glUniform4fv(ColorHandle, 1, color, 0);
 
         // get handle to shape's transformation matrix
-        MVPMatrixHandle = GLES20.glGetUniformLocation(GlProgram, "uMVPMatrix");
+//        MVPMatrixHandle = GLES20.glGetUniformLocation(GlProgram, "uMVPMatrix");
 //        ArRenderer.checkGlError("glGetUniformLocation");
 
         // Apply the projection and view transformation
