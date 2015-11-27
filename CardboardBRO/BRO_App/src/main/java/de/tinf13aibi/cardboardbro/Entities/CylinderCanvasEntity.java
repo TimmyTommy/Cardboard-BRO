@@ -10,7 +10,7 @@ public class CylinderCanvasEntity extends BaseEntity implements IEntity {
 
     public CylinderCanvasEntity(int vertexShader, int fragmentShader){
         super(vertexShader, fragmentShader);
-        GeometryStruct geometry = GeometryFactory.createCylinderGeom(false);
+        GeometryStruct geometry = GeometryFactory.createCylinderGeom(true); //TODO Normalenberechnung nochmal angucken
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
     }
 }
