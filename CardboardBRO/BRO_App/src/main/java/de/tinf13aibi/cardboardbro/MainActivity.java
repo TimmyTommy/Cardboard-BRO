@@ -125,23 +125,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
 
-        String VertexShaderCode =
-                // This matrix member variable provides a hook to manipulate
-                // the coordinates of the objects that use this vertex shader
-                "uniform mat4 uMVPMatrix;" +
-
-                        "attribute vec4 vPosition;" +
-                        "void main() {" +
-                        // the matrix must be included as a modifier of gl_Position
-                        "  gl_Position = uMVPMatrix * vPosition;" +
-                        "}";
-
-        String FragmentShaderCode =
-                "precision mediump float;" +
-                        "uniform vec4 vColor;" +
-                        "void main() {" +
-                        "  gl_FragColor = vColor;" +
-                        "}";
         int vertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
         int gridShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
         int passthroughShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
@@ -164,8 +147,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
         //Test Lines
-        int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, VertexShaderCode);
-        int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, FragmentShaderCode);
+        int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
+        int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
         Matrix.translateM(mEntity.getModel(), 0, 0, 0, -objectDistance/3);

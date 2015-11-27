@@ -41,6 +41,20 @@ public class LineEntity extends BaseEntity implements IEntity {
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
     }
 
+    public void setVerts(float v0, float v1, float v2, float v3, float v4, float v5) {
+        LineCoords[0] = v0;
+        LineCoords[1] = v1;
+        LineCoords[2] = v2;
+        LineCoords[3] = v3;
+        LineCoords[4] = v4;
+        LineCoords[5] = v5;
+
+        mVertices.position(0);
+        mVertices.put(LineCoords);
+        // set the buffer to read the first coordinate
+        mVertices.position(0);
+    }
+
     public LineEntity(int vertexShader, int fragmentShader){
         super();
         mProgram = createProgram(vertexShader, fragmentShader);
