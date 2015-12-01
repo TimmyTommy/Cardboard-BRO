@@ -166,9 +166,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
             if (entity instanceof CuboidEntity) {
-                if (rotationPos < -150){
+                if (rotationPos < -250){
                     rotationDir = true;
-                } else if (rotationPos > 150) {
+                } else if (rotationPos > 250) {
                     rotationDir = false;
                 }
                 int direction = rotationDir ? 1 : -1;
