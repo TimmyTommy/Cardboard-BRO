@@ -142,14 +142,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         //Create Buttons
         for (int i=0; i<7; i++) {
             mEntity = new ButtonEntity(vertexShader, passthroughShader);
-            Matrix.translateM(mEntity.getModel(), 0, 0.09f-0.03f*i, -0.09f, -0.15f);
-            Matrix.scaleM(mEntity.getModel(), 0, 0.012f, 0.012f, 0.003f);
+            Matrix.translateM(mEntity.getModel(), 0, 0.18f-0.06f*i, -0.18f, -0.30f);
+            Matrix.scaleM(mEntity.getModel(), 0, 0.025f, 0.025f, 0.006f);
             mEntityList.add(mEntity);
         }
 
         mEntity = new CuboidEntity(vertexShader, passthroughShader);
-        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -objectDistance);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.15f, 0.15f, 0.15f);
+        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.01f, 0.01f, 0.01f);
         mEntityList.add(mEntity);
 
         //Test Lines
@@ -157,13 +157,27 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.05f, -objectDistance/2);
+        ((LineEntity)mEntity).setVerts(-0.05f, 0, 0, 0.05f, 0, 0);
+        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -0.25f);
         mEntityList.add(mEntity);
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        Matrix.rotateM(mEntity.getModel(), 0, 90, 0.0f, 0.0f, 1.0f);
-        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.02f, -objectDistance / 2);
+        ((LineEntity)mEntity).setVerts(0, -0.05f, 0, 0, 0.05f, 0);
+        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -0.25f);
         mEntityList.add(mEntity);
+//        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
+//        ((LineEntity)mEntity).setVerts(-0.1f, 0, 0, 0.1f, 0, 0);
+//        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -0.15f);
+////        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.05f, -0.25f);
+//        mEntityList.add(mEntity);
+//
+//        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
+////        Matrix.rotateM(mEntity.getModel(), 0, 90, 0.0f, 0.0f, 1.0f);
+////        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.02f, -0.25f);
+//        ((LineEntity)mEntity).setVerts(0, -0.1f, 0, 0, 0.1f, 0);
+//        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -0.15f);
+////        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.05f, -0.25f);
+//        mEntityList.add(mEntity);
         checkGLError("onSurfaceCreated");
     }
 
@@ -176,7 +190,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onNewFrame(HeadTransform headTransform) {
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
-            if (entity instanceof CuboidEntity) {
+            if (entity instanceof ButtonEntity) {
                 if (rotationPos < -250){
                     rotationDir = true;
                 } else if (rotationPos > 250) {
@@ -219,7 +233,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             if (entity instanceof ButtonEntity) {
                 entity.draw(camera, perspective, lightPosInEyeSpace);
             } else if (entity instanceof LineEntity) {
-                entity.draw(view, perspective, lightPosInEyeSpace);
+                entity.draw(headView, perspective, lightPosInEyeSpace);
+//                entity.draw(view, perspective, lightPosInEyeSpace);
             } else {
                 entity.draw(view, perspective, lightPosInEyeSpace);
             }
@@ -277,6 +292,20 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     * @return true if the user is looking at the object.
     */
     private boolean isLookingAtObject() {
+        float[] initVec = { 0, 0, 0, 1.0f };
+        float[] objPositionVec = new float[4];
+
+        // Convert object space to camera space. Use the headView from onNewFrame.
+        Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
+        Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
+
+        float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
+        float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
+
+        return Math.abs(pitch) < Constants.PITCH_LIMIT && Math.abs(yaw) < Constants.YAW_LIMIT;
+    }
+
+    private boolean isPointingAtObject() {
         float[] initVec = { 0, 0, 0, 1.0f };
         float[] objPositionVec = new float[4];
 
