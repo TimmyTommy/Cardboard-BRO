@@ -35,6 +35,7 @@ import java.util.List;
 import javax.microedition.khronos.egl.EGLConfig;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
+import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
@@ -140,18 +141,28 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mEntityList.add(mEntity);
         //Create Buttons
         for (int i=0; i<7; i++) {
-            mEntity = new CuboidEntity(vertexShader, passthroughShader);
+            mEntity = new ButtonEntity(vertexShader, passthroughShader);
             Matrix.translateM(mEntity.getModel(), 0, 0.09f-0.03f*i, -0.09f, -0.15f);
             Matrix.scaleM(mEntity.getModel(), 0, 0.012f, 0.012f, 0.003f);
             mEntityList.add(mEntity);
         }
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -objectDistance);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.15f, 0.15f, 0.15f);
+        mEntityList.add(mEntity);
 
         //Test Lines
         int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
         int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -objectDistance/3);
+        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.05f, -objectDistance/2);
+        mEntityList.add(mEntity);
+
+        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
+        Matrix.rotateM(mEntity.getModel(), 0, 90, 0.0f, 0.0f, 1.0f);
+        Matrix.translateM(mEntity.getModel(), 0, -0.5f, -0.02f, -objectDistance / 2);
         mEntityList.add(mEntity);
         checkGLError("onSurfaceCreated");
     }
@@ -165,7 +176,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onNewFrame(HeadTransform headTransform) {
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
-            if (entity instanceof CuboidEntity) {
+            if (entity instanceof ButtonEntity) {
                 if (rotationPos < -150){
                     rotationDir = true;
                 } else if (rotationPos > 150) {
@@ -174,7 +185,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 int direction = rotationDir ? 1 : -1;
                 rotationPos += direction;
                 Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0f, direction, 0f);
+            } else if (entity instanceof CuboidEntity){
+//                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
             }
+
         }
         //Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
 
@@ -202,7 +216,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         float[] perspective = eye.getPerspective(Constants.Z_NEAR, Constants.Z_FAR);
 
         for (IEntity entity : mEntityList) {
-            if (entity instanceof CuboidEntity) {
+            if (entity instanceof ButtonEntity) {
                 entity.draw(camera, perspective, lightPosInEyeSpace);
             } else if (entity instanceof LineEntity) {
                 entity.draw(view, perspective, lightPosInEyeSpace);
