@@ -176,10 +176,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onNewFrame(HeadTransform headTransform) {
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
-            if (entity instanceof ButtonEntity) {
-                if (rotationPos < -150){
+            if (entity instanceof CuboidEntity) {
+                if (rotationPos < -250){
                     rotationDir = true;
-                } else if (rotationPos > 150) {
+                } else if (rotationPos > 250) {
                     rotationDir = false;
                 }
                 int direction = rotationDir ? 1 : -1;

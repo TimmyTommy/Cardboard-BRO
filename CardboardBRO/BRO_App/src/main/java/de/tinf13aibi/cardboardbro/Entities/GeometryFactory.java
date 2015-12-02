@@ -48,13 +48,13 @@ public class GeometryFactory {
 
     private static float[] calcCycleSegment(float radius, float fromAngle, float toAngle){
         float[] vertices = new float[6];
-        vertices[0] = radius * FloatMath.sin(fromAngle);
+        vertices[0] = (float)(radius * Math.sin(fromAngle));
         vertices[1] = 0;
-        vertices[2] = radius * FloatMath.cos(fromAngle);
+        vertices[2] = (float)(radius * Math.cos(fromAngle));
 
-        vertices[3] = radius * FloatMath.sin(toAngle);
+        vertices[3] = (float)(radius * Math.sin(toAngle));
         vertices[4] = 0;
-        vertices[5] = radius * FloatMath.cos(toAngle);
+        vertices[5] = (float)(radius * Math.cos(toAngle));
         return vertices;
     }
 
