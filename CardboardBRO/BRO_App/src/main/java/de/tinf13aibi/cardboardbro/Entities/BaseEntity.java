@@ -13,6 +13,7 @@ import de.tinf13aibi.cardboardbro.Constants;
  * Created by dth on 27.11.2015.
  */
 public abstract class BaseEntity implements IEntity {
+    protected EntityDisplayType displayType = EntityDisplayType.Absolute;
     protected int mVerticesCount;
     protected FloatBuffer mVertices;
     protected FloatBuffer mColors;
@@ -112,6 +113,14 @@ public abstract class BaseEntity implements IEntity {
         GLES20.glVertexAttribPointer(mNormalParam, 3, GLES20.GL_FLOAT, false, 0, mNormals);
         GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false, 0, mColors);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVerticesCount/3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVerticesCount / 3);
+    }
+
+    public EntityDisplayType getDisplayType() {
+        return displayType;
+    }
+
+    public void setDisplayType(EntityDisplayType displayType) {
+        this.displayType = displayType;
     }
 }
