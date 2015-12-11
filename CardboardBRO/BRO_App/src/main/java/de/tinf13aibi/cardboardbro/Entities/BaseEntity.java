@@ -31,10 +31,13 @@ public abstract class BaseEntity implements IEntity {
     protected int mLightPosParam;
 
     protected float[] mModel;
+    protected float[] mBaseModel;
 
     public BaseEntity(){
         mModel = new float[16];
+        mBaseModel = new float[16];
         Matrix.setIdentityM(mModel, 0);
+        Matrix.setIdentityM(mBaseModel, 0);
     }
 
     public BaseEntity(int vertexShader, int fragmentShader){
@@ -94,6 +97,16 @@ public abstract class BaseEntity implements IEntity {
 
     public float[] getModel(){
         return mModel;
+    }
+
+    public float[] getBaseModel() {
+        return mBaseModel;
+    }
+
+    public void resetModelToBase(){
+//        Matrix.setIdentityM(mModel, 0);
+//        Matrix.multiplyMM(mModel, 0, mModel, 0, mBaseModel, 0);
+        mModel = mBaseModel.clone();
     }
 
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){

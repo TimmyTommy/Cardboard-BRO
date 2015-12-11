@@ -6,4 +6,6 @@ package de.tinf13aibi.cardboardbro.Entities;
 public interface IEntity {
     void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace);
     float[] getModel();
+    float[] getBaseModel();
+    void resetModelToBase();
 }

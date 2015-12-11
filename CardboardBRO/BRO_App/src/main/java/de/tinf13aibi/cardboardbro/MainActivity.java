@@ -143,36 +143,39 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         //Create Buttons
         for (int i=0; i<7; i++) {
             mEntity = new ButtonEntity(vertexShader, passthroughShader);
-            Matrix.translateM(mEntity.getModel(), 0, 1.8f-0.6f*i, -1.8f, -3f);
-            Matrix.scaleM(mEntity.getModel(), 0, 0.25f, 0.25f, 0.06f);
+            Matrix.translateM(mEntity.getBaseModel(), 0, 1.8f-0.6f*i, -1.8f, -3f);
+            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.25f, 0.25f, 0.06f);
             mEntityList.add(mEntity);
         }
 
         mEntity = new CuboidEntity(vertexShader, passthroughShader);
         Matrix.translateM(mEntity.getModel(), 0, 0, 0, -1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.01f, 0.01f, 0.01f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-        //Test Lines
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 0.05f, 0, -0.50f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.055f, 0.055f, 0.055f);
+        mEntityList.add(mEntity);
+
+        //Line Shader
         int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
         int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
+        //Blickpunkt
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(-1f, 0, -(Constants.Z_FAR-2)/2, 1f, 0, -(Constants.Z_FAR-2)/2);
+        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.Z_FAR-2)/2, 2f, 0, -(Constants.Z_FAR-2)/2);
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-//        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -0.25f);
         mEntityList.add(mEntity);
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(0, -1f, -(Constants.Z_FAR-2)/2, 0, 1f, -(Constants.Z_FAR-2)/2);
+        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.Z_FAR-2)/2, 0, 2f, -(Constants.Z_FAR-2)/2);
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-//        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -0.25f);
         mEntityList.add(mEntity);
-
+        //Blickgerade
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
         ((LineEntity)mEntity).setVerts(0, 0, 0, 0, 0, -1000);
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-//        Matrix.translateM(mEntity.getModel(), 0, 0, 0, 0);
         mEntityList.add(mEntity);
 
         checkGLError("onSurfaceCreated");
@@ -196,24 +199,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
             if (entity instanceof ButtonEntity) {
-//                if (rotationPos < -250){
-//                    rotationDir = true;
-//                } else if (rotationPos > 250) {
-//                    rotationDir = false;
-//                }
-//                int direction = rotationDir ? 1 : -1;
-//                rotationPos += direction;
-//
-//                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0f, direction, 0f);
+                if (rotationPos < -250){
+                    rotationDir = true;
+                } else if (rotationPos > 250) {
+                    rotationDir = false;
+                }
+                int direction = rotationDir ? 1 : -1;
+                rotationPos += direction;
 
-                Matrix.setIdentityM(entity.getModel(), 0);
+                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA, 0f, direction, 0f);
+
+                entity.resetModelToBase();
+
                 Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
-                Matrix.translateM(entity.getModel(), 0, 1.8f - 0.6f, -1.8f, -3f);
-                Matrix.scaleM(entity.getModel(), 0, 0.25f, 0.25f, 0.06f);
-            } else if (entity instanceof LineEntity){
-                if (((LineEntity)entity).getDisplayType()==EntityDisplayType.RelativeToCamera) {
-                    Matrix.setIdentityM(entity.getModel(), 0);
 
+
+            } else if (entity instanceof LineEntity){
+                entity.resetModelToBase();
+                if (((LineEntity)entity).getDisplayType()==EntityDisplayType.RelativeToCamera) {
                     //Invertierte HeadView-Matrix auf Objekte drauf rechnen, die sich mit Kopf mitbewegen sollen, weil: Headview * Head^-1 = IdentMat
                     Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
 
@@ -244,7 +247,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 }
 //                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
             } else if (entity instanceof CuboidEntity){
-//                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
+                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
             }
 
         }
