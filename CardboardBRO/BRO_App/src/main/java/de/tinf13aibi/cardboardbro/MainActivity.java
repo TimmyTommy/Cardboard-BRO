@@ -141,9 +141,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Matrix.translateM(mEntity.getModel(), 0, 0, -floorDepth, 0);
         mEntityList.add(mEntity);
         //Create Buttons
-        for (int i=0; i<7; i++) {
+        for (int i=0; i<5; i++) {
             mEntity = new ButtonEntity(vertexShader, passthroughShader);
-            Matrix.translateM(mEntity.getBaseModel(), 0, 1.8f-0.6f*i, -1.8f, -3f);
+            Matrix.translateM(mEntity.getBaseModel(), 0, 1.2f-0.6f*i, -1.3f, -3f);
             Matrix.scaleM(mEntity.getBaseModel(), 0, 0.25f, 0.25f, 0.06f);
             mEntityList.add(mEntity);
         }
@@ -199,15 +199,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
             if (entity instanceof ButtonEntity) {
-                if (rotationPos < -250){
+                if (rotationPos < -25){
                     rotationDir = true;
-                } else if (rotationPos > 250) {
+                } else if (rotationPos > 25) {
                     rotationDir = false;
                 }
                 int direction = rotationDir ? 1 : -1;
                 rotationPos += direction;
 
-                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA, 0f, direction, 0f);
+                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA*8, 0f, 0f, direction);
 
                 entity.resetModelToBase();
 
