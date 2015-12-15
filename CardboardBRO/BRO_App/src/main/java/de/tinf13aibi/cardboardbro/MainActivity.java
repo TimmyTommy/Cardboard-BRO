@@ -30,6 +30,7 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -40,6 +41,7 @@ import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
+import de.tinf13aibi.cardboardbro.Entities.GeometryFactory;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 
@@ -86,7 +88,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.common_ui);
         CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
         cardboardView.setRestoreGLStateEnabled(false);
@@ -95,6 +96,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         modelCube = new float[16];
         camera = new float[16];
+        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
+
         view = new float[16];
         modelView = new float[16];
         headView = new float[16];
@@ -189,7 +192,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onNewFrame(HeadTransform headTransform) {
         // Build the camera matrix and apply it to the ModelView.
-        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
+//        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
+//        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
         headTransform.getHeadView(headView, 0);
         checkGLError("onReadyToDraw");
 
@@ -290,6 +294,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     @Override
     public void onCardboardTrigger() {
+        Log.i("Test Normalvector", Arrays.toString(GeometryFactory.calcNormalVector2(1)));
+        Log.i("Test Normalvec inverse", Arrays.toString(GeometryFactory.calcNormalVector2(-1)));
+
+        float[] intersectPoint = new float[3];
+        boolean intersection = GeometryFactory.calcTriangleLineIntersection(intersectPoint);
+
+        Log.i("intersection", Boolean.toString(intersection));
+        Log.i("intersectPoint", Arrays.toString(intersectPoint));
+
         Log.i(TAG, "onCardboardTrigger");
 
         if (isLookingAtObject()) {

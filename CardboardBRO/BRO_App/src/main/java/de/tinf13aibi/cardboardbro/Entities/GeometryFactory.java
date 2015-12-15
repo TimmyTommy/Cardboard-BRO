@@ -8,6 +8,127 @@ import de.tinf13aibi.cardboardbro.Constants;
  * Created by dth on 27.11.2015.
  */
 public class GeometryFactory {
+    public static float[] calcVecPlusVec(float[] v1, float[] v2){
+        float[] res = new float[3];
+        res[0] = v1[0] + v2[0];
+        res[1] = v1[1] + v2[1];
+        res[2] = v1[2] + v2[2];
+
+        return res;
+    }
+
+    public static float[] calcVecMinusVec(float[] v1, float[] v2){
+        float[] res = new float[3];
+        res[0] = v1[0] - v2[0];
+        res[1] = v1[1] - v2[1];
+        res[2] = v1[2] - v2[2];
+
+        return res;
+    }
+
+    public static float[] calcVecTimesScalar(float[] v, float s){
+        float[] res = new float[3];
+        res[0] = v[0] * s;
+        res[1] = v[1] * s;
+        res[2] = v[2] * s;
+
+        return res;
+    }
+
+    public static float calcScalarProcuct(float[] v1, float[] v2){
+        return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+    }
+
+    public static boolean calcTriangleLineIntersection(float[] intersectPointOut){
+        //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
+
+        //Gerade: X = P + t*d
+        final float[] p = {0.50f, 0, 0.50f}; //point
+        final float[] d = {1,0.0001f,0};          //direction
+
+        //triangle ABC  //Planeequation: X = A + r*(B-A) + s*(C-A)
+        final float[] a = {0,0,0};
+        final float[] b = {1,0,0};
+        final float[] c = {0,0,1};
+
+        float[] u = calcVecMinusVec(b, a);
+        float[] v = calcVecMinusVec(c, a);
+        float[] w = calcVecMinusVec(p, a);
+
+        // (t, r, s) = 1/det(-d, u, v) * (det(w, u, v), det(−d, w, v), det(−d, u, w))
+        // det (a, b, c) = a*(b x c)
+
+        // (t, r, s) = 1/(d x v)*u  * ( (w x u)*v, (d x v)*w, (w x u)*d )
+
+        float[] crossDV = calcCrossProduct(d, v);
+        float[] crossWU = calcCrossProduct(w, u);
+
+        float factor = 1/calcScalarProcuct(crossDV, u);
+
+        float[] vec = new float[3];
+        vec[0] = calcScalarProcuct(crossWU, v);
+        vec[1] = calcScalarProcuct(crossDV, w);
+        vec[2] = calcScalarProcuct(crossWU, d);
+
+        float[] trs = calcVecTimesScalar(vec, factor);
+
+        float[] intersectPoint = calcVecPlusVec(p, calcVecTimesScalar(d, trs[0]));
+        System.arraycopy(intersectPoint, 0, intersectPointOut, 0, 3);
+
+        return isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
+    }
+
+    public static boolean isInRange(float x, float begin, float end){
+        return (begin <= x) && (x <= end);
+    }
+
+    public static float[] calcCrossProduct(float[] v1, float[] v2){
+        float[] kreuz = new float[3];
+
+        kreuz[0]=+((v1[1]*v2[2])-(v1[2]*v2[1]));
+        kreuz[1]=-((v1[0]*v2[2])-(v1[2]*v2[0]));
+        kreuz[2]=+((v1[0]*v2[1])-(v1[1]*v2[0]));
+
+        return kreuz;
+    }
+
+    public static float[] calcNormalVector2(int normalsDirection){
+        final float[] v1 = {0,0,0};
+        final float[] v2 = {1,0,0};
+        final float[] v3 = {0,0,1};
+
+        float[] v1v2, v1v3, kreuz;
+        //Vorbereitung
+        v1v2=new float[3];
+        v1v2[0]= v2[0]-v1[0];
+        v1v2[1]= v2[1]-v1[1];
+        v1v2[2]= v2[2]-v1[2];
+
+        v1v3=new float[3];
+        v1v3[0]= v3[0]-v1[0];
+        v1v3[1]= v3[1]-v1[1];
+        v1v3[2]= v3[2]-v1[2];
+
+//        //Berechnung des Kreuz
+//        double x=+((v1v2[1]*v1v3[2])-(v1v2[2]*v1v3[1]));
+//        double y=-((v1v2[0]*v1v3[2])-(v1v2[2]*v1v3[0]));
+//        double z=+((v1v2[0]*v1v3[1])-(v1v2[1]*v1v3[0]));
+//        kreuz=new float[3];
+
+//        kreuz[0]=(float)x*normalsDirection;
+//        kreuz[1]=(float)y*normalsDirection;
+//        kreuz[2]=(float)z*normalsDirection;
+
+        kreuz = calcCrossProduct(v1v2, v1v3);
+        kreuz = calcVecTimesScalar(kreuz, normalsDirection);
+//        kreuz[0] *= normalsDirection;
+//        kreuz[1] *= normalsDirection;
+//        kreuz[2] *= normalsDirection;
+
+        return kreuz;
+    }
+
+
     public static float[] calcNormalVector(float[] triangle, int normalsDirection){
         float[] v1 = new float[3];
         float[] v2 = new float[3];
