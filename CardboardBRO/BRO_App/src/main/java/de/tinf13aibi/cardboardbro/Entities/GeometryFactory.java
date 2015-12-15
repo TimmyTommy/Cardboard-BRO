@@ -231,7 +231,7 @@ public class GeometryFactory {
 
         for (int i=0; i<Constants.CYLINDER_SEGMENTS; i++){
             float[] angles = calcAngles(Constants.CYLINDER_SEGMENTS, i);
-            float[] cylinderFace = calcCylinderFace(Constants.Z_FAR/2/*radius*/, angles[0], angles[1], 100/*height*/);
+            float[] cylinderFace = calcCylinderFace(Constants.CYL_RADIUS/*radius*/, angles[0], angles[1], 100/*height*/);
             float[] triangle = getFirstTriangle(cylinderFace);
             float[] normal = calcNormalVector(triangle, normalsDirection);
 

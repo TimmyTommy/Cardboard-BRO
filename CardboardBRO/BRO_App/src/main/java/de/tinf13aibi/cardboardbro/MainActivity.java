@@ -44,6 +44,7 @@ import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.GeometryFactory;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
+import de.tinf13aibi.cardboardbro.Entities.Point3d;
 
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
     private List<IEntity> mEntityList;
@@ -52,6 +53,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     // We keep the light always position just above the user.
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
     private final float[] lightPosInEyeSpace = new float[4];
+
+    private Point3d eyePoint, centerOfView, upVector;
 
     private float[] modelCube;
     private float[] camera;
@@ -96,7 +99,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         modelCube = new float[16];
         camera = new float[16];
-        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
+        eyePoint = new Point3d(0, 0, 0);
+        centerOfView = new Point3d(0, 0, -1);
+        upVector = new Point3d(0, 1, 0);
+//        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
+        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
+                                     centerOfView.x, centerOfView.y, centerOfView.z,
+                                     upVector.x, upVector.y, upVector.z);
 
         view = new float[16];
         modelView = new float[16];
@@ -167,12 +176,12 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         //Blickpunkt
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.Z_FAR-2)/2, 2f, 0, -(Constants.Z_FAR-2)/2);
+        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.CYL_RADIUS-0.1f), 2f, 0, -(Constants.CYL_RADIUS-0.1f));
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
         mEntityList.add(mEntity);
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.Z_FAR-2)/2, 0, 2f, -(Constants.Z_FAR-2)/2);
+        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.CYL_RADIUS-0.1f), 0, 2f, -(Constants.CYL_RADIUS-0.1f));
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
         mEntityList.add(mEntity);
         //Blickgerade
@@ -194,6 +203,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Build the camera matrix and apply it to the ModelView.
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
+
+        eyePoint.y += 0.01f;
+        centerOfView.y += 0.01f;
+
+        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
+                centerOfView.x, centerOfView.y, centerOfView.z,
+                upVector.x, upVector.y, upVector.z);
         headTransform.getHeadView(headView, 0);
         checkGLError("onReadyToDraw");
 
@@ -294,6 +310,12 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     @Override
     public void onCardboardTrigger() {
+//        eyePoint.y++;
+//        centerOfView.y++;
+//        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
+//                                    centerOfView.x, centerOfView.y, centerOfView.z,
+//                                    upVector.x, upVector.y, upVector.z);
+
         Log.i("Test Normalvector", Arrays.toString(GeometryFactory.calcNormalVector2(1)));
         Log.i("Test Normalvec inverse", Arrays.toString(GeometryFactory.calcNormalVector2(-1)));
 
