@@ -19,4 +19,18 @@ public class Point3d {
         this.y = y;
         this.z = z;
     }
+
+    public Point3d(float[] array){
+        this.x = array[0];
+        this.y = array[1];
+        this.z = array[2];
+    }
+
+    public float[] toFloatArray(){
+        float[] res = new float[3];
+        res[0] = x;
+        res[1] = y;
+        res[2] = z;
+        return res;
+    }
 }

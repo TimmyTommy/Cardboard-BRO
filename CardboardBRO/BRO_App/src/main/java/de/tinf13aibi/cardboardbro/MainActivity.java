@@ -37,6 +37,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
+import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
@@ -176,12 +177,12 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         //Blickpunkt
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.CYL_RADIUS-0.1f), 2f, 0, -(Constants.CYL_RADIUS-0.1f));
+        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.CYL_RADIUS - 0.1f), 2f, 0, -(Constants.CYL_RADIUS - 0.1f));
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
         mEntityList.add(mEntity);
 
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.CYL_RADIUS-0.1f), 0, 2f, -(Constants.CYL_RADIUS-0.1f));
+        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.CYL_RADIUS - 0.1f), 0, 2f, -(Constants.CYL_RADIUS - 0.1f));
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
         mEntityList.add(mEntity);
         //Blickgerade
@@ -190,6 +191,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
         mEntityList.add(mEntity);
 
+        mEntity = new CrosshairEntity(lineVertexShader, lineFragmentShader);
+        ((CrosshairEntity)mEntity).setPosition(new Point3d(5,0,-5), new Point3d(1,0,-1), 0);
+        mEntityList.add(mEntity);
         checkGLError("onSurfaceCreated");
     }
 
@@ -204,8 +208,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
 
-        eyePoint.y += 0.01f;
-        centerOfView.y += 0.01f;
+//        eyePoint.y += 0.01f;
+//        centerOfView.y += 0.01f;
 
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
                 centerOfView.x, centerOfView.y, centerOfView.z,
@@ -316,14 +320,32 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //                                    centerOfView.x, centerOfView.y, centerOfView.z,
 //                                    upVector.x, upVector.y, upVector.z);
 
-        Log.i("Test Normalvector", Arrays.toString(GeometryFactory.calcNormalVector2(1)));
-        Log.i("Test Normalvec inverse", Arrays.toString(GeometryFactory.calcNormalVector2(-1)));
-
-        float[] intersectPoint = new float[3];
-        boolean intersection = GeometryFactory.calcTriangleLineIntersection(intersectPoint);
-
-        Log.i("intersection", Boolean.toString(intersection));
-        Log.i("intersectPoint", Arrays.toString(intersectPoint));
+//        Log.i("Test Normalvector", Arrays.toString(GeometryFactory.calcNormalVector2(1)));
+//        Log.i("Test Normalvec inverse", Arrays.toString(GeometryFactory.calcNormalVector2(-1)));
+//
+//        float[] intersectPoint = new float[3];
+//        boolean intersection = GeometryFactory.calcTriangleLineIntersection(intersectPoint);
+//
+//        Log.i("intersection", Boolean.toString(intersection));
+//        Log.i("intersectPoint", Arrays.toString(intersectPoint));
+//
+//        Log.i("Test", "(0, 0, 1)");
+//        GeometryFactory.calcCrossVectors(new Point3d(0, 0, 1));
+//
+//        Log.i("Test", "(0, 1, 1)");
+//        GeometryFactory.calcCrossVectors(new Point3d(0, 1, 1));
+//
+//        Log.i("Test", "(1, 0, 0)");
+//        GeometryFactory.calcCrossVectors(new Point3d(1, 0, 0));
+//
+//        Log.i("Test", "(1, 1, 0)");
+//        GeometryFactory.calcCrossVectors(new Point3d(1, 1, 0));
+//
+//        Log.i("Test", "(1, 0, 1)");
+//        GeometryFactory.calcCrossVectors(new Point3d(1, 0, 1));
+//
+//        Log.i("Test", "(1, 1, 1)");
+//        GeometryFactory.calcCrossVectors(new Point3d(1, 1, 1));
 
         Log.i(TAG, "onCardboardTrigger");
 

@@ -1,6 +1,7 @@
 package de.tinf13aibi.cardboardbro.Entities;
 
 import android.util.FloatMath;
+import android.util.Log;
 
 import de.tinf13aibi.cardboardbro.Constants;
 
@@ -8,6 +9,39 @@ import de.tinf13aibi.cardboardbro.Constants;
  * Created by dth on 27.11.2015.
  */
 public class GeometryFactory {
+    public static float calcVectorLength(Point3d vec){
+        return calcVectorLength(vec.toFloatArray());
+    }
+
+    public static float calcVectorLength(float[] vec){
+        return (float) Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
+    }
+
+    public static Point3d calcNormalizedVector(Point3d vec){
+        float length = calcVectorLength(vec);
+        return new Point3d(calcVecTimesScalar(vec.toFloatArray(), 1/length));
+    }
+
+    public static void calcCrossVectors(Point3d normal){
+        final float eps = 0.000001f;
+        Point3d mHoroizontalVec = new Point3d();
+        mHoroizontalVec.y = 0;
+        if (Math.abs(normal.x)<eps){
+            mHoroizontalVec.x = 1;
+            mHoroizontalVec.z = 0;
+        } else if (Math.abs(normal.z)<eps) {
+            mHoroizontalVec.x = 0;
+            mHoroizontalVec.z = 1;
+        } else {
+            mHoroizontalVec.x = 1;
+            mHoroizontalVec.z = -normal.x*mHoroizontalVec.x/normal.z;
+        }
+        Log.i("ergX", String.valueOf(mHoroizontalVec.x));
+        Log.i("ergY", String.valueOf(mHoroizontalVec.y));
+        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));
+    }
+
+
     public static float[] calcVecPlusVec(float[] v1, float[] v2){
         float[] res = new float[3];
         res[0] = v1[0] + v2[0];
@@ -92,10 +126,16 @@ public class GeometryFactory {
         return kreuz;
     }
 
-    public static float[] calcNormalVector2(int normalsDirection){
-        final float[] v1 = {0,0,0};
-        final float[] v2 = {1,0,0};
-        final float[] v3 = {0,0,1};
+    public static float[] calcNormalVector(float[] triangle, int normalsDirection){
+//        final float[] v1 = {0,0,0};
+//        final float[] v2 = {1,0,0};
+//        final float[] v3 = {0,0,1};
+        float[] v1 = new float[3];
+        float[] v2 = new float[3];
+        float[] v3 = new float[3];
+        System.arraycopy(triangle, 0, v1, 0, 3);
+        System.arraycopy(triangle, 3, v2, 0, 3);
+        System.arraycopy(triangle, 6, v3, 0, 3);
 
         float[] v1v2, v1v3, kreuz;
         //Vorbereitung
@@ -129,7 +169,7 @@ public class GeometryFactory {
     }
 
 
-    public static float[] calcNormalVector(float[] triangle, int normalsDirection){
+    public static float[] calcNormalVector2(float[] triangle, int normalsDirection){
         float[] v1 = new float[3];
         float[] v2 = new float[3];
         float[] v3 = new float[3];

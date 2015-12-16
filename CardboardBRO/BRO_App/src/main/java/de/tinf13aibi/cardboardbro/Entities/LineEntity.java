@@ -11,8 +11,8 @@ import de.tinf13aibi.cardboardbro.Constants;
  * Created by dth on 27.11.2015.
  */
 public class LineEntity extends BaseEntity implements IEntity {
-    float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    static float[] LineCoords = {
+    private float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    private float[] LineCoords = {
             0.0f, 0.0f, 0.0f,
             1.0f, 0.0f, 0.0f
     };
@@ -39,6 +39,14 @@ public class LineEntity extends BaseEntity implements IEntity {
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
 
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
+    }
+    public void setVerts(float[] from, float[] to) {
+        System.arraycopy(from, 0, LineCoords, 0, 3);
+        System.arraycopy(to, 0, LineCoords, 3, 3);
+        mVertices.position(0);
+        mVertices.put(LineCoords);
+        // set the buffer to read the first coordinate
+        mVertices.position(0);
     }
 
     public void setVerts(float v0, float v1, float v2, float v3, float v4, float v5) {
