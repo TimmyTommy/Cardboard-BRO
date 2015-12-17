@@ -1,12 +1,9 @@
 package de.tinf13aibi.cardboardbro.Entities;
 
-import android.opengl.GLES20;
-import android.opengl.Matrix;
-import android.util.Log;
-
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Geometry.GeometryFactory;
+import de.tinf13aibi.cardboardbro.Geometry.Point3d;
 
 /**
  * Created by dthom on 16.12.2015.
@@ -59,29 +56,53 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
 
         mHoroizontalVec = GeometryFactory.calcNormalizedVector(mHoroizontalVec);
         mVerticalVec = GeometryFactory.calcNormalizedVector(mVerticalVec);
-
+        mHoroizontalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mHoroizontalVec.toFloatArray(), 100));
+        mVerticalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mVerticalVec.toFloatArray(), 100));
 //        Log.i("ergX", String.valueOf(mHoroizontalVec.x));
 //        Log.i("ergY", String.valueOf(mHoroizontalVec.y));
 //        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));
     }
 
     private void calcCrossedLines(){
-        mLines.get(0).setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecPlusVec(mPosition.toFloatArray(), mHoroizontalVec.toFloatArray()));
-        mLines.get(1).setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecMinusVec(mPosition.toFloatArray(), mHoroizontalVec.toFloatArray()));
-        mLines.get(2).setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecPlusVec(mPosition.toFloatArray(), mVerticalVec.toFloatArray()));
-        mLines.get(3).setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecMinusVec(mPosition.toFloatArray(), mVerticalVec.toFloatArray()));
+        LineEntity line;
+        line = mLines.get(0);
+        line.setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecPlusVec(mPosition.toFloatArray(), mHoroizontalVec.toFloatArray()));
+        line.setColor(1, 0, 0, 1);
+        line = mLines.get(1);
+        line.setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecMinusVec(mPosition.toFloatArray(), mHoroizontalVec.toFloatArray()));
+        line.setColor(1, 0, 0, 1);
+
+        line = mLines.get(2);
+        line.setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecPlusVec(mPosition.toFloatArray(), mVerticalVec.toFloatArray()));
+        line.setColor(0, 1, 0, 1);
+        line = mLines.get(3);
+        line.setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecMinusVec(mPosition.toFloatArray(), mVerticalVec.toFloatArray()));
+        line.setColor(0, 1, 0, 1);
+
+        //Normale
+        line = mLines.get(4);
+        line.setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecPlusVec(mPosition.toFloatArray(), mNormal.toFloatArray()));
+        line.setColor(0, 0, 1, 1);
+        line = mLines.get(5);
+        line.setVerts(mPosition.toFloatArray(), GeometryFactory.calcVecMinusVec(mPosition.toFloatArray(), mNormal.toFloatArray()));
+        line.setColor(0, 0, 1, 1);
     }
 
     public void setPosition(Point3d position, Point3d normal, float distance) {
-        mPosition = position;
-        mNormal = normal;
+//        mNormal = normal;
+//        mPosition = position;
+        mNormal = GeometryFactory.calcNormalizedVector(normal);
+        Point3d translation = new Point3d(GeometryFactory.calcVecTimesScalar(mNormal.toFloatArray(), 0.0001f));
+        mPosition = new Point3d(GeometryFactory.calcVecPlusVec(position.toFloatArray(), translation.toFloatArray()));
         mDistance = distance;
-        calcCrossVectors(normal);
+        calcCrossVectors(mNormal);
         calcCrossedLines();
     }
 
     public CrosshairEntity(int vertexShader, int fragmentShader){
         super();
+        mLines.add(new LineEntity(vertexShader, fragmentShader));
+        mLines.add(new LineEntity(vertexShader, fragmentShader));
         mLines.add(new LineEntity(vertexShader, fragmentShader));
         mLines.add(new LineEntity(vertexShader, fragmentShader));
         mLines.add(new LineEntity(vertexShader, fragmentShader));

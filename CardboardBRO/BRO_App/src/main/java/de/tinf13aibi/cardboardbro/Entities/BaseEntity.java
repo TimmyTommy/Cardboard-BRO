@@ -6,14 +6,18 @@ import android.opengl.Matrix;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Geometry.Point3d;
+import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 
 /**
  * Created by dth on 27.11.2015.
  */
 public abstract class BaseEntity implements IEntity {
     protected EntityDisplayType displayType = EntityDisplayType.Absolute;
+    protected float[] mCoords;
     protected int mVerticesCount;
     protected FloatBuffer mVertices;
     protected FloatBuffer mColors;
@@ -32,6 +36,32 @@ public abstract class BaseEntity implements IEntity {
 
     protected float[] mModel;
     protected float[] mBaseModel;
+
+    public ArrayList<Point3d> getAbsoluteCoords(){
+        ArrayList<Point3d> absoluteCoords = new ArrayList<>();
+        for (int i = 0; i<mCoords.length/3; i++){
+            float[] coord = new float[4];
+            System.arraycopy(mCoords, i*3, coord, 0, 3);
+            coord[3] = 1;
+            Matrix.multiplyMV(coord, 0, mModel, 0, coord, 0);
+            absoluteCoords.add(new Point3d(coord));
+        }
+        return absoluteCoords;
+    }
+
+    public ArrayList<Triangle> getAbsoluteTriangles(){
+        ArrayList<Point3d> absoluteCoords = getAbsoluteCoords();
+        ArrayList<Triangle> absoluteTriangles = new ArrayList<>();
+        if (absoluteCoords.size()%3==0) {
+            for (int i = 0; i<absoluteCoords.size()/3; i++) {
+                float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
+                float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
+                float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
+                absoluteTriangles.add(new Triangle(new Point3d(coord0), new Point3d(coord1), new Point3d(coord2)));
+            }
+        }
+        return absoluteTriangles;
+    }
 
     public BaseEntity(){
         mModel = new float[16];
@@ -71,6 +101,7 @@ public abstract class BaseEntity implements IEntity {
     }
 
     protected void fillBufferVertices(float[] coords){
+        mCoords = coords;
         mVerticesCount = coords.length;
         ByteBuffer bbVertices = ByteBuffer.allocateDirect(mVerticesCount * 4);
         bbVertices.order(ByteOrder.nativeOrder());

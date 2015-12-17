@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Geometry;
 
 public final class GeometryDatabase {
 

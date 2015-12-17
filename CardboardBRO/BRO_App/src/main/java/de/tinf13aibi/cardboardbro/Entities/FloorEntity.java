@@ -1,5 +1,7 @@
 package de.tinf13aibi.cardboardbro.Entities;
 
+import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
+
 /**
  * Created by dth on 27.11.2015.
  */

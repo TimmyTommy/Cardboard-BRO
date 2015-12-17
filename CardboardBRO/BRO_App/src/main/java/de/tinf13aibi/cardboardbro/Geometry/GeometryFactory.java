@@ -1,6 +1,5 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Geometry;
 
-import android.util.FloatMath;
 import android.util.Log;
 
 import de.tinf13aibi.cardboardbro.Constants;
@@ -73,17 +72,26 @@ public class GeometryFactory {
         return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
     }
 
-    public static boolean calcTriangleLineIntersection(float[] intersectPointOut){
+    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
         //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
 
+//        //Gerade: X = P + t*d
+//        final float[] p = {0.50f, 0, 0.50f}; //point
+//        final float[] d = {1,0.0001f,0};          //direction
+//
+//        //triangle ABC  //Planeequation: X = A + r*(B-A) + s*(C-A)
+//        final float[] a = {0,0,0};
+//        final float[] b = {1,0,0};
+//        final float[] c = {0,0,1};
+
         //Gerade: X = P + t*d
-        final float[] p = {0.50f, 0, 0.50f}; //point
-        final float[] d = {1,0.0001f,0};          //direction
+        final float[] p = line.pos.toFloatArray(); //point
+        final float[] d = line.dir.toFloatArray(); //direction
 
         //triangle ABC  //Planeequation: X = A + r*(B-A) + s*(C-A)
-        final float[] a = {0,0,0};
-        final float[] b = {1,0,0};
-        final float[] c = {0,0,1};
+        final float[] a = triangle.p1.toFloatArray();
+        final float[] b = triangle.p2.toFloatArray();
+        final float[] c = triangle.p3.toFloatArray();
 
         float[] u = calcVecMinusVec(b, a);
         float[] v = calcVecMinusVec(c, a);
@@ -109,7 +117,7 @@ public class GeometryFactory {
         float[] intersectPoint = calcVecPlusVec(p, calcVecTimesScalar(d, trs[0]));
         System.arraycopy(intersectPoint, 0, intersectPointOut, 0, 3);
 
-        return isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
+        return trs[0] > 0 && isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
     }
 
     public static boolean isInRange(float x, float begin, float end){
@@ -124,6 +132,10 @@ public class GeometryFactory {
         kreuz[2]=+((v1[0]*v2[1])-(v1[1]*v2[0]));
 
         return kreuz;
+    }
+
+    public static float[] calcNormalVector(float[] triangle){
+        return calcNormalVector(triangle, 1);
     }
 
     public static float[] calcNormalVector(float[] triangle, int normalsDirection){

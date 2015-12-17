@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Entities;
 
+import de.tinf13aibi.cardboardbro.Geometry.GeometryFactory;
+import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
+
 /**
  * Created by dth on 27.11.2015.
  */

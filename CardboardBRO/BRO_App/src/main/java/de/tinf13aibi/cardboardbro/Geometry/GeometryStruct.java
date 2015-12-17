@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Geometry;
 
 /**
  * Created by dth on 27.11.2015.

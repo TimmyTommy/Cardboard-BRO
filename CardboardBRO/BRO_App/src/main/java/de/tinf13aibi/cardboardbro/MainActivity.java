@@ -30,7 +30,6 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -42,13 +41,16 @@ import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
-import de.tinf13aibi.cardboardbro.Entities.GeometryFactory;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
-import de.tinf13aibi.cardboardbro.Entities.Point3d;
+import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
+import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
+import de.tinf13aibi.cardboardbro.Geometry.GeometryFactory;
+import de.tinf13aibi.cardboardbro.Geometry.Point3d;
+import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
 
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
-    private List<IEntity> mEntityList;
+    private ArrayList<IEntity> mEntityList;
     private static final String TAG = "MainActivity";
 
     // We keep the light always position just above the user.
@@ -56,6 +58,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private final float[] lightPosInEyeSpace = new float[4];
 
     private Point3d eyePoint, centerOfView, upVector;
+
+    private CollisionTrianglePoint eyeCollision, armCollision;
+    private CrosshairEntity eyeCross;
 
     private float[] modelCube;
     private float[] camera;
@@ -162,6 +167,41 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
 
         mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 1, 1, 1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, -1, 2, 1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 1, 2, -1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 0, 1, -1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 1, 3, 1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, -1, 0, 1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
+        Matrix.translateM(mEntity.getModel(), 0, 1, 0, -1.25f);
+        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(mEntity);
+
+        mEntity = new CuboidEntity(vertexShader, passthroughShader);
         Matrix.translateM(mEntity.getModel(), 0, 0, 0, -1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
@@ -175,26 +215,31 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
         int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
-        //Blickpunkt
-        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.CYL_RADIUS - 0.1f), 2f, 0, -(Constants.CYL_RADIUS - 0.1f));
-        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-        mEntityList.add(mEntity);
-
-        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.CYL_RADIUS - 0.1f), 0, 2f, -(Constants.CYL_RADIUS - 0.1f));
-        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-        mEntityList.add(mEntity);
+//        //Blickpunkt
+//        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
+//        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.CYL_RADIUS - 1f), 2f, 0, -(Constants.CYL_RADIUS - 1f));
+//        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
+//        mEntityList.add(mEntity);
+//
+//        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
+//        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.CYL_RADIUS - 1f), 0, 2f, -(Constants.CYL_RADIUS - 1f));
+//        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
+//        mEntityList.add(mEntity);
         //Blickgerade
         mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
         ((LineEntity)mEntity).setVerts(0, 0, 0, 0, 0, -1000);
         mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
+        ((LineEntity) mEntity).setColor(0, 1, 1, 1);
         mEntityList.add(mEntity);
 
-        mEntity = new CrosshairEntity(lineVertexShader, lineFragmentShader);
-        ((CrosshairEntity)mEntity).setPosition(new Point3d(5,0,-5), new Point3d(1,0,-1), 0);
-        mEntityList.add(mEntity);
+        eyeCross = new CrosshairEntity(lineVertexShader, lineFragmentShader);
+//        ((CrosshairEntity)mEntity).setPosition(new Point3d(5, 0, -5), new Point3d(1, 0, -1), 0);
+//        mEntityList.add(mEntity);
         checkGLError("onSurfaceCreated");
+    }
+
+    private CollisionTrianglePoint getNearestCollision(StraightLine line){
+        return new CollisionDrawingSpacePoints(line, mEntityList).nearestCollision;
     }
 
     /**
@@ -215,10 +260,34 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 centerOfView.x, centerOfView.y, centerOfView.z,
                 upVector.x, upVector.y, upVector.z);
         headTransform.getHeadView(headView, 0);
-        checkGLError("onReadyToDraw");
-
         float[] invertedHead = new float[16];
         Matrix.invertM(invertedHead, 0, headView, 0);
+
+        float[] forward = new float[3];
+        headTransform.getForwardVector(forward, 0);
+        forward[0] *= -1;
+        forward[1] *= -1;
+
+        float[] forward2 = new float[4];
+        forward2[0] = 0;
+        forward2[1] = 0;
+        forward2[2] = -10;
+        forward2[3] = 1;
+
+        Matrix.multiplyMV(forward2, 0, invertedHead, 0, forward2, 0);
+        StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forward2));
+        eyeCollision = getNearestCollision(eyeLine);
+
+        if (eyeCollision!=null) {
+            eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, 0);
+        } else {
+            eyeCross.setPosition(new Point3d(), new Point3d(0, 0, 1), 0);
+            //TODO calc cross some meters from eyes away
+        }
+        //Todo get forward-Vector and Line from Arm (MYO)
+//        CollisionTrianglePoint nearestArmCollision = getNearestCollision(eyeLine);
+
+        checkGLError("onReadyToDraw");
 
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
@@ -307,6 +376,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 entity.draw(view, perspective, lightPosInEyeSpace);
             }
         }
+        eyeCross.draw(view, perspective, lightPosInEyeSpace);
     }
 
     @Override
