@@ -43,10 +43,11 @@ public class LineEntity extends BaseEntity implements IEntity {
     public void setVerts(float[] from, float[] to) {
         System.arraycopy(from, 0, LineCoords, 0, 3);
         System.arraycopy(to, 0, LineCoords, 3, 3);
-        mVertices.position(0);
-        mVertices.put(LineCoords);
-        // set the buffer to read the first coordinate
-        mVertices.position(0);
+        fillBufferVertices(LineCoords);
+//        mVertices.position(0);
+//        mVertices.put(LineCoords);
+//        // set the buffer to read the first coordinate
+//        mVertices.position(0);
     }
 
     public void setVerts(float v0, float v1, float v2, float v3, float v4, float v5) {
@@ -56,11 +57,11 @@ public class LineEntity extends BaseEntity implements IEntity {
         LineCoords[3] = v3;
         LineCoords[4] = v4;
         LineCoords[5] = v5;
-
-        mVertices.position(0);
-        mVertices.put(LineCoords);
-        // set the buffer to read the first coordinate
-        mVertices.position(0);
+        fillBufferVertices(LineCoords);
+//        mVertices.position(0);
+//        mVertices.put(LineCoords);
+//        // set the buffer to read the first coordinate
+//        mVertices.position(0);
     }
 
     public LineEntity(int vertexShader, int fragmentShader){

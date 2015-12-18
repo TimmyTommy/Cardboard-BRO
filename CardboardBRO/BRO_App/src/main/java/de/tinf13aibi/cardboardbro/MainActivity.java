@@ -61,6 +61,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     private CollisionTrianglePoint eyeCollision, armCollision;
     private CrosshairEntity eyeCross;
+    private LineEntity eyeLine;
 
     private float[] modelCube;
     private float[] camera;
@@ -226,10 +227,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
 //        mEntityList.add(mEntity);
         //Blickgerade
-        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-        ((LineEntity)mEntity).setVerts(0, 0, 0, 0, 0, -1000);
-        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-        ((LineEntity) mEntity).setColor(0, 1, 1, 1);
+        eyeLine = new LineEntity(lineVertexShader, lineFragmentShader);
+        eyeLine.setVerts(0, 0, 0, 0, 0, -1000);
+        eyeLine.setColor(0, 1, 1, 1);
+//        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
         mEntityList.add(mEntity);
 
         eyeCross = new CrosshairEntity(lineVertexShader, lineFragmentShader);
@@ -253,9 +254,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
 
-//        eyePoint.y += 0.01f;
-//        centerOfView.y += 0.01f;
-
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
                 centerOfView.x, centerOfView.y, centerOfView.z,
                 upVector.x, upVector.y, upVector.z);
@@ -263,19 +261,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         float[] invertedHead = new float[16];
         Matrix.invertM(invertedHead, 0, headView, 0);
 
-        float[] forward = new float[3];
-        headTransform.getForwardVector(forward, 0);
-        forward[0] *= -1;
-        forward[1] *= -1;
+        float[] forward = new float[4];
+        forward[0] = 0;
+        forward[1] = 0;
+        forward[2] = -10;
+        forward[3] = 1;
 
-        float[] forward2 = new float[4];
-        forward2[0] = 0;
-        forward2[1] = 0;
-        forward2[2] = -10;
-        forward2[3] = 1;
-
-        Matrix.multiplyMV(forward2, 0, invertedHead, 0, forward2, 0);
-        StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forward2));
+        Matrix.multiplyMV(forward, 0, invertedHead, 0, forward, 0);
+        StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forward));
         eyeCollision = getNearestCollision(eyeLine);
 
         if (eyeCollision!=null) {
@@ -284,6 +277,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             eyeCross.setPosition(new Point3d(), new Point3d(0, 0, 1), 0);
             //TODO calc cross some meters from eyes away
         }
+        this.eyeLine.setVerts(eyeLine.pos.toFloatArray(), eyeCollision.collisionPos.toFloatArray());
         //Todo get forward-Vector and Line from Arm (MYO)
 //        CollisionTrianglePoint nearestArmCollision = getNearestCollision(eyeLine);
 
@@ -340,7 +334,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 }
 //                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
             } else if (entity instanceof CuboidEntity){
-                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
+                //Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
             }
 
         }
@@ -377,6 +371,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             }
         }
         eyeCross.draw(view, perspective, lightPosInEyeSpace);
+        eyeLine.draw(view, perspective, lightPosInEyeSpace);
     }
 
     @Override
@@ -384,6 +379,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     @Override
     public void onCardboardTrigger() {
+        eyePoint.y += 0.1f;
+        centerOfView.y += 0.1f;
 //        eyePoint.y++;
 //        centerOfView.y++;
 //        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
