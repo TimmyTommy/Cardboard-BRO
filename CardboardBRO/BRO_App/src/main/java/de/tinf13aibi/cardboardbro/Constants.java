@@ -5,7 +5,7 @@ package de.tinf13aibi.cardboardbro;
  */
 public interface Constants {
     int COORDS_PER_VERTEX = 3;
-    int CYLINDER_SEGMENTS = 32;//32;
+    int CYLINDER_SEGMENTS = 72; //360 / 72 = 5° pro Segment
     float Z_NEAR = 0.1f;
     float Z_FAR = 1000.0f;
     float CYL_RADIUS = 50.0f;

@@ -20,9 +20,9 @@ android {
 }
 
 dependencies {
+    compile files('libs/libprotobuf-java-2.6-nano.jar')
+    compile files('libs/cardboard.jar')
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
-    compile files('libs/cardboard.jar')
-    compile files('libs/libprotobuf-java-2.6-nano.jar')
 }

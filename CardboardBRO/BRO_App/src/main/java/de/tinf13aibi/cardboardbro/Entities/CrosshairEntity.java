@@ -19,6 +19,10 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
 
     private ArrayList<LineEntity> mLines = new ArrayList<>();
 
+    public Point3d getPosition(){
+        return mPosition;
+    }
+
     @Override
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
         for (LineEntity lineEntity : mLines) {
@@ -58,6 +62,7 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         mVerticalVec = GeometryFactory.calcNormalizedVector(mVerticalVec);
         mHoroizontalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mHoroizontalVec.toFloatArray(), 100));
         mVerticalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mVerticalVec.toFloatArray(), 100));
+        mNormal = new Point3d(GeometryFactory.calcVecTimesScalar(mNormal.toFloatArray(), 100));
 //        Log.i("ergX", String.valueOf(mHoroizontalVec.x));
 //        Log.i("ergY", String.valueOf(mHoroizontalVec.y));
 //        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));

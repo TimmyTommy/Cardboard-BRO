@@ -107,7 +107,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         modelCube = new float[16];
         camera = new float[16];
         eyePoint = new Point3d(0, 0, 0);
-        centerOfView = new Point3d(0, 0, -1);
+        centerOfView = new Point3d(0, 0, -0.01f);
         upVector = new Point3d(0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
@@ -262,22 +262,34 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Matrix.invertM(invertedHead, 0, headView, 0);
 
         float[] forward = new float[4];
+        float[] forwardInv = new float[4];
         forward[0] = 0;
         forward[1] = 0;
-        forward[2] = -10;
+        forward[2] = -1;
         forward[3] = 1;
 
-        Matrix.multiplyMV(forward, 0, invertedHead, 0, forward, 0);
-        StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forward));
+        Matrix.multiplyMV(forwardInv, 0, invertedHead, 0, forward, 0);
+        StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forwardInv));
         eyeCollision = getNearestCollision(eyeLine);
 
         if (eyeCollision!=null) {
             eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, 0);
         } else {
-            eyeCross.setPosition(new Point3d(), new Point3d(0, 0, 1), 0);
-            //TODO calc cross some meters from eyes away
+            //calc cross some meters away from eyes
+            Point3d farPointOnEyeLine = new Point3d(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(forwardInv, 100)));
+            eyeCross.setPosition(farPointOnEyeLine, new Point3d(forwardInv), 0);
         }
-        this.eyeLine.setVerts(eyeLine.pos.toFloatArray(), eyeCollision.collisionPos.toFloatArray());
+//        float[] eyepos = eyePoint.toFloatArray4d();
+//        Matrix.multiplyMV(eyepos, 0, invertedHead, 0, eyepos, 0);
+//        this.eyeLine.setVerts(eyepos, eyeCross.getPosition().toFloatArray());
+
+        Point3d pointOnEyeLineBehind = new Point3d(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(forwardInv, -10)));
+        this.eyeLine.setVerts(pointOnEyeLineBehind.toFloatArray(), eyeCross.getPosition().toFloatArray());
+
+
+//        this.eyeLine.setVerts(eyeLine.pos.toFloatArray(), eyeCross.getPosition().toFloatArray());
+
+//        this.eyeLine.setVerts(eyeLine.pos.toFloatArray(), eyeCollision.collisionPos.toFloatArray());
         //Todo get forward-Vector and Line from Arm (MYO)
 //        CollisionTrianglePoint nearestArmCollision = getNearestCollision(eyeLine);
 
@@ -371,7 +383,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             }
         }
         eyeCross.draw(view, perspective, lightPosInEyeSpace);
-        eyeLine.draw(view, perspective, lightPosInEyeSpace);
+//        eyeLine.draw(view, perspective, lightPosInEyeSpace);
     }
 
     @Override
@@ -379,8 +391,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     @Override
     public void onCardboardTrigger() {
-        eyePoint.y += 0.1f;
-        centerOfView.y += 0.1f;
+        eyePoint.x += 1f;
+        centerOfView.x += 1f;
 //        eyePoint.y++;
 //        centerOfView.y++;
 //        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,

@@ -33,4 +33,13 @@ public class Point3d {
         res[2] = z;
         return res;
     }
+
+    public float[] toFloatArray4d(){
+        float[] res = new float[4];
+        res[0] = x;
+        res[1] = y;
+        res[2] = z;
+        res[3] = 1;
+        return res;
+    }
 }
