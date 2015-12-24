@@ -273,11 +273,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         eyeCollision = getNearestCollision(eyeLine);
 
         if (eyeCollision!=null) {
-            eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, 0);
+            float[] distanceVec = GeometryFactory.calcVecMinusVec(eyeCollision.collisionPos.toFloatArray(), eyePoint.toFloatArray());
+            float distance = GeometryFactory.calcVectorLength(distanceVec);
+            eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, distance);
         } else {
             //calc cross some meters away from eyes
             Point3d farPointOnEyeLine = new Point3d(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(forwardInv, 100)));
-            eyeCross.setPosition(farPointOnEyeLine, new Point3d(forwardInv), 0);
+            float[] distanceVec = GeometryFactory.calcVecMinusVec(farPointOnEyeLine.toFloatArray(), eyePoint.toFloatArray());
+            float distance = GeometryFactory.calcVectorLength(distanceVec);
+            eyeCross.setPosition(farPointOnEyeLine, new Point3d(forwardInv), distance);
         }
 //        float[] eyepos = eyePoint.toFloatArray4d();
 //        Matrix.multiplyMV(eyepos, 0, invertedHead, 0, eyepos, 0);

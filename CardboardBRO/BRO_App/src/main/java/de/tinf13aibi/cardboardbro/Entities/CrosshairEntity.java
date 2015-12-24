@@ -60,9 +60,9 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
 
         mHoroizontalVec = GeometryFactory.calcNormalizedVector(mHoroizontalVec);
         mVerticalVec = GeometryFactory.calcNormalizedVector(mVerticalVec);
-        mHoroizontalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mHoroizontalVec.toFloatArray(), 100));
-        mVerticalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mVerticalVec.toFloatArray(), 100));
-        mNormal = new Point3d(GeometryFactory.calcVecTimesScalar(mNormal.toFloatArray(), 100));
+        mHoroizontalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mHoroizontalVec.toFloatArray(), mDistance/10));
+        mVerticalVec = new Point3d(GeometryFactory.calcVecTimesScalar(mVerticalVec.toFloatArray(), mDistance/10));
+        mNormal = new Point3d(GeometryFactory.calcVecTimesScalar(mNormal.toFloatArray(), mDistance/10));
 //        Log.i("ergX", String.valueOf(mHoroizontalVec.x));
 //        Log.i("ergY", String.valueOf(mHoroizontalVec.y));
 //        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));
