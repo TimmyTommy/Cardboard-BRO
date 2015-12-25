@@ -22,6 +22,8 @@ import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -113,7 +115,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
                                      centerOfView.x, centerOfView.y, centerOfView.z,
                                      upVector.x, upVector.y, upVector.z);
-
         view = new float[16];
         modelView = new float[16];
         headView = new float[16];
@@ -121,6 +122,23 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
         overlayView.show3DToast("Pull the magnet when you find an object.");
+        cardboardView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()){
+                    case MotionEvent.ACTION_DOWN: overlayView.show3DToast("Down"); break;
+                    case MotionEvent.ACTION_UP: overlayView.show3DToast("Up"); break;
+                }
+                return false;
+            }
+        });
+//        cardboardView.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//                overlayView.show3DToast("This is a LongClick");
+//                return false;
+//            }
+//        });
     }
 
     @Override
@@ -393,10 +411,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public void onFinishFrame(Viewport viewport) {}
 
-    @Override
-    public void onCardboardTrigger() {
-        eyePoint.x += 1f;
-        centerOfView.x += 1f;
+//    @Override
+//    public void onCardboardTrigger() {
+//        eyePoint.x += 1f;
+//        centerOfView.x += 1f;
+
 //        eyePoint.y++;
 //        centerOfView.y++;
 //        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
@@ -430,18 +449,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        Log.i("Test", "(1, 1, 1)");
 //        GeometryFactory.calcCrossVectors(new Point3d(1, 1, 1));
 
-        Log.i(TAG, "onCardboardTrigger");
-
-        if (isLookingAtObject()) {
-            score++;
-            overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
-            hideObject();
-        } else {
-            overlayView.show3DToast("Look around to find the object!");
-        }
-        // Always give user feedback.
-        vibrator.vibrate(50);
-    }
+//        Log.i(TAG, "onCardboardTrigger");
+//
+//        if (isLookingAtObject()) {
+//            score++;
+//            overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
+//            hideObject();
+//        } else {
+//            overlayView.show3DToast("Look around to find the object!");
+//        }
+//        // Always give user feedback.
+//        vibrator.vibrate(50);
+//    }
 
     /**
     * Find a new random position for the object.
