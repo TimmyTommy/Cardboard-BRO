@@ -26,6 +26,14 @@ public class Point3d {
         this.z = array[2];
     }
 
+    public void fromFloatArray(float[] array){
+        if (array!=null) {
+            x = array[0];
+            y = array[1];
+            z = array[2];
+        }
+    }
+
     public float[] toFloatArray(){
         float[] res = new float[3];
         res[0] = x;

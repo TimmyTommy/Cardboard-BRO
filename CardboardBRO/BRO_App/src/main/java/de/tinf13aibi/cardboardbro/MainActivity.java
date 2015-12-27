@@ -32,6 +32,7 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -59,7 +60,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
     private final float[] lightPosInEyeSpace = new float[4];
 
-    private Point3d eyePoint, centerOfView, upVector;
+    private Point3d eyePoint, centerOfView, upVector,  eyeVelocity, mForceAccum;
+    private Point3d eyeForwardNormalized;
+
+    private  boolean mMoving = false;
+    private Date mTimeLastFrame;
 
     private CollisionTrianglePoint eyeCollision, armCollision;
     private CrosshairEntity eyeCross;
@@ -79,6 +84,38 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     private Vibrator vibrator;
     private CardboardOverlayView overlayView;
+
+//    private void addForce(Point3d force){
+//        mForceAccum = new Point3d(GeometryFactory.calcVecPlusVec(mForceAccum.toFloatArray(), force.toFloatArray()));
+//    }
+
+    void clearForceAccum(){
+        mForceAccum.x = 0.0f;
+        mForceAccum.y = 0.0f;
+        mForceAccum.z = 0.0f;
+    }
+
+    private void moveCamera(float time)
+    {
+        // Position berechnen
+
+        eyePoint.fromFloatArray(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(eyeVelocity.toFloatArray(), time)));
+        centerOfView.fromFloatArray(GeometryFactory.calcVecPlusVec(centerOfView.toFloatArray(), GeometryFactory.calcVecTimesScalar(eyeVelocity.toFloatArray(), time)));
+
+        // Beschleunigung berechnen
+
+//        Vector3 acc = m_ForceAccum * m_InverseMass;
+
+        // Neue Geschwindigkeit berechnen
+        eyeVelocity.fromFloatArray(GeometryFactory.calcVecPlusVec(eyeVelocity.toFloatArray(), GeometryFactory.calcVecTimesScalar(mForceAccum.toFloatArray(), time)));
+
+        eyeVelocity.fromFloatArray(GeometryFactory.calcVecTimesScalar(eyeVelocity.toFloatArray(), 0.9f));
+        if (GeometryFactory.calcVectorLength(eyeVelocity)<0.0001f){
+            eyeVelocity.fromFloatArray(new Point3d().toFloatArray());
+        }
+        // Alle Kräfte entfernen
+        clearForceAccum();
+    }
 
     /**
     * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
@@ -109,7 +146,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         modelCube = new float[16];
         camera = new float[16];
         eyePoint = new Point3d(0, 0, 0);
+        eyeVelocity = new Point3d(0, 0, 0);
         centerOfView = new Point3d(0, 0, -0.01f);
+        mForceAccum = new Point3d(0, 0, 0);
+        eyeForwardNormalized = new Point3d(0, 0, -0.01f);
+        mTimeLastFrame = new Date();
         upVector = new Point3d(0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
@@ -126,8 +167,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()){
-                    case MotionEvent.ACTION_DOWN: overlayView.show3DToast("Down"); break;
-                    case MotionEvent.ACTION_UP: overlayView.show3DToast("Up"); break;
+                    case MotionEvent.ACTION_DOWN:
+                        overlayView.show3DToast("Accelerating");
+                        mMoving = true;
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        overlayView.show3DToast("Slowing down");
+                        mMoving = false;
+                        break;
                 }
                 return false;
             }
@@ -271,7 +318,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Build the camera matrix and apply it to the ModelView.
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
-
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
                 centerOfView.x, centerOfView.y, centerOfView.z,
                 upVector.x, upVector.y, upVector.z);
@@ -285,8 +331,20 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         forward[1] = 0;
         forward[2] = -1;
         forward[3] = 1;
-
         Matrix.multiplyMV(forwardInv, 0, invertedHead, 0, forward, 0);
+
+        eyeForwardNormalized.fromFloatArray(GeometryFactory.calcNormalizedVector(new Point3d(forwardInv)).toFloatArray());
+        if (mMoving) {
+            mForceAccum.fromFloatArray(GeometryFactory.calcVecTimesScalar(eyeForwardNormalized.toFloatArray(), 5));
+        }
+
+        Date timeDelta = new Date(new Date().getTime()-mTimeLastFrame.getTime());
+
+        mTimeLastFrame = new Date();
+
+//        mTimeElapsedLastFrame.setTime((new Date()).getTime() - mTimeElapsedLastFrame.getTime());
+        moveCamera(timeDelta.getTime()*0.001f);
+
         StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forwardInv));
         eyeCollision = getNearestCollision(eyeLine);
 
