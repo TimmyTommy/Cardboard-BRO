@@ -1,14 +1,12 @@
 package de.tinf13aibi.cardboardbro.Geometry;
 
-import android.util.Log;
-
 import de.tinf13aibi.cardboardbro.Constants;
 
 /**
  * Created by dth on 27.11.2015.
  */
-public class GeometryFactory {
-    public static float calcVectorLength(Point3d vec){
+public class VecMath {
+    public static float calcVectorLength(Vec3d vec){
         return calcVectorLength(vec.toFloatArray());
     }
 
@@ -16,38 +14,47 @@ public class GeometryFactory {
         return (float) Math.sqrt(vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
     }
 
-    public static Point3d calcNormalizedVector(Point3d vec){
+    public static Vec3d calcNormalizedVector(Vec3d vec){
+//        float length = calcVectorLength(vec);
+//        return new Vec3d(calcVecTimesScalar(vec.toFloatArray(), 1/length));
+        return new Vec3d(calcNormalizedVector(vec.toFloatArray()));
+    }
+
+    public static float[] calcNormalizedVector(float[] vec){
         float length = calcVectorLength(vec);
-        return new Point3d(calcVecTimesScalar(vec.toFloatArray(), 1/length));
+        return calcVecTimesScalar(vec, 1/length);
     }
 
-    public static void calcCrossVectors(Point3d normal){
-        final float eps = 0.000001f;
-        Point3d mHoroizontalVec = new Point3d();
-        mHoroizontalVec.y = 0;
-        if (Math.abs(normal.x)<eps){
-            mHoroizontalVec.x = 1;
-            mHoroizontalVec.z = 0;
-        } else if (Math.abs(normal.z)<eps) {
-            mHoroizontalVec.x = 0;
-            mHoroizontalVec.z = 1;
-        } else {
-            mHoroizontalVec.x = 1;
-            mHoroizontalVec.z = -normal.x*mHoroizontalVec.x/normal.z;
-        }
-        Log.i("ergX", String.valueOf(mHoroizontalVec.x));
-        Log.i("ergY", String.valueOf(mHoroizontalVec.y));
-        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));
-    }
-
+//
+//    public static void calcCrossVectors(Vec3d normal){
+//        final float eps = 0.000001f;
+//        Vec3d mHoroizontalVec = new Vec3d();
+//        mHoroizontalVec.y = 0;
+//        if (Math.abs(normal.x)<eps){
+//            mHoroizontalVec.x = 1;
+//            mHoroizontalVec.z = 0;
+//        } else if (Math.abs(normal.z)<eps) {
+//            mHoroizontalVec.x = 0;
+//            mHoroizontalVec.z = 1;
+//        } else {
+//            mHoroizontalVec.x = 1;
+//            mHoroizontalVec.z = -normal.x*mHoroizontalVec.x/normal.z;
+//        }
+//        Log.i("ergX", String.valueOf(mHoroizontalVec.x));
+//        Log.i("ergY", String.valueOf(mHoroizontalVec.y));
+//        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));
+//    }
 
     public static float[] calcVecPlusVec(float[] v1, float[] v2){
         float[] res = new float[3];
         res[0] = v1[0] + v2[0];
         res[1] = v1[1] + v2[1];
         res[2] = v1[2] + v2[2];
-
         return res;
+    }
+
+    public static Vec3d calcVecPlusVec(Vec3d v1, Vec3d v2){
+        return new Vec3d(calcVecPlusVec(v1.toFloatArray(), v2.toFloatArray()));
     }
 
     public static float[] calcVecMinusVec(float[] v1, float[] v2){
@@ -55,8 +62,11 @@ public class GeometryFactory {
         res[0] = v1[0] - v2[0];
         res[1] = v1[1] - v2[1];
         res[2] = v1[2] - v2[2];
-
         return res;
+    }
+
+    public static Vec3d calcVecMinusVec(Vec3d v1, Vec3d v2){
+        return new Vec3d(calcVecMinusVec(v1.toFloatArray(), v2.toFloatArray()));
     }
 
     public static float[] calcVecTimesScalar(float[] v, float s){
@@ -68,8 +78,16 @@ public class GeometryFactory {
         return res;
     }
 
+    public static Vec3d calcVecTimesScalar(Vec3d v, float s){
+        return new Vec3d(calcVecTimesScalar(v.toFloatArray(), s));
+    }
+
     public static float calcScalarProcuct(float[] v1, float[] v2){
         return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+    }
+
+    public static float calcScalarProcuct(Vec3d v1, Vec3d v2){
+        return calcScalarProcuct(v1.toFloatArray(), v2.toFloatArray());
     }
 
     public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
@@ -134,14 +152,15 @@ public class GeometryFactory {
         return kreuz;
     }
 
-    public static float[] calcNormalVector(float[] triangle){
-        return calcNormalVector(triangle, 1);
+    public static Vec3d calcCrossProduct(Vec3d v1, Vec3d v2){
+        return new Vec3d(calcCrossProduct(v1.toFloatArray(), v2.toFloatArray()));
+    }
+
+    public static Vec3d calcNormalVector(Triangle triangle, int normalsDirection){
+        return new Vec3d(calcNormalVector(triangle.toFloatArray(), normalsDirection));
     }
 
     public static float[] calcNormalVector(float[] triangle, int normalsDirection){
-//        final float[] v1 = {0,0,0};
-//        final float[] v2 = {1,0,0};
-//        final float[] v3 = {0,0,1};
         float[] v1 = new float[3];
         float[] v2 = new float[3];
         float[] v3 = new float[3];
@@ -149,68 +168,15 @@ public class GeometryFactory {
         System.arraycopy(triangle, 3, v2, 0, 3);
         System.arraycopy(triangle, 6, v3, 0, 3);
 
-        float[] v1v2, v1v3, kreuz;
+        float[] v1v2, v1v3, cross;
         //Vorbereitung
-        v1v2=new float[3];
-        v1v2[0]= v2[0]-v1[0];
-        v1v2[1]= v2[1]-v1[1];
-        v1v2[2]= v2[2]-v1[2];
+        v1v2 = calcVecMinusVec(v2, v1);
+        v1v3 = calcVecMinusVec(v3, v1);
 
-        v1v3=new float[3];
-        v1v3[0]= v3[0]-v1[0];
-        v1v3[1]= v3[1]-v1[1];
-        v1v3[2]= v3[2]-v1[2];
+        cross = calcCrossProduct(v1v2, v1v3);
+        cross = calcVecTimesScalar(cross, normalsDirection);
 
-//        //Berechnung des Kreuz
-//        double x=+((v1v2[1]*v1v3[2])-(v1v2[2]*v1v3[1]));
-//        double y=-((v1v2[0]*v1v3[2])-(v1v2[2]*v1v3[0]));
-//        double z=+((v1v2[0]*v1v3[1])-(v1v2[1]*v1v3[0]));
-//        kreuz=new float[3];
-
-//        kreuz[0]=(float)x*normalsDirection;
-//        kreuz[1]=(float)y*normalsDirection;
-//        kreuz[2]=(float)z*normalsDirection;
-
-        kreuz = calcCrossProduct(v1v2, v1v3);
-        kreuz = calcVecTimesScalar(kreuz, normalsDirection);
-//        kreuz[0] *= normalsDirection;
-//        kreuz[1] *= normalsDirection;
-//        kreuz[2] *= normalsDirection;
-
-        return kreuz;
-    }
-
-
-    public static float[] calcNormalVector2(float[] triangle, int normalsDirection){
-        float[] v1 = new float[3];
-        float[] v2 = new float[3];
-        float[] v3 = new float[3];
-        System.arraycopy(triangle, 0, v1, 0, 3);
-        System.arraycopy(triangle, 3, v2, 0, 3);
-        System.arraycopy(triangle, 6, v3, 0, 3);
-
-        float[] v1v2, v1v3, kreuz;
-        //Vorbereitung
-        v1v2=new float[3];
-        v1v2[0]= v2[0]-v1[0];
-        v1v2[1]= v2[1]-v1[1];
-        v1v2[2]= v2[2]-v1[2];
-
-        v1v3=new float[3];
-        v1v3[0]= v3[0]-v1[0];
-        v1v3[1]= v3[1]-v1[1];
-        v1v3[2]= v3[2]-v1[2];
-
-        //Berechnung des Kreuz
-        double x=+((v1v2[1]*v1v3[2])-(v1v2[2]*v1v3[1]));
-        double y=-((v1v2[0]*v1v3[2])-(v1v2[2]*v1v3[0]));
-        double z=+((v1v2[0]*v1v3[1])-(v1v2[1]*v1v3[0]));
-        kreuz=new float[3];
-        kreuz[0]=(float)x*normalsDirection;
-        kreuz[1]=(float)y*normalsDirection;
-        kreuz[2]=(float)z*normalsDirection;
-
-        return kreuz;
+        return cross;
     }
 
     public static float[] getFirstTriangle(float[] vertices){

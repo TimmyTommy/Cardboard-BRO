@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
-import de.tinf13aibi.cardboardbro.Geometry.Point3d;
+import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 
 /**
@@ -37,27 +37,27 @@ public abstract class BaseEntity implements IEntity {
     protected float[] mModel;
     protected float[] mBaseModel;
 
-    public ArrayList<Point3d> getAbsoluteCoords(){
-        ArrayList<Point3d> absoluteCoords = new ArrayList<>();
+    public ArrayList<Vec3d> getAbsoluteCoords(){
+        ArrayList<Vec3d> absoluteCoords = new ArrayList<>();
         for (int i = 0; i<mCoords.length/3; i++){
             float[] coord = new float[4];
             System.arraycopy(mCoords, i*3, coord, 0, 3);
             coord[3] = 1;
             Matrix.multiplyMV(coord, 0, mModel, 0, coord, 0);
-            absoluteCoords.add(new Point3d(coord));
+            absoluteCoords.add(new Vec3d(coord));
         }
         return absoluteCoords;
     }
 
     public ArrayList<Triangle> getAbsoluteTriangles(){
-        ArrayList<Point3d> absoluteCoords = getAbsoluteCoords();
+        ArrayList<Vec3d> absoluteCoords = getAbsoluteCoords();
         ArrayList<Triangle> absoluteTriangles = new ArrayList<>();
         if (absoluteCoords.size()%3==0) {
             for (int i = 0; i<absoluteCoords.size()/3; i++) {
                 float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
                 float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
                 float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
-                absoluteTriangles.add(new Triangle(new Point3d(coord0), new Point3d(coord1), new Point3d(coord2)));
+                absoluteTriangles.add(new Triangle(new Vec3d(coord0), new Vec3d(coord1), new Vec3d(coord2)));
             }
         }
         return absoluteTriangles;
@@ -135,8 +135,6 @@ public abstract class BaseEntity implements IEntity {
     }
 
     public void resetModelToBase(){
-//        Matrix.setIdentityM(mModel, 0);
-//        Matrix.multiplyMM(mModel, 0, mModel, 0, mBaseModel, 0);
         mModel = mBaseModel.clone();
     }
 

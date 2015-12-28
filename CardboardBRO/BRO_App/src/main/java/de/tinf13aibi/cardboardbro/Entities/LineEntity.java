@@ -3,9 +3,8 @@ package de.tinf13aibi.cardboardbro.Entities;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import java.nio.FloatBuffer;
-
 import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 
 /**
  * Created by dth on 27.11.2015.
@@ -41,6 +40,11 @@ public class LineEntity extends BaseEntity implements IEntity {
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
         GLES20.glLineWidth(1);
     }
+
+    public void setVerts(Vec3d from, Vec3d to) {
+        setVerts(from.toFloatArray(), to.toFloatArray());
+    }
+
     public void setVerts(float[] from, float[] to) {
         System.arraycopy(from, 0, LineCoords, 0, 3);
         System.arraycopy(to, 0, LineCoords, 3, 3);

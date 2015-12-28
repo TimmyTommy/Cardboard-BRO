@@ -33,7 +33,6 @@ import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -42,14 +41,13 @@ import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
-import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
-import de.tinf13aibi.cardboardbro.Geometry.GeometryFactory;
-import de.tinf13aibi.cardboardbro.Geometry.Point3d;
+import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
 
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
@@ -60,8 +58,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
     private final float[] lightPosInEyeSpace = new float[4];
 
-    private Point3d eyePoint, centerOfView, upVector,  eyeVelocity, mForceAccum;
-    private Point3d eyeForwardNormalized;
+    private Vec3d eyePoint, centerOfView, upVector,  eyeVelocity, mForceAccum;
+    private Vec3d eyeForwardNormalized;
 
     private  boolean mMoving = false;
     private Date mTimeLastFrame;
@@ -85,33 +83,29 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private Vibrator vibrator;
     private CardboardOverlayView overlayView;
 
-//    private void addForce(Point3d force){
-//        mForceAccum = new Point3d(GeometryFactory.calcVecPlusVec(mForceAccum.toFloatArray(), force.toFloatArray()));
+//    private void addForce(Vec3d force){
+//        mForceAccum = new Vec3d(VecMath.calcVecPlusVec(mForceAccum.toFloatArray(), force.toFloatArray()));
 //    }
 
     void clearForceAccum(){
-        mForceAccum.x = 0.0f;
-        mForceAccum.y = 0.0f;
-        mForceAccum.z = 0.0f;
+        mForceAccum.assignPoint3d(new Vec3d());
     }
 
     private void moveCamera(float time)
     {
         // Position berechnen
-
-        eyePoint.fromFloatArray(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(eyeVelocity.toFloatArray(), time)));
-        centerOfView.fromFloatArray(GeometryFactory.calcVecPlusVec(centerOfView.toFloatArray(), GeometryFactory.calcVecTimesScalar(eyeVelocity.toFloatArray(), time)));
+        eyePoint.assignPoint3d(VecMath.calcVecPlusVec(eyePoint, VecMath.calcVecTimesScalar(eyeVelocity, time)));
+        centerOfView.assignPoint3d(VecMath.calcVecPlusVec(centerOfView, VecMath.calcVecTimesScalar(eyeVelocity, time)));
 
         // Beschleunigung berechnen
-
 //        Vector3 acc = m_ForceAccum * m_InverseMass;
 
         // Neue Geschwindigkeit berechnen
-        eyeVelocity.fromFloatArray(GeometryFactory.calcVecPlusVec(eyeVelocity.toFloatArray(), GeometryFactory.calcVecTimesScalar(mForceAccum.toFloatArray(), time)));
+        eyeVelocity.assignPoint3d(VecMath.calcVecPlusVec(eyeVelocity, VecMath.calcVecTimesScalar(mForceAccum, time)));
 
-        eyeVelocity.fromFloatArray(GeometryFactory.calcVecTimesScalar(eyeVelocity.toFloatArray(), 0.9f));
-        if (GeometryFactory.calcVectorLength(eyeVelocity)<0.0001f){
-            eyeVelocity.fromFloatArray(new Point3d().toFloatArray());
+        eyeVelocity.assignPoint3d(VecMath.calcVecTimesScalar(eyeVelocity, 0.9f));
+        if (VecMath.calcVectorLength(eyeVelocity)<0.0001f){
+            eyeVelocity.assignPoint3d(new Vec3d());
         }
         // Alle Kräfte entfernen
         clearForceAccum();
@@ -145,13 +139,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         modelCube = new float[16];
         camera = new float[16];
-        eyePoint = new Point3d(0, 0, 0);
-        eyeVelocity = new Point3d(0, 0, 0);
-        centerOfView = new Point3d(0, 0, -0.01f);
-        mForceAccum = new Point3d(0, 0, 0);
-        eyeForwardNormalized = new Point3d(0, 0, -0.01f);
+        eyePoint = new Vec3d(0, 0, 0);
+        eyeVelocity = new Vec3d(0, 0, 0);
+        centerOfView = new Vec3d(0, 0, -0.01f);
+        mForceAccum = new Vec3d(0, 0, 0);
+        eyeForwardNormalized = new Vec3d(0, 0, -0.01f);
         mTimeLastFrame = new Date();
-        upVector = new Point3d(0, 1, 0);
+        upVector = new Vec3d(0, 1, 0);
 //        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
         Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
                                      centerOfView.x, centerOfView.y, centerOfView.z,
@@ -179,13 +173,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 return false;
             }
         });
-//        cardboardView.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View v) {
-//                overlayView.show3DToast("This is a LongClick");
-//                return false;
-//            }
-//        });
     }
 
     @Override
@@ -281,26 +268,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
         int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
-//        //Blickpunkt
-//        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-//        ((LineEntity)mEntity).setVerts(-2f, 0, -(Constants.CYL_RADIUS - 1f), 2f, 0, -(Constants.CYL_RADIUS - 1f));
-//        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-//        mEntityList.add(mEntity);
-//
-//        mEntity = new LineEntity(lineVertexShader, lineFragmentShader);
-//        ((LineEntity)mEntity).setVerts(0, -2f, -(Constants.CYL_RADIUS - 1f), 0, 2f, -(Constants.CYL_RADIUS - 1f));
-//        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-//        mEntityList.add(mEntity);
         //Blickgerade
         eyeLine = new LineEntity(lineVertexShader, lineFragmentShader);
         eyeLine.setVerts(0, 0, 0, 0, 0, -1000);
         eyeLine.setColor(0, 1, 1, 1);
-//        mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-        mEntityList.add(mEntity);
 
         eyeCross = new CrosshairEntity(lineVertexShader, lineFragmentShader);
-//        ((CrosshairEntity)mEntity).setPosition(new Point3d(5, 0, -5), new Point3d(1, 0, -1), 0);
-//        mEntityList.add(mEntity);
+
         checkGLError("onSurfaceCreated");
     }
 
@@ -333,104 +307,61 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         forward[3] = 1;
         Matrix.multiplyMV(forwardInv, 0, invertedHead, 0, forward, 0);
 
-        eyeForwardNormalized.fromFloatArray(GeometryFactory.calcNormalizedVector(new Point3d(forwardInv)).toFloatArray());
+        eyeForwardNormalized.assignFloatArray(VecMath.calcNormalizedVector(forwardInv));
         if (mMoving) {
-            mForceAccum.fromFloatArray(GeometryFactory.calcVecTimesScalar(eyeForwardNormalized.toFloatArray(), 5));
+            mForceAccum.assignPoint3d(VecMath.calcVecTimesScalar(eyeForwardNormalized, 5));
         }
 
         Date timeDelta = new Date(new Date().getTime()-mTimeLastFrame.getTime());
 
         mTimeLastFrame = new Date();
 
-//        mTimeElapsedLastFrame.setTime((new Date()).getTime() - mTimeElapsedLastFrame.getTime());
         moveCamera(timeDelta.getTime()*0.001f);
 
-        StraightLine eyeLine = new StraightLine(eyePoint, new Point3d(forwardInv));
+        StraightLine eyeLine = new StraightLine(eyePoint, new Vec3d(forwardInv));
         eyeCollision = getNearestCollision(eyeLine);
 
         if (eyeCollision!=null) {
-            float[] distanceVec = GeometryFactory.calcVecMinusVec(eyeCollision.collisionPos.toFloatArray(), eyePoint.toFloatArray());
-            float distance = GeometryFactory.calcVectorLength(distanceVec);
+            Vec3d distanceVec = VecMath.calcVecMinusVec(eyeCollision.collisionPos, eyePoint);
+            float distance = VecMath.calcVectorLength(distanceVec);
             eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, distance);
         } else {
             //calc cross some meters away from eyes
-            Point3d farPointOnEyeLine = new Point3d(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(forwardInv, 100)));
-            float[] distanceVec = GeometryFactory.calcVecMinusVec(farPointOnEyeLine.toFloatArray(), eyePoint.toFloatArray());
-            float distance = GeometryFactory.calcVectorLength(distanceVec);
-            eyeCross.setPosition(farPointOnEyeLine, new Point3d(forwardInv), distance);
+            Vec3d farPointOnEyeLine = VecMath.calcVecPlusVec(eyePoint, new Vec3d(VecMath.calcVecTimesScalar(forwardInv, 100)));
+            Vec3d distanceVec = VecMath.calcVecMinusVec(farPointOnEyeLine, eyePoint);
+            float distance = VecMath.calcVectorLength(distanceVec);
+            eyeCross.setPosition(farPointOnEyeLine, new Vec3d(forwardInv), distance);
         }
-//        float[] eyepos = eyePoint.toFloatArray4d();
-//        Matrix.multiplyMV(eyepos, 0, invertedHead, 0, eyepos, 0);
-//        this.eyeLine.setVerts(eyepos, eyeCross.getPosition().toFloatArray());
-
-        Point3d pointOnEyeLineBehind = new Point3d(GeometryFactory.calcVecPlusVec(eyePoint.toFloatArray(), GeometryFactory.calcVecTimesScalar(forwardInv, -10)));
+        Vec3d pointOnEyeLineBehind = VecMath.calcVecPlusVec(eyePoint, new Vec3d(VecMath.calcVecTimesScalar(forwardInv, -10)));
         this.eyeLine.setVerts(pointOnEyeLineBehind.toFloatArray(), eyeCross.getPosition().toFloatArray());
 
-
-//        this.eyeLine.setVerts(eyeLine.pos.toFloatArray(), eyeCross.getPosition().toFloatArray());
-
-//        this.eyeLine.setVerts(eyeLine.pos.toFloatArray(), eyeCollision.collisionPos.toFloatArray());
         //Todo get forward-Vector and Line from Arm (MYO)
-//        CollisionTrianglePoint nearestArmCollision = getNearestCollision(eyeLine);
+//        CollisionTrianglePoint nearestArmCollision = getNearestCollision(armLine);
 
         checkGLError("onReadyToDraw");
 
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
             if (entity instanceof ButtonEntity) {
-                if (rotationPos < -25){
-                    rotationDir = true;
-                } else if (rotationPos > 25) {
-                    rotationDir = false;
-                }
-                int direction = rotationDir ? 1 : -1;
-                rotationPos += direction;
-
-                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA*8, 0f, 0f, direction);
-
+//                //Test: rotiere Buttons
+//                if (rotationPos < -25){
+//                    rotationDir = true;
+//                } else if (rotationPos > 25) {
+//                    rotationDir = false;
+//                }
+//                int direction = rotationDir ? 1 : -1;
+//                rotationPos += direction;
+//                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA*8, 0f, 0f, direction);
                 entity.resetModelToBase();
-
+                //Invertierte HeadView-Matrix auf Objekte drauf rechnen, die sich mit Kopf mitbewegen sollen, weil: Headview * Head^-1 = IdentMat
                 Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
-
-
             } else if (entity instanceof LineEntity){
-                entity.resetModelToBase();
-                if (((LineEntity)entity).getDisplayType()==EntityDisplayType.RelativeToCamera) {
-                    //Invertierte HeadView-Matrix auf Objekte drauf rechnen, die sich mit Kopf mitbewegen sollen, weil: Headview * Head^-1 = IdentMat
-                    Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
-
-//                    float[] eulerAngles = new float[3];
-//                    headTransform.getEulerAngles(eulerAngles, 0);
-//                    eulerAngles[0] *= 180/Math.PI;
-//                    eulerAngles[1] *= 180/Math.PI;
-//                    eulerAngles[2] *= 180/Math.PI;
-
-//                    float[] headForwardVector = new float[3];
-//                    headTransform.getForwardVector(headForwardVector, 0);
-//                    float[] headTransVector = new float[3];
-//                    headTransform.getTranslation(headTransVector, 0);
-//
-//
-//                    float xAxisAngle = (float) -(Math.atan2(headForwardVector[1], headForwardVector[2])*180/Math.PI);
-//
-//                    float yAxisAngle = (float) -(Math.atan2(headForwardVector[0], headForwardVector[2])*180/Math.PI);//done
-//
-//                    float zAxisAngle = (float) (Math.atan2(headForwardVector[0], headForwardVector[1])*180/Math.PI);
-//
-//
-//                    Matrix.rotateM(entity.getModel(), 0, yAxisAngle, 0, 1, 0);
-//                    Matrix.rotateM(entity.getModel(), 0, xAxisAngle, 1, 0, 0);
-
-
-//                    Matrix.rotateM(entity.getModel(), 0, zAxisAngle, 0, 0, 1);
-                }
-//                Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
-            } else if (entity instanceof CuboidEntity){
-                //Matrix.rotateM(entity.getModel(), 0, Constants.TIME_DELTA, 0.5f, 0.5f, 1.0f);
+//                entity.resetModelToBase();
+//                if (((LineEntity)entity).getDisplayType()==EntityDisplayType.RelativeToCamera) {
+//                    Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
+//                }
             }
-
         }
-        //Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
     }
 
     /**
@@ -473,40 +404,40 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //    public void onCardboardTrigger() {
 //        eyePoint.x += 1f;
 //        centerOfView.x += 1f;
-
+//
 //        eyePoint.y++;
 //        centerOfView.y++;
 //        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
 //                                    centerOfView.x, centerOfView.y, centerOfView.z,
 //                                    upVector.x, upVector.y, upVector.z);
-
-//        Log.i("Test Normalvector", Arrays.toString(GeometryFactory.calcNormalVector2(1)));
-//        Log.i("Test Normalvec inverse", Arrays.toString(GeometryFactory.calcNormalVector2(-1)));
+//
+//        Log.i("Test Normalvector", Arrays.toString(VecMath.calcNormalVector2(1)));
+//        Log.i("Test Normalvec inverse", Arrays.toString(VecMath.calcNormalVector2(-1)));
 //
 //        float[] intersectPoint = new float[3];
-//        boolean intersection = GeometryFactory.calcTriangleLineIntersection(intersectPoint);
+//        boolean intersection = VecMath.calcTriangleLineIntersection(intersectPoint);
 //
 //        Log.i("intersection", Boolean.toString(intersection));
 //        Log.i("intersectPoint", Arrays.toString(intersectPoint));
 //
 //        Log.i("Test", "(0, 0, 1)");
-//        GeometryFactory.calcCrossVectors(new Point3d(0, 0, 1));
+//        VecMath.calcCrossVectors(new Vec3d(0, 0, 1));
 //
 //        Log.i("Test", "(0, 1, 1)");
-//        GeometryFactory.calcCrossVectors(new Point3d(0, 1, 1));
+//        VecMath.calcCrossVectors(new Vec3d(0, 1, 1));
 //
 //        Log.i("Test", "(1, 0, 0)");
-//        GeometryFactory.calcCrossVectors(new Point3d(1, 0, 0));
+//        VecMath.calcCrossVectors(new Vec3d(1, 0, 0));
 //
 //        Log.i("Test", "(1, 1, 0)");
-//        GeometryFactory.calcCrossVectors(new Point3d(1, 1, 0));
+//        VecMath.calcCrossVectors(new Vec3d(1, 1, 0));
 //
 //        Log.i("Test", "(1, 0, 1)");
-//        GeometryFactory.calcCrossVectors(new Point3d(1, 0, 1));
+//        VecMath.calcCrossVectors(new Vec3d(1, 0, 1));
 //
 //        Log.i("Test", "(1, 1, 1)");
-//        GeometryFactory.calcCrossVectors(new Point3d(1, 1, 1));
-
+//        VecMath.calcCrossVectors(new Vec3d(1, 1, 1));
+//
 //        Log.i(TAG, "onCardboardTrigger");
 //
 //        if (isLookingAtObject()) {
@@ -519,64 +450,50 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        // Always give user feedback.
 //        vibrator.vibrate(50);
 //    }
-
-    /**
-    * Find a new random position for the object.
-    *
-    * <p>We'll rotate it around the Y-axis so it's out of sight, and then up or down by a little bit.
-    */
-    private void hideObject() {
-        float[] rotationMatrix = new float[16];
-        float[] posVec = new float[4];
-        // First rotate in XZ plane, between 90 and 270 deg away, and scale so that we vary
-        // the object's distance from the user.
-        float angleXZ = (float) Math.random() * 180 + 90;
-        Matrix.setRotateM(rotationMatrix, 0, angleXZ, 0f, 1f, 0f);
-        float oldObjectDistance = objectDistance;
-        objectDistance = (float) Math.random() * 15 + 5;
-        float objectScalingFactor = objectDistance / oldObjectDistance;
-        Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
-        Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
-
-        // Now get the up or down angle, between -20 and 20 degrees.
-        float angleY = (float) Math.random() * 80 - 40; // Angle in Y plane, between -40 and 40.
-        angleY = (float) Math.toRadians(angleY);
-        float newY = (float) Math.tan(angleY) * objectDistance;
-
-        Matrix.setIdentityM(modelCube, 0);
-        Matrix.translateM(modelCube, 0, posVec[0], newY, posVec[2]);
-    }
-
-    /**
-    * Check if user is looking at object by calculating where the object is in eye-space.
-    *
-    * @return true if the user is looking at the object.
-    */
-    private boolean isLookingAtObject() {
-        float[] initVec = { 0, 0, 0, 1.0f };
-        float[] objPositionVec = new float[4];
-
-        // Convert object space to camera space. Use the headView from onNewFrame.
-        Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
-        Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
-
-        float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
-        float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
-
-        return Math.abs(pitch) < Constants.PITCH_LIMIT && Math.abs(yaw) < Constants.YAW_LIMIT;
-    }
-
-    private boolean isPointingAtObject() {
-        float[] initVec = { 0, 0, 0, 1.0f };
-        float[] objPositionVec = new float[4];
-
-        // Convert object space to camera space. Use the headView from onNewFrame.
-        Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
-        Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
-
-        float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
-        float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
-
-        return Math.abs(pitch) < Constants.PITCH_LIMIT && Math.abs(yaw) < Constants.YAW_LIMIT;
-    }
+//
+//    /**
+//    * Find a new random position for the object.
+//    *
+//    * <p>We'll rotate it around the Y-axis so it's out of sight, and then up or down by a little bit.
+//    */
+//    private void hideObject() {
+//        float[] rotationMatrix = new float[16];
+//        float[] posVec = new float[4];
+//        // First rotate in XZ plane, between 90 and 270 deg away, and scale so that we vary
+//        // the object's distance from the user.
+//        float angleXZ = (float) Math.random() * 180 + 90;
+//        Matrix.setRotateM(rotationMatrix, 0, angleXZ, 0f, 1f, 0f);
+//        float oldObjectDistance = objectDistance;
+//        objectDistance = (float) Math.random() * 15 + 5;
+//        float objectScalingFactor = objectDistance / oldObjectDistance;
+//        Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
+//        Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
+//
+//        // Now get the up or down angle, between -20 and 20 degrees.
+//        float angleY = (float) Math.random() * 80 - 40; // Angle in Y plane, between -40 and 40.
+//        angleY = (float) Math.toRadians(angleY);
+//        float newY = (float) Math.tan(angleY) * objectDistance;
+//
+//        Matrix.setIdentityM(modelCube, 0);
+//        Matrix.translateM(modelCube, 0, posVec[0], newY, posVec[2]);
+//    }
+//
+//    /**
+//    * Check if user is looking at object by calculating where the object is in eye-space.
+//    *
+//    * @return true if the user is looking at the object.
+//    */
+//    private boolean isLookingAtObject() {
+//        float[] initVec = { 0, 0, 0, 1.0f };
+//        float[] objPositionVec = new float[4];
+//
+//        // Convert object space to camera space. Use the headView from onNewFrame.
+//        Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
+//        Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
+//
+//        float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
+//        float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
+//
+//        return Math.abs(pitch) < Constants.PITCH_LIMIT && Math.abs(yaw) < Constants.YAW_LIMIT;
+//    }
 }

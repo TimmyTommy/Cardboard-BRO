@@ -8,9 +8,9 @@ import de.tinf13aibi.cardboardbro.Entities.IEntity;
  */
 public class CollisionTrianglePoint {
     public Triangle triangle;
-    public Point3d triangleNormal;
+    public Vec3d triangleNormal;
     public StraightLine straight;
-    public Point3d collisionPos;
+    public Vec3d collisionPos;
     public IEntity entity;
     public float distance = -1;
     public int normalDir = 1;
@@ -22,16 +22,16 @@ public class CollisionTrianglePoint {
     }
 
     private void calcDistance(){
-        float[] vec = GeometryFactory.calcVecMinusVec(collisionPos.toFloatArray(), straight.pos.toFloatArray());
-        distance = GeometryFactory.calcVectorLength(vec);
+        Vec3d vec = VecMath.calcVecMinusVec(collisionPos, straight.pos);
+        distance = VecMath.calcVectorLength(vec);
     }
 
     private void calcTriangleLineIntersection(){
         normalDir = entity instanceof CylinderCanvasEntity ? -1 : 1;
-        triangleNormal = new Point3d(GeometryFactory.calcNormalVector(triangle.toFloatArray(), normalDir));
+        triangleNormal = VecMath.calcNormalVector(triangle, normalDir);
         float[] pos = new float[3];
-        if (GeometryFactory.calcTriangleLineIntersection(pos, triangle, straight)){
-            collisionPos = new Point3d(pos);
+        if (VecMath.calcTriangleLineIntersection(pos, triangle, straight)){
+            collisionPos = new Vec3d(pos);
             calcDistance();
         } else {
             collisionPos = null;
