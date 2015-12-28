@@ -32,6 +32,7 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -41,9 +42,11 @@ import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
+import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
+import de.tinf13aibi.cardboardbro.Entities.User;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
@@ -54,62 +57,22 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private ArrayList<IEntity> mEntityList;
     private static final String TAG = "MainActivity";
 
-    // We keep the light always position just above the user.
-    private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
-    private final float[] lightPosInEyeSpace = new float[4];
+    private User mUser = new User();
+    private boolean mMoving = false;
 
-    private Vec3d eyePoint, centerOfView, upVector,  eyeVelocity, mForceAccum;
-    private Vec3d eyeForwardNormalized;
-
-    private  boolean mMoving = false;
-    private Date mTimeLastFrame;
-
+    //TODO nach Klasse USER auslagern
     private CollisionTrianglePoint eyeCollision, armCollision;
     private CrosshairEntity eyeCross;
     private LineEntity eyeLine;
-
-    private float[] modelCube;
-    private float[] camera;
-    private float[] view;
-    private float[] headView;
-    private float[] modelView;
 
     private int rotationPos = 0;
     private Boolean rotationDir = true;
     private int score = 0;
     private float objectDistance = 12f;
-    private float floorDepth = 10f;
+    private float floorDepth = 10f; //TODO nach Constants auslagern
 
     private Vibrator vibrator;
     private CardboardOverlayView overlayView;
-
-//    private void addForce(Vec3d force){
-//        mForceAccum = new Vec3d(VecMath.calcVecPlusVec(mForceAccum.toFloatArray(), force.toFloatArray()));
-//    }
-
-    void clearForceAccum(){
-        mForceAccum.assignPoint3d(new Vec3d());
-    }
-
-    private void moveCamera(float time)
-    {
-        // Position berechnen
-        eyePoint.assignPoint3d(VecMath.calcVecPlusVec(eyePoint, VecMath.calcVecTimesScalar(eyeVelocity, time)));
-        centerOfView.assignPoint3d(VecMath.calcVecPlusVec(centerOfView, VecMath.calcVecTimesScalar(eyeVelocity, time)));
-
-        // Beschleunigung berechnen
-//        Vector3 acc = m_ForceAccum * m_InverseMass;
-
-        // Neue Geschwindigkeit berechnen
-        eyeVelocity.assignPoint3d(VecMath.calcVecPlusVec(eyeVelocity, VecMath.calcVecTimesScalar(mForceAccum, time)));
-
-        eyeVelocity.assignPoint3d(VecMath.calcVecTimesScalar(eyeVelocity, 0.9f));
-        if (VecMath.calcVectorLength(eyeVelocity)<0.0001f){
-            eyeVelocity.assignPoint3d(new Vec3d());
-        }
-        // Alle Kräfte entfernen
-        clearForceAccum();
-    }
 
     /**
     * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
@@ -137,22 +100,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         cardboardView.setRenderer(this);
         setCardboardView(cardboardView);
 
-        modelCube = new float[16];
-        camera = new float[16];
-        eyePoint = new Vec3d(0, 0, 0);
-        eyeVelocity = new Vec3d(0, 0, 0);
-        centerOfView = new Vec3d(0, 0, -0.01f);
-        mForceAccum = new Vec3d(0, 0, 0);
-        eyeForwardNormalized = new Vec3d(0, 0, -0.01f);
-        mTimeLastFrame = new Date();
-        upVector = new Vec3d(0, 1, 0);
-//        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
-        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
-                                     centerOfView.x, centerOfView.y, centerOfView.z,
-                                     upVector.x, upVector.y, upVector.z);
-        view = new float[16];
-        modelView = new float[16];
-        headView = new float[16];
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
@@ -214,6 +161,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         //Create Buttons
         for (int i=0; i<5; i++) {
             mEntity = new ButtonEntity(vertexShader, passthroughShader);
+            mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
             Matrix.translateM(mEntity.getBaseModel(), 0, 1.2f-0.6f*i, -1.3f, -3f);
             Matrix.scaleM(mEntity.getBaseModel(), 0, 0.25f, 0.25f, 0.06f);
             mEntityList.add(mEntity);
@@ -289,50 +237,35 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     */
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-        // Build the camera matrix and apply it to the ModelView.
-//        Matrix.setLookAtM(camera, 0, 0, 0, Constants.CAMERA_Z, 0, 0, 0, 0, 1, 0);
-//        Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, Constants.CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.75f, 0.0f);
-        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
-                centerOfView.x, centerOfView.y, centerOfView.z,
-                upVector.x, upVector.y, upVector.z);
+        float[] headView = new float[16];
         headTransform.getHeadView(headView, 0);
-        float[] invertedHead = new float[16];
-        Matrix.invertM(invertedHead, 0, headView, 0);
+        mUser.setHeadView(headView);
 
-        float[] forward = new float[4];
+        Vec3d forwardVec = new Vec3d(0, 0, -1);
         float[] forwardInv = new float[4];
-        forward[0] = 0;
-        forward[1] = 0;
-        forward[2] = -1;
-        forward[3] = 1;
-        Matrix.multiplyMV(forwardInv, 0, invertedHead, 0, forward, 0);
 
-        eyeForwardNormalized.assignFloatArray(VecMath.calcNormalizedVector(forwardInv));
-        if (mMoving) {
-            mForceAccum.assignPoint3d(VecMath.calcVecTimesScalar(eyeForwardNormalized, 5));
-        }
+        Matrix.multiplyMV(forwardInv, 0, mUser.getInvHeadView(), 0, forwardVec.toFloatArray4d(), 0);
+        mUser.getEyeForward().assignFloatArray(VecMath.calcNormalizedVector(forwardInv));
 
-        Date timeDelta = new Date(new Date().getTime()-mTimeLastFrame.getTime());
+        Vec3d acceleration = VecMath.calcVecTimesScalar(mUser.getEyeForward(), mMoving ? 5:0);
+        mUser.move(acceleration);
 
-        mTimeLastFrame = new Date();
-
-        moveCamera(timeDelta.getTime()*0.001f);
-
-        StraightLine eyeLine = new StraightLine(eyePoint, new Vec3d(forwardInv));
+        //Position von CrossEntity berechnen : TODO: nach Klasse "User" auslagern
+        StraightLine eyeLine = new StraightLine(mUser.getPosition(), new Vec3d(forwardInv));
         eyeCollision = getNearestCollision(eyeLine);
 
         if (eyeCollision!=null) {
-            Vec3d distanceVec = VecMath.calcVecMinusVec(eyeCollision.collisionPos, eyePoint);
+            Vec3d distanceVec = VecMath.calcVecMinusVec(eyeCollision.collisionPos, mUser.getPosition());
             float distance = VecMath.calcVectorLength(distanceVec);
             eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, distance);
         } else {
             //calc cross some meters away from eyes
-            Vec3d farPointOnEyeLine = VecMath.calcVecPlusVec(eyePoint, new Vec3d(VecMath.calcVecTimesScalar(forwardInv, 100)));
-            Vec3d distanceVec = VecMath.calcVecMinusVec(farPointOnEyeLine, eyePoint);
+            Vec3d farPointOnEyeLine = VecMath.calcVecPlusVec(mUser.getPosition(), new Vec3d(VecMath.calcVecTimesScalar(forwardInv, 100)));
+            Vec3d distanceVec = VecMath.calcVecMinusVec(farPointOnEyeLine, mUser.getPosition());
             float distance = VecMath.calcVectorLength(distanceVec);
             eyeCross.setPosition(farPointOnEyeLine, new Vec3d(forwardInv), distance);
         }
-        Vec3d pointOnEyeLineBehind = VecMath.calcVecPlusVec(eyePoint, new Vec3d(VecMath.calcVecTimesScalar(forwardInv, -10)));
+        Vec3d pointOnEyeLineBehind = VecMath.calcVecPlusVec(mUser.getPosition(), new Vec3d(VecMath.calcVecTimesScalar(forwardInv, -10)));
         this.eyeLine.setVerts(pointOnEyeLineBehind.toFloatArray(), eyeCross.getPosition().toFloatArray());
 
         //Todo get forward-Vector and Line from Arm (MYO)
@@ -344,23 +277,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         for (IEntity entity : mEntityList) {
             if (entity instanceof ButtonEntity) {
 //                //Test: rotiere Buttons
-//                if (rotationPos < -25){
-//                    rotationDir = true;
-//                } else if (rotationPos > 25) {
-//                    rotationDir = false;
-//                }
-//                int direction = rotationDir ? 1 : -1;
-//                rotationPos += direction;
-//                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA*8, 0f, 0f, direction);
+                if (rotationPos < -25){
+                    rotationDir = true;
+                } else if (rotationPos > 25) {
+                    rotationDir = false;
+                }
+                int direction = rotationDir ? 1 : -1;
+                rotationPos += direction;
+                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA*8, 0f, 0f, direction);
                 entity.resetModelToBase();
                 //Invertierte HeadView-Matrix auf Objekte drauf rechnen, die sich mit Kopf mitbewegen sollen, weil: Headview * Head^-1 = IdentMat
-                Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
-            } else if (entity instanceof LineEntity){
+//                Matrix.multiplyMM(entity.getModel(), 0, mUser.getHeadView(), 0, entity.getModel(), 0);
+            }
+//            else if (entity instanceof LineEntity){
 //                entity.resetModelToBase();
 //                if (((LineEntity)entity).getDisplayType()==EntityDisplayType.RelativeToCamera) {
 //                    Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
 //                }
-            }
+//            }
         }
     }
 
@@ -375,23 +309,43 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         checkGLError("colorParam");
         // Apply the eye transformation to the camera.
-        Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, camera, 0);
+        float[] view = new float[16];
+        Matrix.multiplyMM(view, 0, eye.getEyeView(), 0, mUser.getCamera(), 0);
+
         // Set the position of the light
-        Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, LIGHT_POS_IN_WORLD_SPACE, 0);
+        final float[] lightPosInEyeSpace = new float[4];
+        Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, Constants.LIGHT_POS_IN_WORLD_SPACE, 0);
+
         // Build the ModelView and ModelViewProjection matrices for calculating cube position and light.
         float[] perspective = eye.getPerspective(Constants.Z_NEAR, Constants.Z_FAR);
 
         for (IEntity entity : mEntityList) {
-            if (entity instanceof ButtonEntity) {
-                entity.draw(view, perspective, lightPosInEyeSpace);
-//                entity.draw(camera, perspective, lightPosInEyeSpace);
-            } else if (entity instanceof LineEntity) {
-                entity.draw(view, perspective, lightPosInEyeSpace);
-            } else if (entity instanceof CylinderCanvasEntity) {
-                entity.draw(view, perspective, lightPosInEyeSpace);
+            if (((BaseEntity)entity).getDisplayType() == EntityDisplayType.RelativeToCamera) {
+//                entity.draw(view, perspective, lightPosInEyeSpace);
+//                entity.draw(mUser.getInvHeadView(), perspective, lightPosInEyeSpace);
+
+                //Objekte die sich mit Camera mitbewegen sollen, werden mithilfe der IdentMat gezeichnet
+                float[] identMat = new float[16];
+                Matrix.setIdentityM(identMat, 0);
+                entity.draw(identMat, perspective, lightPosInEyeSpace);
             } else {
                 entity.draw(view, perspective, lightPosInEyeSpace);
             }
+//            if (entity instanceof ButtonEntity) {
+////                entity.draw(view, perspective, lightPosInEyeSpace);
+////                entity.draw(mUser.getInvHeadView(), perspective, lightPosInEyeSpace);
+//
+//                //Objekte die sich mit Camera mitbewegen sollen, werden mithilfe der IdentMat gezeichnet
+//                float[] identMat = new float[16];
+//                Matrix.setIdentityM(identMat, 0);
+//                entity.draw(identMat, perspective, lightPosInEyeSpace);
+//            } else if (entity instanceof LineEntity) {
+//                entity.draw(view, perspective, lightPosInEyeSpace);
+//            } else if (entity instanceof CylinderCanvasEntity) {
+//                entity.draw(view, perspective, lightPosInEyeSpace);
+//            } else {
+//                entity.draw(view, perspective, lightPosInEyeSpace);
+//            }
         }
         eyeCross.draw(view, perspective, lightPosInEyeSpace);
 //        eyeLine.draw(view, perspective, lightPosInEyeSpace);
