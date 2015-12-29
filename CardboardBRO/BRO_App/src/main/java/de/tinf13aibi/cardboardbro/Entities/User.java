@@ -34,6 +34,13 @@ public class User {
         mPosition.assignPoint3d(VecMath.calcVecPlusVec(mPosition, VecMath.calcVecTimesScalar(mVelocity, timeSeconds)));
         mCenterOfView.assignPoint3d(VecMath.calcVecPlusVec(mCenterOfView, VecMath.calcVecTimesScalar(mVelocity, timeSeconds)));
 
+        //Augenhöhe auf mindestens 0m
+//        if (mPosition.y < 0) {
+//            mPosition.y = 0;
+//        }
+//        if (mCenterOfView.y < 0) {
+//            mCenterOfView.y =0;
+//        }
         //Augenhöhe auf mindestens 1,75m
         if (mPosition.y < 1.75f) {
             mPosition.y = 1.75f;
@@ -41,6 +48,8 @@ public class User {
         if (mCenterOfView.y < 1.75f) {
             mCenterOfView.y = 1.75f;
         }
+
+        //Augenhöhe immer auf 1,75m
 //        if (mPosition.y != 1.75f) {
 //            mPosition.y = 1.75f;
 //        }
@@ -70,6 +79,12 @@ public class User {
                 mCenterOfView.x, mCenterOfView.y, mCenterOfView.z,
                 mUpVector.x, mUpVector.y, mUpVector.z);
         return camera;
+    }
+
+    public float[] getInvCamera() {
+        float[] invCamera = new float[16];
+        Matrix.invertM(invCamera, 0, getCamera(), 0);
+        return invCamera;
     }
 
     public void setHeadView(float[] headView) {

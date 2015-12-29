@@ -135,7 +135,8 @@ public abstract class BaseEntity implements IEntity {
     }
 
     public void resetModelToBase(){
-        mModel = mBaseModel.clone();
+//        mModel = mBaseModel.clone();
+        System.arraycopy(mBaseModel, 0, mModel, 0, 16);
     }
 
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){

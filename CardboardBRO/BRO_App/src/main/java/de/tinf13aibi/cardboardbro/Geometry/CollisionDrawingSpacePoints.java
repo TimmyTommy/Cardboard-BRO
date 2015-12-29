@@ -2,6 +2,7 @@ package de.tinf13aibi.cardboardbro.Geometry;
 
 import java.util.ArrayList;
 
+import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
@@ -46,6 +47,7 @@ public class CollisionDrawingSpacePoints {
     private boolean isEntityWithArea(IEntity entity){
         return  entity instanceof FloorEntity ||
                 entity instanceof CylinderCanvasEntity ||
+                entity instanceof ButtonEntity || //Aktivieren, wenn Buttons "anzielbar" sein sollen
                 entity instanceof CuboidEntity;
     }
 

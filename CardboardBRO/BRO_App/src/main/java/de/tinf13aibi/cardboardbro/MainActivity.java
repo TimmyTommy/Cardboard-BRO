@@ -32,8 +32,6 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -103,7 +101,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        overlayView.show3DToast("Pull the magnet when you find an object.");
+        overlayView.show3DToast("Push the button to move around.");
         cardboardView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -145,9 +143,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
 
+        //Faces shader
         int vertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
         int gridShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
         int passthroughShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
+        //Line Shader
+        int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
+        int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
         mEntityList = new ArrayList<>();
         //Create Cylinder Canvas
@@ -158,12 +160,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mEntity = new FloorEntity(vertexShader, gridShader);
         Matrix.translateM(mEntity.getModel(), 0, 0, -floorDepth, 0);
         mEntityList.add(mEntity);
+
         //Create Buttons
         for (int i=0; i<5; i++) {
             mEntity = new ButtonEntity(vertexShader, passthroughShader);
             mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
-            Matrix.translateM(mEntity.getBaseModel(), 0, 1.2f-0.6f*i, -1.3f, -3f);
-            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.25f, 0.25f, 0.06f);
+            float y = -0.13f;
+            Matrix.translateM(mEntity.getBaseModel(), 0, 0.12f-0.06f*i, /*-1.3f*/y, -0.3f);
+            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
+//            float y = -0.065f;
+//            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
+//            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
             mEntityList.add(mEntity);
         }
 
@@ -212,9 +219,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Matrix.scaleM(mEntity.getModel(), 0, 0.055f, 0.055f, 0.055f);
         mEntityList.add(mEntity);
 
-        //Line Shader
-        int lineVertexShader = ShaderFunctions.loadGLShader(GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
-        int lineFragmentShader = ShaderFunctions.loadGLShader(GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
 
         //Blickgerade
         eyeLine = new LineEntity(lineVertexShader, lineFragmentShader);
@@ -265,8 +269,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             float distance = VecMath.calcVectorLength(distanceVec);
             eyeCross.setPosition(farPointOnEyeLine, new Vec3d(forwardInv), distance);
         }
-        Vec3d pointOnEyeLineBehind = VecMath.calcVecPlusVec(mUser.getPosition(), new Vec3d(VecMath.calcVecTimesScalar(forwardInv, -10)));
-        this.eyeLine.setVerts(pointOnEyeLineBehind.toFloatArray(), eyeCross.getPosition().toFloatArray());
+        this.eyeLine.setVerts(mUser.getPosition(), eyeCross.getPosition());
 
         //Todo get forward-Vector and Line from Arm (MYO)
 //        CollisionTrianglePoint nearestArmCollision = getNearestCollision(armLine);
@@ -275,8 +278,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         // Build the Model part of the ModelView matrix.
         for (IEntity entity : mEntityList) {
-            if (entity instanceof ButtonEntity) {
-//                //Test: rotiere Buttons
+            if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
+                //Test: rotiere Buttons
                 if (rotationPos < -25){
                     rotationDir = true;
                 } else if (rotationPos > 25) {
@@ -284,17 +287,43 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 }
                 int direction = rotationDir ? 1 : -1;
                 rotationPos += direction;
-                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA*8, 0f, 0f, direction);
+                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA * 8, 0f, 0f, direction);
+
                 entity.resetModelToBase();
-                //Invertierte HeadView-Matrix auf Objekte drauf rechnen, die sich mit Kopf mitbewegen sollen, weil: Headview * Head^-1 = IdentMat
-//                Matrix.multiplyMM(entity.getModel(), 0, mUser.getHeadView(), 0, entity.getModel(), 0);
-            }
-//            else if (entity instanceof LineEntity){
-//                entity.resetModelToBase();
-//                if (((LineEntity)entity).getDisplayType()==EntityDisplayType.RelativeToCamera) {
-//                    Matrix.multiplyMM(entity.getModel(), 0, invertedHead, 0, entity.getModel(), 0);
+
+                float[] finalOp = new float[16];
+                float[] anOp = new float[16];
+                Matrix.setIdentityM(finalOp, 0);
+
+//                Matrix.setIdentityM(anOp, 0);
+//                Matrix.scaleM(anOp, 0, 0.01f, 0.01f, 0.01f);
+//                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
+
+//                Matrix.setIdentityM(anOp, 0);
+//                Matrix.translateM(anOp, 0, 0, 0, -0.50f);
+//                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
+
+//                Matrix.setIdentityM(anOp, 0);
+//                Matrix.multiplyMM(anOp, 0, mUser.getInvHeadView(), 0, anOp, 0);
+//                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
+
+//                float[] quat = new float[4];
+//                headTransform.getQuaternion(quat, 0);
+//                for (int k=0; k<3; k++){
+//                    quat[k] *= -1;
 //                }
-//            }
+//                float[] rotMat = VecMath.calcQuaternionToMatrix(quat);
+//                Matrix.multiplyMM(finalOp, 0, rotMat, 0, finalOp, 0);
+
+                Matrix.multiplyMM(finalOp, 0, mUser.getInvHeadView(), 0, finalOp, 0);
+
+                Matrix.setIdentityM(anOp, 0);
+                Vec3d pos = mUser.getPosition();
+                Matrix.translateM(anOp, 0, pos.x, pos.y, pos.z);
+                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
+
+                Matrix.multiplyMM(entity.getModel(), 0, finalOp, 0, entity.getModel(), 0);
+            }
         }
     }
 
@@ -320,35 +349,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         float[] perspective = eye.getPerspective(Constants.Z_NEAR, Constants.Z_FAR);
 
         for (IEntity entity : mEntityList) {
-            if (((BaseEntity)entity).getDisplayType() == EntityDisplayType.RelativeToCamera) {
-//                entity.draw(view, perspective, lightPosInEyeSpace);
-//                entity.draw(mUser.getInvHeadView(), perspective, lightPosInEyeSpace);
-
-                //Objekte die sich mit Camera mitbewegen sollen, werden mithilfe der IdentMat gezeichnet
-                float[] identMat = new float[16];
-                Matrix.setIdentityM(identMat, 0);
-                entity.draw(identMat, perspective, lightPosInEyeSpace);
-            } else {
+            if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
                 entity.draw(view, perspective, lightPosInEyeSpace);
-            }
-//            if (entity instanceof ButtonEntity) {
-////                entity.draw(view, perspective, lightPosInEyeSpace);
-////                entity.draw(mUser.getInvHeadView(), perspective, lightPosInEyeSpace);
-//
 //                //Objekte die sich mit Camera mitbewegen sollen, werden mithilfe der IdentMat gezeichnet
 //                float[] identMat = new float[16];
 //                Matrix.setIdentityM(identMat, 0);
 //                entity.draw(identMat, perspective, lightPosInEyeSpace);
-//            } else if (entity instanceof LineEntity) {
-//                entity.draw(view, perspective, lightPosInEyeSpace);
-//            } else if (entity instanceof CylinderCanvasEntity) {
-//                entity.draw(view, perspective, lightPosInEyeSpace);
-//            } else {
-//                entity.draw(view, perspective, lightPosInEyeSpace);
-//            }
+            } else {
+                entity.draw(view, perspective, lightPosInEyeSpace);
+            }
         }
         eyeCross.draw(view, perspective, lightPosInEyeSpace);
-//        eyeLine.draw(view, perspective, lightPosInEyeSpace);
+        eyeLine.draw(view, perspective, lightPosInEyeSpace);
     }
 
     @Override
@@ -356,42 +368,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 //    @Override
 //    public void onCardboardTrigger() {
-//        eyePoint.x += 1f;
-//        centerOfView.x += 1f;
-//
-//        eyePoint.y++;
-//        centerOfView.y++;
-//        Matrix.setLookAtM(camera, 0, eyePoint.x, eyePoint.y, eyePoint.z,
-//                                    centerOfView.x, centerOfView.y, centerOfView.z,
-//                                    upVector.x, upVector.y, upVector.z);
-//
-//        Log.i("Test Normalvector", Arrays.toString(VecMath.calcNormalVector2(1)));
-//        Log.i("Test Normalvec inverse", Arrays.toString(VecMath.calcNormalVector2(-1)));
-//
-//        float[] intersectPoint = new float[3];
-//        boolean intersection = VecMath.calcTriangleLineIntersection(intersectPoint);
-//
-//        Log.i("intersection", Boolean.toString(intersection));
-//        Log.i("intersectPoint", Arrays.toString(intersectPoint));
-//
-//        Log.i("Test", "(0, 0, 1)");
-//        VecMath.calcCrossVectors(new Vec3d(0, 0, 1));
-//
-//        Log.i("Test", "(0, 1, 1)");
-//        VecMath.calcCrossVectors(new Vec3d(0, 1, 1));
-//
-//        Log.i("Test", "(1, 0, 0)");
-//        VecMath.calcCrossVectors(new Vec3d(1, 0, 0));
-//
-//        Log.i("Test", "(1, 1, 0)");
-//        VecMath.calcCrossVectors(new Vec3d(1, 1, 0));
-//
-//        Log.i("Test", "(1, 0, 1)");
-//        VecMath.calcCrossVectors(new Vec3d(1, 0, 1));
-//
-//        Log.i("Test", "(1, 1, 1)");
-//        VecMath.calcCrossVectors(new Vec3d(1, 1, 1));
-//
 //        Log.i(TAG, "onCardboardTrigger");
 //
 //        if (isLookingAtObject()) {

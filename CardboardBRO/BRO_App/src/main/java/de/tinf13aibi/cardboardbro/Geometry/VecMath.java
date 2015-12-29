@@ -6,6 +6,28 @@ import de.tinf13aibi.cardboardbro.Constants;
  * Created by dth on 27.11.2015.
  */
 public class VecMath {
+    public static float[] calcQuaternionToMatrix(float[] quaternion){
+        float x = quaternion[0];
+        float y = quaternion[1];
+        float z = quaternion[2];
+        float w = quaternion[3];
+
+        float x2 = x * x;
+        float y2 = y * y;
+        float z2 = z * z;
+        float xy = x * y;
+        float xz = x * z;
+        float yz = y * z;
+        float wx = w * x;
+        float wy = w * y;
+        float wz = w * z;
+
+        return new float[]{1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
+                            2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
+                            2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
+                            0.0f, 0.0f, 0.0f, 1.0f};
+    }
+
     public static float calcVectorLength(Vec3d vec){
         return calcVectorLength(vec.toFloatArray());
     }
