@@ -35,6 +35,7 @@ public class CollisionTrianglePoint {
             calcDistance();
         } else {
             collisionPos = null;
+            distance = -1;
         }
     }
 }

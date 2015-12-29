@@ -37,7 +37,6 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
-import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
@@ -45,11 +44,8 @@ import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Entities.User;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
-import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
 
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
     private ArrayList<IEntity> mEntityList;
@@ -59,14 +55,12 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private boolean mMoving = false;
 
     //TODO nach Klasse USER auslagern
-    private CollisionTrianglePoint eyeCollision, armCollision;
-    private CrosshairEntity eyeCross;
-    private LineEntity eyeLine;
+    private LineEntity mArmLine;
 
     private int rotationPos = 0;
     private Boolean rotationDir = true;
-    private int score = 0;
-    private float objectDistance = 12f;
+//    private int score = 0;
+//    private float objectDistance = 12f;
     private float floorDepth = 10f; //TODO nach Constants auslagern
 
     private Vibrator vibrator;
@@ -221,17 +215,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 
         //Blickgerade
-        eyeLine = new LineEntity(lineVertexShader, lineFragmentShader);
-        eyeLine.setVerts(0, 0, 0, 0, 0, -1000);
-        eyeLine.setColor(0, 1, 1, 1);
+        mArmLine = new LineEntity(lineVertexShader, lineFragmentShader);
+        mArmLine.setVerts(0, 0, 0, 0, 0, -1000);
+        mArmLine.setColor(0, 1, 1, 1);
 
-        eyeCross = new CrosshairEntity(lineVertexShader, lineFragmentShader);
+        mUser.createCrosshairs(lineVertexShader, lineFragmentShader);
 
         checkGLError("onSurfaceCreated");
-    }
-
-    private CollisionTrianglePoint getNearestCollision(StraightLine line){
-        return new CollisionDrawingSpacePoints(line, mEntityList).nearestCollision;
     }
 
     /**
@@ -243,36 +233,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onNewFrame(HeadTransform headTransform) {
         float[] headView = new float[16];
         headTransform.getHeadView(headView, 0);
+
         mUser.setHeadView(headView);
-
-        Vec3d forwardVec = new Vec3d(0, 0, -1);
-        float[] forwardInv = new float[4];
-
-        Matrix.multiplyMV(forwardInv, 0, mUser.getInvHeadView(), 0, forwardVec.toFloatArray4d(), 0);
-        mUser.getEyeForward().assignFloatArray(VecMath.calcNormalizedVector(forwardInv));
+        mUser.getArmForward().assignPoint3d(mUser.getEyeForward()); //TODO: ArmForward von MYO zuweisen
 
         Vec3d acceleration = VecMath.calcVecTimesScalar(mUser.getEyeForward(), mMoving ? 5:0);
         mUser.move(acceleration);
 
-        //Position von CrossEntity berechnen : TODO: nach Klasse "User" auslagern
-        StraightLine eyeLine = new StraightLine(mUser.getPosition(), new Vec3d(forwardInv));
-        eyeCollision = getNearestCollision(eyeLine);
+        mUser.calcEyeLookingAt(mEntityList);
+        mUser.calcArmPointingAt(mEntityList);
 
-        if (eyeCollision!=null) {
-            Vec3d distanceVec = VecMath.calcVecMinusVec(eyeCollision.collisionPos, mUser.getPosition());
-            float distance = VecMath.calcVectorLength(distanceVec);
-            eyeCross.setPosition(eyeCollision.collisionPos, eyeCollision.triangleNormal, distance);
-        } else {
-            //calc cross some meters away from eyes
-            Vec3d farPointOnEyeLine = VecMath.calcVecPlusVec(mUser.getPosition(), new Vec3d(VecMath.calcVecTimesScalar(forwardInv, 100)));
-            Vec3d distanceVec = VecMath.calcVecMinusVec(farPointOnEyeLine, mUser.getPosition());
-            float distance = VecMath.calcVectorLength(distanceVec);
-            eyeCross.setPosition(farPointOnEyeLine, new Vec3d(forwardInv), distance);
-        }
-        this.eyeLine.setVerts(mUser.getPosition(), eyeCross.getPosition());
-
-        //Todo get forward-Vector and Line from Arm (MYO)
-//        CollisionTrianglePoint nearestArmCollision = getNearestCollision(armLine);
+        mArmLine.setVerts(mUser.getPosition(), mUser.getArmCrosshair().getPosition());
 
         checkGLError("onReadyToDraw");
 
@@ -359,8 +330,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 entity.draw(view, perspective, lightPosInEyeSpace);
             }
         }
-        eyeCross.draw(view, perspective, lightPosInEyeSpace);
-        eyeLine.draw(view, perspective, lightPosInEyeSpace);
+
+        mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
+        mArmLine.draw(view, perspective, lightPosInEyeSpace);
     }
 
     @Override
