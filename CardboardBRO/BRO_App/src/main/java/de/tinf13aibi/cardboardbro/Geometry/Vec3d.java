@@ -8,6 +8,10 @@ public class Vec3d {
     public float y;
     public float z;
 
+    public Vec3d copy(){
+        return new Vec3d(toFloatArray());
+    }
+
     public Vec3d(){
         x = 0;
         y = 0;

@@ -44,10 +44,16 @@ public class User {
         }
     }
 
-    public void createCrosshairs(int vertexShader, int fragmentShader){
-        mEyeCrosshair = new CrosshairEntity(vertexShader, fragmentShader);
-        mArmCrosshair = new CrosshairEntity(vertexShader, fragmentShader);
+//    public void createCrosshairs(int vertexShader, int fragmentShader){
+//        mEyeCrosshair = new CrosshairEntity(vertexShader, fragmentShader);
+//        mArmCrosshair = new CrosshairEntity(vertexShader, fragmentShader);
+//    }
+
+    public void createCrosshairs(int program){
+        mEyeCrosshair = new CrosshairEntity(program);
+        mArmCrosshair = new CrosshairEntity(program);
     }
+
 
     private void calcCrosshairPos(CrosshairEntity crosshairEntity, CollisionTrianglePoint pointingAt, Vec3d forwardVec){
         if (pointingAt!=null) {

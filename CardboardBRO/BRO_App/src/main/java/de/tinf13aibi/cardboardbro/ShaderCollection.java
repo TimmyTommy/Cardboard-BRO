@@ -9,9 +9,34 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 /**
- * Created by dthom on 25.11.2015.
+ * Created by Tommy on 02.01.2016.
  */
-public class ShaderFunctions {
+public class ShaderCollection {
+    private static ShaderCollection ourInstance = new ShaderCollection();
+    private static HashMap<Shaders, Integer> mShaders = new HashMap<>();
+    private static HashMap<Programs, Integer> mPrograms = new HashMap<>();
+
+    public static ShaderCollection getInstance() {
+        return ourInstance;
+    }
+
+    private ShaderCollection() {
+    }
+
+    public static int getProgram(Programs program){
+        return mPrograms.get(program);
+    }
+
+    public static int addProgram(Programs program, Shaders vertexShader, Shaders fragmentShader){
+        int aProgram = GLES20.glCreateProgram();
+        GLES20.glAttachShader(aProgram, mShaders.get(vertexShader));
+        GLES20.glAttachShader(aProgram, mShaders.get(fragmentShader));
+        GLES20.glLinkProgram(aProgram);
+//        GLES20.glUseProgram(program);
+        mPrograms.put(program, aProgram);
+        return aProgram;
+    }
+
     public static int loadGLShader(int type, String code) {
         int shader = GLES20.glCreateShader(type);
         GLES20.glShaderSource(shader, code);
@@ -34,9 +59,11 @@ public class ShaderFunctions {
         return shader;
     }
 
-    public static int loadGLShader(int type, InputStream inputStream) {
+    public static int loadGLShader(Shaders shaderType, int type, InputStream inputStream) {
         String code = readRawTextFile(inputStream);
-        return loadGLShader(type, code);
+        int shader = loadGLShader(type, code);
+        mShaders.put(shaderType, shader);
+        return shader;
     }
 
     private static String readRawTextFile(InputStream inputStream) {

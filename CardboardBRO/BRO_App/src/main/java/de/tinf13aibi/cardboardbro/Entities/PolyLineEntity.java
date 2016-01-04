@@ -1,31 +1,34 @@
 package de.tinf13aibi.cardboardbro.Entities;
 
+import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
+
+import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 
 /**
- * Created by dth on 27.11.2015.
+ * Created by Tommy on 02.01.2016.
  */
-public class LineEntity extends BaseEntity implements IEntity {
-    private float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    private float[] LineCoords = {
-            0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f
-    };
-    private final int mVerticesCount = LineCoords.length / Constants.COORDS_PER_VERTEX;
+public class PolyLineEntity extends BaseEntity implements IEntity {
+    private float mColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    private ArrayList<Vec3d> mPolyLinePoints = new ArrayList<>();
+    private float[] mPolyLineCoords = {};
 
     public void setColor(float red, float green, float blue, float alpha) {
-        color[0] = red;
-        color[1] = green;
-        color[2] = blue;
-        color[3] = alpha;
+        mColor[0] = red;
+        mColor[1] = green;
+        mColor[2] = blue;
+        mColor[3] = alpha;
     }
 
     @Override
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
+        //TODO: muss erstmal so sein wegen GLES20 Context, da draw nur in onDrawEye aufgerufen wird und somit context vorhanden ist
+        fillParameters(mProgram);
+        fillBufferVertices(mPolyLineCoords);
         float[] modelView = new float[16];
         float[] modelViewProjection = new float[16];
 
@@ -33,54 +36,41 @@ public class LineEntity extends BaseEntity implements IEntity {
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
         GLES20.glUseProgram(mProgram);
-        GLES20.glUniform4fv(mColorParam, 1, color, 0);
+        GLES20.glUniform4fv(mColorParam, 1, mColor, 0);
         GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, modelViewProjection, 0);
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
-        GLES20.glLineWidth(3);
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
+        GLES20.glLineWidth(5);
+        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, mPolyLinePoints.size());
         GLES20.glLineWidth(1);
     }
 
-    public void setVerts(Vec3d from, Vec3d to) {
-        setVerts(from.toFloatArray(), to.toFloatArray());
+    private float[] transformPointsToCoords(ArrayList<Vec3d> points){
+        float[] pointCoords = new float[points.size()*3];
+        for (int i=0; i<points.size(); i++){
+            Vec3d point = points.get(i);
+            System.arraycopy(point.toFloatArray(), 0, pointCoords, i*3, 3);
+        }
+        return pointCoords;
     }
 
-    public void setVerts(float[] from, float[] to) {
-        System.arraycopy(from, 0, LineCoords, 0, 3);
-        System.arraycopy(to, 0, LineCoords, 3, 3);
-        fillBufferVertices(LineCoords);
-//        mVertices.position(0);
-//        mVertices.put(LineCoords);
-//        // set the buffer to read the first coordinate
-//        mVertices.position(0);
+    public void addVert(Vec3d point) {
+        mPolyLinePoints.add(point.copy());
+        mPolyLineCoords = transformPointsToCoords(mPolyLinePoints);
+        fillBufferVertices(mPolyLineCoords);
     }
 
-    public void setVerts(float v0, float v1, float v2, float v3, float v4, float v5) {
-        LineCoords[0] = v0;
-        LineCoords[1] = v1;
-        LineCoords[2] = v2;
-        LineCoords[3] = v3;
-        LineCoords[4] = v4;
-        LineCoords[5] = v5;
-        fillBufferVertices(LineCoords);
-//        mVertices.position(0);
-//        mVertices.put(LineCoords);
-//        // set the buffer to read the first coordinate
-//        mVertices.position(0);
-    }
-
-    public LineEntity(int program){
+    public PolyLineEntity(int program){
         super();
         mProgram = program;
-        fillParameters(mProgram);
-        fillBufferVertices(LineCoords);
+//        fillParameters(mProgram);
+//        fillBufferVertices(mPolyLineCoords);
     }
 
-//    public LineEntity(int vertexShader, int fragmentShader){
+//    public PolyLineEntity(int vertexShader, int fragmentShader){
 //        super();
 //        mProgram = createProgram(vertexShader, fragmentShader);
 //        fillParameters(mProgram);
-//        fillBufferVertices(LineCoords);
+//        fillBufferVertices(mPolyLineCoords);
 //    }
 
     private void fillParameters(int program){

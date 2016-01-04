@@ -10,8 +10,12 @@ public class CuboidEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
-    public CuboidEntity(int vertexShader, int fragmentShader){
-        super(vertexShader, fragmentShader);
+    public CuboidEntity(int program){
+        super(program);
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
     }
+//    public CuboidEntity(int vertexShader, int fragmentShader){
+//        super(vertexShader, fragmentShader);
+//        fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
+//    }
 }

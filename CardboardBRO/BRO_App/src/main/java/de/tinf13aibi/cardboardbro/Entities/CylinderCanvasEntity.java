@@ -11,9 +11,15 @@ public class CylinderCanvasEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
-    public CylinderCanvasEntity(int vertexShader, int fragmentShader){
-        super(vertexShader, fragmentShader);
+    public CylinderCanvasEntity(int program){
+        super(program);
         GeometryStruct geometry = VecMath.createCylinderGeom(true); //TODO Normalenberechnung nochmal angucken
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
     }
+
+//    public CylinderCanvasEntity(int vertexShader, int fragmentShader){
+//        super(vertexShader, fragmentShader);
+//        GeometryStruct geometry = VecMath.createCylinderGeom(true); //TODO Normalenberechnung nochmal angucken
+//        fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+//    }
 }

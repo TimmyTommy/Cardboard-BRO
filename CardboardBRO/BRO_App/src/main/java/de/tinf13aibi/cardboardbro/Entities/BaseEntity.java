@@ -70,22 +70,30 @@ public abstract class BaseEntity implements IEntity {
         Matrix.setIdentityM(mBaseModel, 0);
     }
 
-    public BaseEntity(int vertexShader, int fragmentShader){
+//    public BaseEntity(int vertexShader, int fragmentShader){
+//        this();
+//        mProgram = createProgram(vertexShader, fragmentShader);
+//        fillParameters(mProgram);
+//    }
+
+    public BaseEntity(int program){
         this();
-        mProgram = createProgram(vertexShader, fragmentShader);
+        mProgram = program;
+//        mProgram = createProgram(vertexShader, fragmentShader);
         fillParameters(mProgram);
     }
 
-    public int createProgram(int vertexShader, int fragmentShader){
-        int program = GLES20.glCreateProgram();
-        GLES20.glAttachShader(program, vertexShader);
-        GLES20.glAttachShader(program, fragmentShader);
-        GLES20.glLinkProgram(program);
-        GLES20.glUseProgram(program);
-        return program;
-    }
+//    public int createProgram(int vertexShader, int fragmentShader){
+//        int program = GLES20.glCreateProgram();
+//        GLES20.glAttachShader(program, vertexShader);
+//        GLES20.glAttachShader(program, fragmentShader);
+//        GLES20.glLinkProgram(program);
+//        GLES20.glUseProgram(program);
+//        return program;
+//    }
 
     private void fillParameters(int program){
+        //TODO auslagern nach ShaderCollection Programs in eine ProgramClass mit den folgenden Attibuten + int mProgram
         mPositionParam = GLES20.glGetAttribLocation(program, "a_Position");
         mNormalParam = GLES20.glGetAttribLocation(program, "a_Normal");
         mColorParam = GLES20.glGetAttribLocation(program, "a_Color");

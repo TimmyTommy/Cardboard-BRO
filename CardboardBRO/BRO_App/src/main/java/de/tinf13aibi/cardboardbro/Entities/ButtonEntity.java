@@ -10,8 +10,13 @@ public class ButtonEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
-    public ButtonEntity(int vertexShader, int fragmentShader){
-        super(vertexShader, fragmentShader);
+    public ButtonEntity(int program){
+        super(program);
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
     }
+
+//    public ButtonEntity(int vertexShader, int fragmentShader){
+//        super(vertexShader, fragmentShader);
+//        fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
+//    }
 }
