@@ -18,8 +18,8 @@ import de.tinf13aibi.cardboardbro.Geometry.Triangle;
  */
 public abstract class BaseEntity implements IEntity {
     protected EntityDisplayType displayType = EntityDisplayType.Absolute;
-    protected float[] mCoords;
-    protected int mVerticesCount;
+    protected float[] mCoords = new float[]{};
+    protected int mVerticesCount = 0;
     protected FloatBuffer mVertices;
     protected FloatBuffer mColors;
     protected FloatBuffer mNormals;
@@ -74,7 +74,6 @@ public abstract class BaseEntity implements IEntity {
     public BaseEntity(int program){
         this();
         mProgram = program;
-        fillParameters(mProgram);
     }
 
     private void fillParameters(int program){
@@ -128,11 +127,12 @@ public abstract class BaseEntity implements IEntity {
     }
 
     public void resetModelToBase(){
-//        mModel = mBaseModel.clone();
         System.arraycopy(mBaseModel, 0, mModel, 0, 16);
     }
 
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+        fillParameters(mProgram);
+
         float[] modelView = new float[16];
         float[] modelViewProjection = new float[16];
 

@@ -27,7 +27,7 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
         //TODO: muss erstmal so sein wegen GLES20 Context, da draw nur in onDrawEye aufgerufen wird und somit context vorhanden ist
         fillParameters(mProgram);
-        fillBufferVertices(mCoords);
+
         float[] modelView = new float[16];
         float[] modelViewProjection = new float[16];
 
@@ -61,8 +61,7 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
     public PolyLineEntity(int program){
         super();
         mProgram = program;
-//        fillParameters(mProgram);
-//        fillBufferVertices(mPolyLineCoords);
+        fillBufferVertices(mCoords);
     }
 
     private void fillParameters(int program){

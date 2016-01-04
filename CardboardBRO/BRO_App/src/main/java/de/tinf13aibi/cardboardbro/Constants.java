@@ -12,6 +12,7 @@ public interface Constants {
     float CYL_RADIUS = 50.0f;
     float CAMERA_Z = 0.001f;//0.01f;
     float TIME_DELTA = 0.3f;
+    float FLOOR_DEPTH = -10f;
 
     float YAW_LIMIT = 0.12f;
     float PITCH_LIMIT = 0.12f;

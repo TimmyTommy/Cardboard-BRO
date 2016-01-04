@@ -64,7 +64,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private Boolean rotationDir = true;
 //    private int score = 0;
 //    private float objectDistance = 12f;
-    private float floorDepth = 10f; //TODO nach Constants auslagern
 
     private Vibrator vibrator;
     private CardboardOverlayView overlayView;
@@ -155,98 +154,96 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onSurfaceChanged");
     }
 
-    /**
-    * Creates the buffers we use to store information about the 3D world.
-    *
-    * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
-    * Hence we use ByteBuffers.
-    *
-    * @param config The EGL configuration used when creating the surface.
-    */
-    @Override
-    public void onSurfaceCreated(EGLConfig config) {
-        Log.i(TAG, "onSurfaceCreated");
-        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
-        //Faces shader
-        //TODO nach funktion "InitShaders()"
+    private void initShaders(){
         ShaderCollection.loadGLShader(Shaders.BodyVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
         ShaderCollection.loadGLShader(Shaders.BodyFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
         ShaderCollection.loadGLShader(Shaders.GridVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
         ShaderCollection.loadGLShader(Shaders.GridFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
         ShaderCollection.loadGLShader(Shaders.LineVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
         ShaderCollection.loadGLShader(Shaders.LineFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
-        //TODO nach funktion "InitPrograms()"
+    }
+
+    private void initPrograms(){
+        initShaders();
         ShaderCollection.addProgram(Programs.BodyProgram, Shaders.BodyVertexShader, Shaders.BodyFragmentShader);
         ShaderCollection.addProgram(Programs.GridProgram, Shaders.GridVertexShader, Shaders.GridFragmentShader);
         ShaderCollection.addProgram(Programs.LineProgram, Shaders.LineVertexShader, Shaders.LineFragmentShader);
+    }
 
-        //Create Cylinder Canvas
-        BaseEntity mEntity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 0, -2 * floorDepth, 0);
-//        mEntityList.add(mEntity); //TODO später wieder einblenden
+    private void setupCylinderCanvas(){
+        BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
+//        mEntityList.add(entity); //TODO später wieder einblenden
+    }
 
-        //Create Floor
-        mEntity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 0, -floorDepth, 0);
-        mEntityList.add(mEntity);
+    private void setupFloor(){
+        BaseEntity entity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
+        Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
+        mEntityList.add(entity);
+    }
 
-        //Create Buttons
+    private void setupButtons(){
         for (int i=0; i<5; i++) {
-            mEntity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-            mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
+            BaseEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            entity.setDisplayType(EntityDisplayType.RelativeToCamera);
             float y = -0.13f;
-            Matrix.translateM(mEntity.getBaseModel(), 0, 0.12f-0.06f*i, /*-1.3f*/y, -0.3f);
-            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
+            Matrix.translateM(entity.getBaseModel(), 0, 0.12f-0.06f*i, /*-1.3f*/y, -0.3f);
+            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 //            float y = -0.065f;
 //            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
 //            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
-            mEntityList.add(mEntity);
+            mEntityList.add(entity);
         }
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 1, 1, 1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+    }
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, -1, 2, 1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+    private void setupTestObjects(){
+        BaseEntity entity;
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 1, 2, -1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 1, 1, 1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 0, 1, -1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, -1, 2, 1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 1, 3, 1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 1, 2, -1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, -1, 0, 1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 0, 1, -1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 1, 0, -1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 1, 3, 1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 0, 0, -1.25f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, -1, 0, 1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
 
-        mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(mEntity.getModel(), 0, 0.05f, 0, -0.50f);
-        Matrix.scaleM(mEntity.getModel(), 0, 0.055f, 0.055f, 0.055f);
-        mEntityList.add(mEntity);
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 1, 0, -1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
+
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 0, 0, -1.25f);
+        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        mEntityList.add(entity);
+
+        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(entity.getModel(), 0, 0.05f, 0, -0.50f);
+        Matrix.scaleM(entity.getModel(), 0, 0.055f, 0.055f, 0.055f);
+        mEntityList.add(entity);
 
 //Test Polyline
 //        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
@@ -256,14 +253,33 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        polyLineEntity.addVert(new Vec3d(0, 2, -5));
 //        polyLineEntity.addVert(new Vec3d(8, 2, -5));
 //        mEntityList.add(polyLineEntity);
+    }
 
-        //Blickgerade
+    /**
+    * Creates the buffers we use to store information about the 3D world.
+    *
+    * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
+    * Hence we use ByteBuffers.
+    *
+    * @param config The EGL configuration used when creating the surface.
+    */
+    @Override
+    public void onSurfaceCreated(EGLConfig config){
+        Log.i(TAG, "onSurfaceCreated");
+        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
+        initPrograms();
+
+        setupCylinderCanvas();
+        setupFloor();
+
+        setupButtons();
+        setupTestObjects();
+
+        mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
         mArmLine = new LineEntity(ShaderCollection.getProgram(Programs.LineProgram));
         mArmLine.setVerts(new Vec3d(0, 0, 0), new Vec3d(0, 0, -1000));
         mArmLine.setColor(0, 1, 1, 1);
-
-        mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
         checkGLError("onSurfaceCreated");
     }

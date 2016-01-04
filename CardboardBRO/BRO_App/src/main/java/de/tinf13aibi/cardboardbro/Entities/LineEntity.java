@@ -21,6 +21,8 @@ public class LineEntity extends BaseEntity implements IEntity {
 
     @Override
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
+        fillParameters(mProgram);
+
         float[] modelView = new float[16];
         float[] modelViewProjection = new float[16];
 
@@ -51,7 +53,6 @@ public class LineEntity extends BaseEntity implements IEntity {
         mCoords = new float[]{0.0f, 0.0f, 0.0f,
                               1.0f, 0.0f, 0.0f};
         mProgram = program;
-        fillParameters(mProgram);
         fillBufferVertices(mCoords);
     }
 
