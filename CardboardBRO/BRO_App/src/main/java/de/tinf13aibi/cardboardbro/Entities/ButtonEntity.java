@@ -15,8 +15,4 @@ public class ButtonEntity extends BaseEntity implements IEntity {
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
     }
 
-//    public ButtonEntity(int vertexShader, int fragmentShader){
-//        super(vertexShader, fragmentShader);
-//        fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
-//    }
 }

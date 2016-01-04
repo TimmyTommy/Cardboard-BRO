@@ -11,11 +11,6 @@ import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
  */
 public class LineEntity extends BaseEntity implements IEntity {
     private float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    private float[] LineCoords = {
-            0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f
-    };
-    private final int mVerticesCount = LineCoords.length / Constants.COORDS_PER_VERTEX;
 
     public void setColor(float red, float green, float blue, float alpha) {
         color[0] = red;
@@ -46,42 +41,19 @@ public class LineEntity extends BaseEntity implements IEntity {
     }
 
     public void setVerts(float[] from, float[] to) {
-        System.arraycopy(from, 0, LineCoords, 0, 3);
-        System.arraycopy(to, 0, LineCoords, 3, 3);
-        fillBufferVertices(LineCoords);
-//        mVertices.position(0);
-//        mVertices.put(LineCoords);
-//        // set the buffer to read the first coordinate
-//        mVertices.position(0);
-    }
-
-    public void setVerts(float v0, float v1, float v2, float v3, float v4, float v5) {
-        LineCoords[0] = v0;
-        LineCoords[1] = v1;
-        LineCoords[2] = v2;
-        LineCoords[3] = v3;
-        LineCoords[4] = v4;
-        LineCoords[5] = v5;
-        fillBufferVertices(LineCoords);
-//        mVertices.position(0);
-//        mVertices.put(LineCoords);
-//        // set the buffer to read the first coordinate
-//        mVertices.position(0);
+        System.arraycopy(from, 0, mCoords, 0, 3);
+        System.arraycopy(to, 0, mCoords, 3, 3);
+        fillBufferVertices(mCoords);
     }
 
     public LineEntity(int program){
         super();
+        mCoords = new float[]{0.0f, 0.0f, 0.0f,
+                              1.0f, 0.0f, 0.0f};
         mProgram = program;
         fillParameters(mProgram);
-        fillBufferVertices(LineCoords);
+        fillBufferVertices(mCoords);
     }
-
-//    public LineEntity(int vertexShader, int fragmentShader){
-//        super();
-//        mProgram = createProgram(vertexShader, fragmentShader);
-//        fillParameters(mProgram);
-//        fillBufferVertices(LineCoords);
-//    }
 
     private void fillParameters(int program){
         mPositionParam = GLES20.glGetAttribLocation(program, "vPosition");

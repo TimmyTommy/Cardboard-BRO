@@ -1,10 +1,12 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro;
 
 import android.opengl.Matrix;
 
 import java.util.ArrayList;
 import java.util.Date;
 
+import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
+import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
 import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
@@ -43,11 +45,6 @@ public class User {
             mArmCrosshair.draw(view, perspective, lightPosInEyeSpace);
         }
     }
-
-//    public void createCrosshairs(int vertexShader, int fragmentShader){
-//        mEyeCrosshair = new CrosshairEntity(vertexShader, fragmentShader);
-//        mArmCrosshair = new CrosshairEntity(vertexShader, fragmentShader);
-//    }
 
     public void createCrosshairs(int program){
         mEyeCrosshair = new CrosshairEntity(program);

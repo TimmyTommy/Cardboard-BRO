@@ -31,8 +31,6 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -41,17 +39,18 @@ import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
-import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
+import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
-import de.tinf13aibi.cardboardbro.Entities.User;
+import de.tinf13aibi.cardboardbro.Enums.Programs;
+import de.tinf13aibi.cardboardbro.Enums.Shaders;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
-    private ArrayList<IEntity> mEntityList;
+    private ArrayList<IEntity> mEntityList = new ArrayList<>();
     private static final String TAG = "MainActivity";
 
     private User mUser = new User();
@@ -181,22 +180,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         ShaderCollection.addProgram(Programs.GridProgram, Shaders.GridVertexShader, Shaders.GridFragmentShader);
         ShaderCollection.addProgram(Programs.LineProgram, Shaders.LineVertexShader, Shaders.LineFragmentShader);
 
-        mEntityList = new ArrayList<>();
         //Create Cylinder Canvas
-//        BaseEntity mEntity = new CylinderCanvasEntity(mVertexShader, mPassthroughShader);
         BaseEntity mEntity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 0, -2 * floorDepth, 0);
-//        mEntityList.add(mEntity);
+//        mEntityList.add(mEntity); //TODO später wieder einblenden
 
         //Create Floor
-//        mEntity = new FloorEntity(mVertexShader, mGridShader);
         mEntity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
         Matrix.translateM(mEntity.getModel(), 0, 0, -floorDepth, 0);
         mEntityList.add(mEntity);
 
         //Create Buttons
         for (int i=0; i<5; i++) {
-//            mEntity = new ButtonEntity(mVertexShader, mPassthroughShader);
             mEntity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
             mEntity.setDisplayType(EntityDisplayType.RelativeToCamera);
             float y = -0.13f;
@@ -208,61 +203,52 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             mEntityList.add(mEntity);
         }
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 1, 1, 1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, -1, 2, 1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 1, 2, -1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 0, 1, -1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 1, 3, 1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, -1, 0, 1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 1, 0, -1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 0, 0, -1.25f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(mEntity);
 
-//        mEntity = new CuboidEntity(mVertexShader, mPassthroughShader);
         mEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mEntity.getModel(), 0, 0.05f, 0, -0.50f);
         Matrix.scaleM(mEntity.getModel(), 0, 0.055f, 0.055f, 0.055f);
         mEntityList.add(mEntity);
 
-//        PolyLineEntity polyLineEntity = new PolyLineEntity(mLineVertexShader, mLineFragmentShader);
+//Test Polyline
 //        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
 //        polyLineEntity.addVert(new Vec3d(0, 0, 0));
 //        polyLineEntity.addVert(new Vec3d(0, 0, -10));
@@ -272,12 +258,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //        mEntityList.add(polyLineEntity);
 
         //Blickgerade
-//        mArmLine = new LineEntity(mLineVertexShader, mLineFragmentShader);
+
         mArmLine = new LineEntity(ShaderCollection.getProgram(Programs.LineProgram));
-        mArmLine.setVerts(0, 0, 0, 0, 0, -1000);
+        mArmLine.setVerts(new Vec3d(0, 0, 0), new Vec3d(0, 0, -1000));
         mArmLine.setColor(0, 1, 1, 1);
 
-//        mUser.createCrosshairs(mLineVertexShader, mLineFragmentShader);
         mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
         checkGLError("onSurfaceCreated");

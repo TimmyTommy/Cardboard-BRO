@@ -2,6 +2,7 @@ package de.tinf13aibi.cardboardbro.Entities;
 
 import java.util.ArrayList;
 
+import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 

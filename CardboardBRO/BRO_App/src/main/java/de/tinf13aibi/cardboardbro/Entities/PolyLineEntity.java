@@ -15,7 +15,6 @@ import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 public class PolyLineEntity extends BaseEntity implements IEntity {
     private float mColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
     private ArrayList<Vec3d> mPolyLinePoints = new ArrayList<>();
-    private float[] mPolyLineCoords = {};
 
     public void setColor(float red, float green, float blue, float alpha) {
         mColor[0] = red;
@@ -28,7 +27,7 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
         //TODO: muss erstmal so sein wegen GLES20 Context, da draw nur in onDrawEye aufgerufen wird und somit context vorhanden ist
         fillParameters(mProgram);
-        fillBufferVertices(mPolyLineCoords);
+        fillBufferVertices(mCoords);
         float[] modelView = new float[16];
         float[] modelViewProjection = new float[16];
 
@@ -55,8 +54,8 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
 
     public void addVert(Vec3d point) {
         mPolyLinePoints.add(point.copy());
-        mPolyLineCoords = transformPointsToCoords(mPolyLinePoints);
-        fillBufferVertices(mPolyLineCoords);
+        mCoords = transformPointsToCoords(mPolyLinePoints);
+        fillBufferVertices(mCoords);
     }
 
     public PolyLineEntity(int program){
@@ -65,13 +64,6 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
 //        fillParameters(mProgram);
 //        fillBufferVertices(mPolyLineCoords);
     }
-
-//    public PolyLineEntity(int vertexShader, int fragmentShader){
-//        super();
-//        mProgram = createProgram(vertexShader, fragmentShader);
-//        fillParameters(mProgram);
-//        fillBufferVertices(mPolyLineCoords);
-//    }
 
     private void fillParameters(int program){
         mPositionParam = GLES20.glGetAttribLocation(program, "vPosition");

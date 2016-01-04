@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.Enums;
 
 /**
  * Created by DTH on 02.01.2016.

@@ -9,6 +9,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 
@@ -70,27 +71,11 @@ public abstract class BaseEntity implements IEntity {
         Matrix.setIdentityM(mBaseModel, 0);
     }
 
-//    public BaseEntity(int vertexShader, int fragmentShader){
-//        this();
-//        mProgram = createProgram(vertexShader, fragmentShader);
-//        fillParameters(mProgram);
-//    }
-
     public BaseEntity(int program){
         this();
         mProgram = program;
-//        mProgram = createProgram(vertexShader, fragmentShader);
         fillParameters(mProgram);
     }
-
-//    public int createProgram(int vertexShader, int fragmentShader){
-//        int program = GLES20.glCreateProgram();
-//        GLES20.glAttachShader(program, vertexShader);
-//        GLES20.glAttachShader(program, fragmentShader);
-//        GLES20.glLinkProgram(program);
-//        GLES20.glUseProgram(program);
-//        return program;
-//    }
 
     private void fillParameters(int program){
         //TODO auslagern nach ShaderCollection Programs in eine ProgramClass mit den folgenden Attibuten + int mProgram
@@ -110,8 +95,8 @@ public abstract class BaseEntity implements IEntity {
 
     protected void fillBufferVertices(float[] coords){
         mCoords = coords;
-        mVerticesCount = coords.length;
-        ByteBuffer bbVertices = ByteBuffer.allocateDirect(mVerticesCount * 4);
+        mVerticesCount = coords.length / Constants.COORDS_PER_VERTEX;
+        ByteBuffer bbVertices = ByteBuffer.allocateDirect(mVerticesCount * Constants.COORDS_PER_VERTEX * 4);
         bbVertices.order(ByteOrder.nativeOrder());
         mVertices = bbVertices.asFloatBuffer();
         mVertices.put(coords);
@@ -164,7 +149,7 @@ public abstract class BaseEntity implements IEntity {
         GLES20.glVertexAttribPointer(mNormalParam, 3, GLES20.GL_FLOAT, false, 0, mNormals);
         GLES20.glVertexAttribPointer(mColorParam, 4, GLES20.GL_FLOAT, false, 0, mColors);
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVerticesCount / 3);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVerticesCount);
     }
 
     public EntityDisplayType getDisplayType() {

@@ -88,16 +88,6 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         calcCrossedLines();
     }
 
-//    public CrosshairEntity(int vertexShader, int fragmentShader){
-//        super();
-//        mLines.add(new LineEntity(vertexShader, fragmentShader));
-//        mLines.add(new LineEntity(vertexShader, fragmentShader));
-//        mLines.add(new LineEntity(vertexShader, fragmentShader));
-//        mLines.add(new LineEntity(vertexShader, fragmentShader));
-//        mLines.add(new LineEntity(vertexShader, fragmentShader));
-//        mLines.add(new LineEntity(vertexShader, fragmentShader));
-//    }
-
     public CrosshairEntity(int program){
         super();
         mLines.add(new LineEntity(program));

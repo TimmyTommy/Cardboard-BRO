@@ -14,9 +14,4 @@ public class FloorEntity extends BaseEntity implements IEntity {
         super(program);
         fillBuffers(GeometryDatabase.FLOOR_COORDS, GeometryDatabase.FLOOR_NORMALS, GeometryDatabase.FLOOR_COLORS);
     }
-
-//    public FloorEntity(int vertexShader, int fragmentShader){
-//        super(vertexShader, fragmentShader);
-//        fillBuffers(GeometryDatabase.FLOOR_COORDS, GeometryDatabase.FLOOR_NORMALS, GeometryDatabase.FLOOR_COLORS);
-//    }
 }
