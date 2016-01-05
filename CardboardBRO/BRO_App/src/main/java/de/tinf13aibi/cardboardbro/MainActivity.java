@@ -32,6 +32,7 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -62,10 +63,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     //TODO: evtl nach User auslagern
 //    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
-    private AppState mAppState = AppState.WaitForBeginFreeDraw; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForBeginFreeDraw; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
 
     private User mUser = new User();
     private boolean mMoving = false;
+
+    private Date mClickTime; //TODO: nur temporär zum imitieren von "MYO-Fingerspread"
 
 //    private int score = 0;
 //    private float objectDistance = 12f;
@@ -73,14 +77,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private Vibrator vibrator;
     private CardboardOverlayView overlayView;
 
-    private void beginDrawingLine(Vec3d point){
+    //Draw FreeLine
+    private void beginDrawFreeLine(Vec3d point){
         PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
         polyLineEntity.addVert(point);
         mEntityList.add(polyLineEntity);
         vibrator.vibrate(50);
     }
 
-    private void continueDrawingLine(Vec3d point){
+    private void continueDrawFreeLine(Vec3d point){
         IEntity entity = mEntityList.get(mEntityList.size()-1);
         if (entity instanceof PolyLineEntity) {
             PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
@@ -88,11 +93,39 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         }
     }
 
-    private void endDrawingLine(Vec3d point){
+    private void endDrawFreeLine(Vec3d point){
         IEntity entity = mEntityList.get(mEntityList.size()-1);
         if (entity instanceof PolyLineEntity) {
             PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
             polyLineEntity.addVert(point);
+        }
+        vibrator.vibrate(50);
+    }
+
+    //Draw PolyLine
+    private void beginDrawPolyLine(Vec3d point){
+        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
+        polyLineEntity.addVert(point);
+        polyLineEntity.addVert(point);
+        mEntityList.add(polyLineEntity);
+        vibrator.vibrate(50);
+    }
+
+    private void continueDrawPolyLine(Vec3d point, Boolean fix){
+        IEntity entity = mEntityList.get(mEntityList.size()-1);
+        if (entity instanceof PolyLineEntity) {
+            PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
+            polyLineEntity.setLastVert(point);
+            if (fix) {
+                polyLineEntity.addVert(point);
+            }
+        }
+    }
+
+    private void endDrawPolyLine(){
+        IEntity entity = mEntityList.get(mEntityList.size()-1);
+        if (entity instanceof PolyLineEntity) {
+            ((PolyLineEntity)entity).delLastVert();
         }
         vibrator.vibrate(50);
     }
@@ -134,19 +167,46 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     case MotionEvent.ACTION_DOWN:
 //                        overlayView.show3DToast("Accelerating");
 //                        mMoving = true;
+                        mClickTime = new Date();
                         if (mAppState == AppState.WaitForBeginFreeDraw) {
-                            overlayView.show3DToast("Begin drawing");
-                            beginDrawingLine(mUser.getArmCrosshair().getPosition());
+                            overlayView.show3DToast("Begin FreeDraw");
+                            beginDrawFreeLine(mUser.getArmCrosshair().getPosition());
                             mAppState = AppState.DrawingFreeHand;
                         }
                         break;
                     case MotionEvent.ACTION_UP:
+                        //TODO : MYO-Waveout imitieren
 //                        overlayView.show3DToast("Slowing down");
 //                        mMoving = false;
+                        Date diffBetweenDownAndUp = new Date(new Date().getTime()-mClickTime.getTime());
+                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
                         if (mAppState == AppState.DrawingFreeHand) {
-                            overlayView.show3DToast("End drawing");
-                            endDrawingLine(mUser.getArmCrosshair().getPosition());
+                            overlayView.show3DToast("End FreeDraw");
+                            endDrawFreeLine(mUser.getArmCrosshair().getPosition());
                             mAppState = AppState.WaitForBeginFreeDraw;
+                        }
+//                        else if (mAppState == AppState.WaitForBeginFreeDraw /*&& timeSeconds>1 bzw. Fingerspread*/) { //nicht möglich da durch ACTION_DOWN der Zustand "WaitForBeginFreeDraw"
+//                            overlayView.show3DToast("Leave FreeDraw State --> SelectEntityToCreate");                 //innerhalb von ACTION_UP nicht ermöglicht wird
+//                            mAppState = AppState.SelectEntityToCreate;
+//                        }
+                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds<=1) {
+                            overlayView.show3DToast("Begin PolyLine");
+                            beginDrawPolyLine(mUser.getArmCrosshair().getPosition());
+                            mAppState = AppState.WaitForNextPolyLinePoint;
+                        }
+                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+                            overlayView.show3DToast("Leave PolyLine State --> SelectEntityToCreate");
+                            mAppState = AppState.SelectEntityToCreate;
+                        }
+                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds<=1) {
+                            overlayView.show3DToast("Update PolyLine");
+                            continueDrawPolyLine(mUser.getArmCrosshair().getPosition(), true /*fix*/);
+                            mAppState = AppState.WaitForNextPolyLinePoint;
+                        }
+                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+                            overlayView.show3DToast("End PolyLine");
+                            endDrawPolyLine();
+                            mAppState = AppState.WaitForBeginPolyLinePoint;
                         }
                         break;
                 }
@@ -194,8 +254,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     }
 
     private void setupEntityCreateButtonSet(){
-        AppState[] appStates = new AppState[]{AppState.SelectAction, AppState.WaitForBeginFreeDraw, AppState.WaitForPolyLinePoint,
-                                              AppState.WaitForSphereCenterpoint, AppState.WaitForCylinderCenterPoint, AppState.WaitForCuboidBasePoint1, AppState.WaitForKeyboardInput};
+        AppState[] appStates = new AppState[]{  AppState.SelectAction, AppState.WaitForBeginFreeDraw, AppState.WaitForBeginPolyLinePoint, AppState.WaitForSphereCenterPoint,
+                                                AppState.WaitForCylinderCenterPoint, AppState.WaitForCuboidBasePoint1, AppState.WaitForKeyboardInput};
         for (int i=0; i<7; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
             entity.setDisplayType(EntityDisplayType.RelativeToCamera);
@@ -341,7 +401,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mUser.calcArmPointingAt(entityListForArm);
 
         if (mAppState == AppState.DrawingFreeHand) {
-            continueDrawingLine(mUser.getArmCrosshair().getPosition());
+            continueDrawFreeLine(mUser.getArmCrosshair().getPosition());
+        }
+        else if (mAppState == AppState.WaitForNextPolyLinePoint) {
+            continueDrawPolyLine(mUser.getArmCrosshair().getPosition(), false /*fix*/);
         }
 
         mEntityActionButtons.rotateStep();

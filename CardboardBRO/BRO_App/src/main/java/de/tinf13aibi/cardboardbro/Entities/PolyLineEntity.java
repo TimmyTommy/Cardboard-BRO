@@ -57,6 +57,23 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
         fillBufferVertices(mCoords);
     }
 
+    public void delLastVert() {
+        if (mPolyLinePoints.size()>0) {
+            mPolyLinePoints.remove(mPolyLinePoints.size() - 1);
+        }
+        mCoords = transformPointsToCoords(mPolyLinePoints);
+        fillBufferVertices(mCoords);
+    }
+
+    public void setLastVert(Vec3d point) {
+        if (mPolyLinePoints.size()>1) {
+            mPolyLinePoints.get(mPolyLinePoints.size() - 1).assignPoint3d(point);
+        }
+        mCoords = transformPointsToCoords(mPolyLinePoints);
+        fillBufferVertices(mCoords);
+    }
+
+
     public PolyLineEntity(int program){
         super();
         mProgram = program;
