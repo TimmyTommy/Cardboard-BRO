@@ -34,8 +34,9 @@ public class CollisionDrawingSpacePoints {
     }
 
     private void calcEntityCollisions(){
-        for (IEntity entity : entityList) {
-            if (isEntityWithArea(entity)) {
+        for (int i=0; i<entityList.size(); i++) {
+            IEntity entity = entityList.get(i);
+            if (isCollideEntity(entity)) {
                 CollisionEntityPoints collisionPoints = new CollisionEntityPoints(straight, entity);
                 if (collisionPoints.collisions.size() > 0) {
                     entityCollisions.add(collisionPoints);
@@ -44,7 +45,7 @@ public class CollisionDrawingSpacePoints {
         }
     }
 
-    private boolean isEntityWithArea(IEntity entity){
+    private boolean isCollideEntity(IEntity entity){
         return  entity instanceof FloorEntity ||
                 entity instanceof CylinderCanvasEntity ||
                 entity instanceof ButtonEntity || //Aktivieren, wenn Buttons "anzielbar" sein sollen

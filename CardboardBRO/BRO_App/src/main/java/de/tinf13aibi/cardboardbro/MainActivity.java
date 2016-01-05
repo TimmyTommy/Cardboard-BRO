@@ -37,8 +37,10 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
+import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
+import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
@@ -51,14 +53,20 @@ import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
     private ArrayList<IEntity> mEntityList = new ArrayList<>();
+
+    private ButtonSet mEntityActionButtons = new ButtonSet();
+    private ButtonSet mEntityCreateButtons = new ButtonSet();
+    private ButtonSet mKeyboardButtons = new ButtonSet();
+
     private static final String TAG = "MainActivity";
+
+    //TODO: evtl nach User auslagern
+//    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
+    private AppState mAppState = AppState.WaitForBeginFreeDraw; //Zu Testzwecken manuell AppState setzen
 
     private User mUser = new User();
     private boolean mMoving = false;
-    private boolean mDrawingLine = false;
 
-    private int rotationPos = 0;
-    private Boolean rotationDir = true;
 //    private int score = 0;
 //    private float objectDistance = 12f;
 
@@ -69,7 +77,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
         polyLineEntity.addVert(point);
         mEntityList.add(polyLineEntity);
-        mDrawingLine = true;
         vibrator.vibrate(50);
     }
 
@@ -78,8 +85,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         if (entity instanceof PolyLineEntity) {
             PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
             polyLineEntity.addVert(point);
-        } else {
-            mDrawingLine = false;
         }
     }
 
@@ -89,7 +94,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
             polyLineEntity.addVert(point);
         }
-        mDrawingLine = false;
         vibrator.vibrate(50);
     }
 
@@ -126,18 +130,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         cardboardView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()){
+                switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
 //                        overlayView.show3DToast("Accelerating");
 //                        mMoving = true;
-                        overlayView.show3DToast("Begin drawing");
-                        beginDrawingLine(mUser.getArmCrosshair().getPosition());
+                        if (mAppState == AppState.WaitForBeginFreeDraw) {
+                            overlayView.show3DToast("Begin drawing");
+                            beginDrawingLine(mUser.getArmCrosshair().getPosition());
+                            mAppState = AppState.DrawingFreeHand;
+                        }
                         break;
                     case MotionEvent.ACTION_UP:
 //                        overlayView.show3DToast("Slowing down");
 //                        mMoving = false;
-                        overlayView.show3DToast("End drawing");
-                        endDrawingLine(mUser.getArmCrosshair().getPosition());
+                        if (mAppState == AppState.DrawingFreeHand) {
+                            overlayView.show3DToast("End drawing");
+                            endDrawingLine(mUser.getArmCrosshair().getPosition());
+                            mAppState = AppState.WaitForBeginFreeDraw;
+                        }
                         break;
                 }
                 return false;
@@ -183,17 +193,38 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mEntityList.add(entity);
     }
 
-    private void setupButtons(){
-        for (int i=0; i<5; i++) {
-            BaseEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+    private void setupEntityCreateButtonSet(){
+        AppState[] appStates = new AppState[]{AppState.SelectAction, AppState.WaitForBeginFreeDraw, AppState.WaitForPolyLinePoint,
+                                              AppState.WaitForSphereCenterpoint, AppState.WaitForCylinderCenterPoint, AppState.WaitForCuboidBasePoint1, AppState.WaitForKeyboardInput};
+        for (int i=0; i<7; i++) {
+            ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
             entity.setDisplayType(EntityDisplayType.RelativeToCamera);
+            entity.setNextState(appStates[i]);
             float y = -0.13f;
-            Matrix.translateM(entity.getBaseModel(), 0, 0.12f-0.06f*i, /*-1.3f*/y, -0.3f);
+            Matrix.translateM(entity.getBaseModel(), 0, 0.18f-0.06f*i, y, -0.3f);
             Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 //            float y = -0.065f;
 //            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
 //            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
-            mEntityList.add(entity);
+//            mEntityList.add(entity);
+            mEntityCreateButtons.addButton(entity);
+        }
+    }
+
+    private void setupEntityActionButtonSet(){
+        AppState[] appStates = new AppState[]{AppState.SelectEntityToCreate, AppState.SelectEntityToMove, AppState.SelectEntityToDelete};
+        for (int i=0; i<3; i++) {
+            ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            entity.setDisplayType(EntityDisplayType.RelativeToCamera);
+            entity.setNextState(appStates[i]);
+            float y = -0.13f;
+            Matrix.translateM(entity.getBaseModel(), 0, 0.06f-0.06f*i, y, -0.3f);
+            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
+//            float y = -0.065f;
+//            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
+//            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
+//            mEntityList.add(entity);
+            mEntityActionButtons.addButton(entity);
         }
 
     }
@@ -273,7 +304,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         setupCylinderCanvas();
         setupFloor();
 
-        setupButtons();
+        setupEntityActionButtonSet();
+        setupEntityCreateButtonSet();
         setupTestObjects();
 
         mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
@@ -298,63 +330,27 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         mUser.move(acceleration);
 
         mUser.calcEyeLookingAt(mEntityList);
-        mUser.calcArmPointingAt(mEntityList);
 
-        if (mDrawingLine){
+        ArrayList<IEntity> entityListForArm;
+        switch (mAppState){
+            case SelectAction:          entityListForArm = mEntityActionButtons.getButtonEntities(); break;
+            case SelectEntityToCreate:  entityListForArm = mEntityCreateButtons.getButtonEntities(); break;
+            case WaitForKeyboardInput:  entityListForArm = mKeyboardButtons.getButtonEntities(); break;
+            default:                    entityListForArm = mEntityList; break;
+        }
+        mUser.calcArmPointingAt(entityListForArm);
+
+        if (mAppState == AppState.DrawingFreeHand) {
             continueDrawingLine(mUser.getArmCrosshair().getPosition());
         }
 
+        mEntityActionButtons.rotateStep();
+        mEntityCreateButtons.rotateStep();
+
+        mEntityActionButtons.setButtonsRelativeToCamera(mUser.getInvHeadView(), mUser.getPosition());
+        mEntityCreateButtons.setButtonsRelativeToCamera(mUser.getInvHeadView(), mUser.getPosition());
+
         checkGLError("onReadyToDraw");
-
-        // Build the Model part of the ModelView matrix.
-        for (IEntity entity : mEntityList) {
-            if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
-                //Test: rotiere Buttons
-                if (rotationPos < -25){
-                    rotationDir = true;
-                } else if (rotationPos > 25) {
-                    rotationDir = false;
-                }
-                int direction = rotationDir ? 1 : -1;
-                rotationPos += direction;
-                Matrix.rotateM(entity.getBaseModel(), 0, Constants.TIME_DELTA * 8, 0f, 0f, direction);
-
-                entity.resetModelToBase();
-
-                float[] finalOp = new float[16];
-                float[] anOp = new float[16];
-                Matrix.setIdentityM(finalOp, 0);
-
-//                Matrix.setIdentityM(anOp, 0);
-//                Matrix.scaleM(anOp, 0, 0.01f, 0.01f, 0.01f);
-//                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
-
-//                Matrix.setIdentityM(anOp, 0);
-//                Matrix.translateM(anOp, 0, 0, 0, -0.50f);
-//                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
-
-//                Matrix.setIdentityM(anOp, 0);
-//                Matrix.multiplyMM(anOp, 0, mUser.getInvHeadView(), 0, anOp, 0);
-//                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
-
-//                float[] quat = new float[4];
-//                headTransform.getQuaternion(quat, 0);
-//                for (int k=0; k<3; k++){
-//                    quat[k] *= -1;
-//                }
-//                float[] rotMat = VecMath.calcQuaternionToMatrix(quat);
-//                Matrix.multiplyMM(finalOp, 0, rotMat, 0, finalOp, 0);
-
-                Matrix.multiplyMM(finalOp, 0, mUser.getInvHeadView(), 0, finalOp, 0);
-
-                Matrix.setIdentityM(anOp, 0);
-                Vec3d pos = mUser.getPosition();
-                Matrix.translateM(anOp, 0, pos.x, pos.y, pos.z);
-                Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
-
-                Matrix.multiplyMM(entity.getModel(), 0, finalOp, 0, entity.getModel(), 0);
-            }
-        }
     }
 
     /**
@@ -379,85 +375,28 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         float[] perspective = eye.getPerspective(Constants.Z_NEAR, Constants.Z_FAR);
 
         for (IEntity entity : mEntityList) {
-            if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
-                entity.draw(view, perspective, lightPosInEyeSpace);
-//                //Objekte die sich mit Camera mitbewegen sollen, werden mithilfe der IdentMat gezeichnet
-//                float[] identMat = new float[16];
-//                Matrix.setIdentityM(identMat, 0);
-//                entity.draw(identMat, perspective, lightPosInEyeSpace);
-            } else {
-                if (entity instanceof PolyLineEntity) {
-                    entity.draw(view, perspective, lightPosInEyeSpace);
-                } else {
-                    entity.draw(view, perspective, lightPosInEyeSpace);
-                }
-
-            }
+            entity.draw(view, perspective, lightPosInEyeSpace);
         }
+
         mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
+
+        switch (mAppState) {
+            case SelectAction: mEntityActionButtons.draw(view, perspective, lightPosInEyeSpace); break;
+            case SelectEntityToCreate: mEntityCreateButtons.draw(view, perspective, lightPosInEyeSpace); break;
+            case WaitForKeyboardInput: mKeyboardButtons.draw(view, perspective, lightPosInEyeSpace); break;
+        }
     }
 
     @Override
     public void onFinishFrame(Viewport viewport) {}
 
+    //Nicht verwenden, da es kein "onCardboardTriggerRelease" gibt
 //    @Override
 //    public void onCardboardTrigger() {
 //        Log.i(TAG, "onCardboardTrigger");
-//
-//        if (isLookingAtObject()) {
-//            score++;
-//            overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
-//            hideObject();
-//        } else {
-//            overlayView.show3DToast("Look around to find the object!");
-//        }
+//          overlayView.show3DToast("onCardboardTrigger");
 //        // Always give user feedback.
 //        vibrator.vibrate(50);
 //    }
-//
-//    /**
-//    * Find a new random position for the object.
-//    *
-//    * <p>We'll rotate it around the Y-axis so it's out of sight, and then up or down by a little bit.
-//    */
-//    private void hideObject() {
-//        float[] rotationMatrix = new float[16];
-//        float[] posVec = new float[4];
-//        // First rotate in XZ plane, between 90 and 270 deg away, and scale so that we vary
-//        // the object's distance from the user.
-//        float angleXZ = (float) Math.random() * 180 + 90;
-//        Matrix.setRotateM(rotationMatrix, 0, angleXZ, 0f, 1f, 0f);
-//        float oldObjectDistance = objectDistance;
-//        objectDistance = (float) Math.random() * 15 + 5;
-//        float objectScalingFactor = objectDistance / oldObjectDistance;
-//        Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
-//        Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
-//
-//        // Now get the up or down angle, between -20 and 20 degrees.
-//        float angleY = (float) Math.random() * 80 - 40; // Angle in Y plane, between -40 and 40.
-//        angleY = (float) Math.toRadians(angleY);
-//        float newY = (float) Math.tan(angleY) * objectDistance;
-//
-//        Matrix.setIdentityM(modelCube, 0);
-//        Matrix.translateM(modelCube, 0, posVec[0], newY, posVec[2]);
-//    }
-//
-//    /**
-//    * Check if user is looking at object by calculating where the object is in eye-space.
-//    *
-//    * @return true if the user is looking at the object.
-//    */
-//    private boolean isLookingAtObject() {
-//        float[] initVec = { 0, 0, 0, 1.0f };
-//        float[] objPositionVec = new float[4];
-//
-//        // Convert object space to camera space. Use the headView from onNewFrame.
-//        Matrix.multiplyMM(modelView, 0, headView, 0, modelCube, 0);
-//        Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
-//
-//        float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
-//        float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
-//
-//        return Math.abs(pitch) < Constants.PITCH_LIMIT && Math.abs(yaw) < Constants.YAW_LIMIT;
-//    }
+
 }
