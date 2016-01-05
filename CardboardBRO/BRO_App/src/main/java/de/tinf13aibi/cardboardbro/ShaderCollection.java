@@ -35,7 +35,6 @@ public class ShaderCollection {
         GLES20.glAttachShader(aProgram, mShaders.get(vertexShader));
         GLES20.glAttachShader(aProgram, mShaders.get(fragmentShader));
         GLES20.glLinkProgram(aProgram);
-//        GLES20.glUseProgram(program);
         mPrograms.put(program, aProgram);
         return aProgram;
     }

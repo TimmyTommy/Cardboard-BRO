@@ -7,6 +7,7 @@ import java.util.Date;
 
 import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
 import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
@@ -32,6 +33,8 @@ public class User {
     private CrosshairEntity mEyeCrosshair;
     private CrosshairEntity mArmCrosshair;
 
+    private LineEntity mArmLine;
+
     private Vec3d mPosition = new Vec3d();
     private Vec3d mVelocity = new Vec3d();
 
@@ -43,12 +46,16 @@ public class User {
         }
         if (mArmCrosshair != null) {
             mArmCrosshair.draw(view, perspective, lightPosInEyeSpace);
+            mArmLine.draw(view, perspective, lightPosInEyeSpace);
         }
     }
 
     public void createCrosshairs(int program){
         mEyeCrosshair = new CrosshairEntity(program);
         mArmCrosshair = new CrosshairEntity(program);
+
+        mArmLine = new LineEntity(program);
+        mArmLine.setColor(0, 1, 1, 1);
     }
 
 
@@ -75,6 +82,8 @@ public class User {
         StraightLine line = new StraightLine(mPosition, mArmForward);
         mArmPointingAt = new CollisionDrawingSpacePoints(line, entityList).nearestCollision;
         calcCrosshairPos(mArmCrosshair, mArmPointingAt, mArmForward);
+
+        mArmLine.setVerts(mPosition, mArmCrosshair.getPosition());
         return mArmPointingAt;
     }
 

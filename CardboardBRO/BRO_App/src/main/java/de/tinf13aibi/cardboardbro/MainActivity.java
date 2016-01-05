@@ -57,9 +57,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private boolean mMoving = false;
     private boolean mDrawingLine = false;
 
-    //TODO nach Klasse USER auslagern
-    private LineEntity mArmLine;
-
     private int rotationPos = 0;
     private Boolean rotationDir = true;
 //    private int score = 0;
@@ -73,6 +70,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         polyLineEntity.addVert(point);
         mEntityList.add(polyLineEntity);
         mDrawingLine = true;
+        vibrator.vibrate(50);
     }
 
     private void continueDrawingLine(Vec3d point){
@@ -92,6 +90,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             polyLineEntity.addVert(point);
         }
         mDrawingLine = false;
+        vibrator.vibrate(50);
     }
 
     /**
@@ -129,13 +128,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()){
                     case MotionEvent.ACTION_DOWN:
-                        overlayView.show3DToast("Accelerating");
+//                        overlayView.show3DToast("Accelerating");
 //                        mMoving = true;
+                        overlayView.show3DToast("Begin drawing");
                         beginDrawingLine(mUser.getArmCrosshair().getPosition());
                         break;
                     case MotionEvent.ACTION_UP:
-                        overlayView.show3DToast("Slowing down");
+//                        overlayView.show3DToast("Slowing down");
 //                        mMoving = false;
+                        overlayView.show3DToast("End drawing");
                         endDrawingLine(mUser.getArmCrosshair().getPosition());
                         break;
                 }
@@ -173,7 +174,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private void setupCylinderCanvas(){
         BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
-//        mEntityList.add(entity); //TODO später wieder einblenden
+//        mEntityList.add(entity); //TODO: später wieder einblenden
     }
 
     private void setupFloor(){
@@ -277,10 +278,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
-        mArmLine = new LineEntity(ShaderCollection.getProgram(Programs.LineProgram));
-        mArmLine.setVerts(new Vec3d(0, 0, 0), new Vec3d(0, 0, -1000));
-        mArmLine.setColor(0, 1, 1, 1);
-
         checkGLError("onSurfaceCreated");
     }
 
@@ -295,15 +292,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         headTransform.getHeadView(headView, 0);
 
         mUser.setHeadView(headView);
-        mUser.getArmForward().assignPoint3d(mUser.getEyeForward()); //TODO: ArmForward von MYO zuweisen
+        mUser.getArmForward().assignPoint3d(mUser.getEyeForward()); //TODO: ArmForward (Armrichtung) von MYO zuweisen
 
         Vec3d acceleration = VecMath.calcVecTimesScalar(mUser.getEyeForward(), mMoving ? 5:0);
         mUser.move(acceleration);
 
         mUser.calcEyeLookingAt(mEntityList);
         mUser.calcArmPointingAt(mEntityList);
-
-        mArmLine.setVerts(mUser.getPosition(), mUser.getArmCrosshair().getPosition());
 
         if (mDrawingLine){
             continueDrawingLine(mUser.getArmCrosshair().getPosition());
@@ -399,9 +394,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
             }
         }
-
         mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
-        mArmLine.draw(view, perspective, lightPosInEyeSpace);
     }
 
     @Override

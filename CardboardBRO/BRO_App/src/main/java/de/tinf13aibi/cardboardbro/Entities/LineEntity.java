@@ -21,7 +21,7 @@ public class LineEntity extends BaseEntity implements IEntity {
 
     @Override
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
-        fillParameters(mProgram);
+        fillParameters(mProgram); //muss erstmal hier sein da draw() nur in onDrawEye() aufgerufen wird und somit GLES20-Context vorhanden ist
 
         float[] modelView = new float[16];
         float[] modelViewProjection = new float[16];

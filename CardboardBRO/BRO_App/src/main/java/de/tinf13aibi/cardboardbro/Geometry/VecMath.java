@@ -258,7 +258,7 @@ public class VecMath {
         return cylinderFace;
     }
 
-    public static GeometryStruct createCylinderGeom(Boolean normalsInverse){
+    public static GeometryStruct createCylinderCanvasGeom(Boolean normalsInverse){
         int SEGMENT_VERTICES_COUNT = 6;
         int SEGMENT_COORDS_COUNT = SEGMENT_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
         int COORDS_COUNT = Constants.CYLINDER_SEGMENTS * SEGMENT_COORDS_COUNT;

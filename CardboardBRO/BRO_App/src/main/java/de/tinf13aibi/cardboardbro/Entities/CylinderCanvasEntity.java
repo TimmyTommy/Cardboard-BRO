@@ -13,7 +13,7 @@ public class CylinderCanvasEntity extends BaseEntity implements IEntity {
 
     public CylinderCanvasEntity(int program){
         super(program);
-        GeometryStruct geometry = VecMath.createCylinderGeom(true); //TODO Normalenberechnung nochmal angucken
+        GeometryStruct geometry = VecMath.createCylinderCanvasGeom(true);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
     }
 }
