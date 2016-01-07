@@ -38,7 +38,9 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
         GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, modelViewProjection, 0);
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
         GLES20.glLineWidth(5);
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, mPolyLinePoints.size());
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glLineWidth(1);
     }
 

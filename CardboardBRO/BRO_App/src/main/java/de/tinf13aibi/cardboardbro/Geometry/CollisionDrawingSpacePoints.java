@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
+import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 
@@ -45,9 +46,10 @@ public class CollisionDrawingSpacePoints {
         }
     }
 
-    private boolean isCollideEntity(IEntity entity){
+    private boolean isCollideEntity(IEntity entity){ //TODO überdenken: vllt den Körper-Entities ein Attribut geben "mHasFaces"
         return  entity instanceof FloorEntity ||
                 entity instanceof CylinderCanvasEntity ||
+                entity instanceof CylinderEntity ||
                 entity instanceof ButtonEntity || //Aktivieren, wenn Buttons "anzielbar" sein sollen
                 entity instanceof CuboidEntity;
     }

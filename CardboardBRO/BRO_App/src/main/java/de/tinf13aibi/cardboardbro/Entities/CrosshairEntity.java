@@ -72,17 +72,14 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         line = mLines.get(4);
         line.setVerts(mPosition, VecMath.calcVecPlusVec(mPosition, mNormal));
         line.setColor(0, 0, 1, 1);
-        line = mLines.get(5);
-        line.setVerts(mPosition, VecMath.calcVecMinusVec(mPosition, mNormal));
-        line.setColor(0, 0, 1, 1);
+//        line = mLines.get(5);
+//        line.setVerts(mPosition, VecMath.calcVecMinusVec(mPosition, mNormal));
+//        line.setColor(0, 0, 1, 1);
     }
 
     public void setPosition(Vec3d position, Vec3d normal, float distance) {
-//        mNormal = normal;
-//        mPosition = position;
         mNormal = VecMath.calcNormalizedVector(normal);
-        Vec3d translation = VecMath.calcVecTimesScalar(mNormal, 0.0001f);
-        mPosition = VecMath.calcVecPlusVec(position, translation);
+        mPosition = position;
         mDistance = distance;
         calcCrossVectors(mNormal);
         calcCrossedLines();
@@ -95,6 +92,6 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         mLines.add(new LineEntity(program));
         mLines.add(new LineEntity(program));
         mLines.add(new LineEntity(program));
-        mLines.add(new LineEntity(program));
+//        mLines.add(new LineEntity(program));
     }
 }

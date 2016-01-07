@@ -52,9 +52,10 @@ public final class GeometryDatabase {
         -1.0f, -1.0f, -1.0f,
     };
 
-    public static final float[] CYLINDER_COLOR = new float[] {
-            1f, 1f, 1f, 1.0f
-        //0f, 0.5273f, 0.2656f, 1.0f
+    public static final float[] CANVAS_CYL_COLOR = new float[] {
+           // 1f, 1f, 1f, 1.0f
+//            0f, 0.5273f, 0.2656f, 1.0f
+        0.8f, 0.8f, 0.8f, 1.0f
     };
 
     public static final float[] CUBE_COLORS = new float[] {
@@ -208,11 +209,11 @@ public final class GeometryDatabase {
     };
 
     public static final float[] FLOOR_COORDS = new float[] {
-        200f, 0, -200f,
+        -200f, 0, 200f,
         -200f, 0, -200f,
-        -200f, 0, 200f,
         200f, 0, -200f,
         -200f, 0, 200f,
+        200f, 0, -200f,
         200f, 0, 200f,
     };
 

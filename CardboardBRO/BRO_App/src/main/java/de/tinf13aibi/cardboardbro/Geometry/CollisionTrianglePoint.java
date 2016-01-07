@@ -27,8 +27,7 @@ public class CollisionTrianglePoint {
     }
 
     private void calcTriangleLineIntersection(){
-        normalDir = entity instanceof CylinderCanvasEntity ? -1 : 1;
-        triangleNormal = VecMath.calcNormalVector(triangle, normalDir);
+        triangleNormal = VecMath.calcNormalVector(triangle);
         float[] pos = new float[3];
         if (VecMath.calcTriangleLineIntersection(pos, triangle, straight)){
             collisionPos = new Vec3d(pos);

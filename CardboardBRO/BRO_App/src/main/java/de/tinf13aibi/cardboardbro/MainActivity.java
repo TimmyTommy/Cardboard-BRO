@@ -41,6 +41,7 @@ import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
+import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
@@ -49,6 +50,7 @@ import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
 import de.tinf13aibi.cardboardbro.Enums.Shaders;
+import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
@@ -243,8 +245,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     private void setupCylinderCanvas(){
         BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
-//        mEntityList.add(entity); //TODO: später wieder einblenden
+        Matrix.translateM(entity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
+        mEntityList.add(entity); //TODO: später wieder einblenden
     }
 
     private void setupFloor(){
@@ -337,6 +339,20 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Matrix.scaleM(entity.getModel(), 0, 0.055f, 0.055f, 0.055f);
         mEntityList.add(entity);
 
+        CylinderEntity cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        cylEntity.setColor(new float[]{1, 0, 0, 1});
+        cylEntity.setHeight(2);
+        cylEntity.setRadius(0.5f);
+        Matrix.translateM(cylEntity.getModel(), 0, 1f, 1, -5.0f);
+        mEntityList.add(cylEntity);
+
+        cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        cylEntity.setColor(new float[]{0, 0, 1, 1});
+        cylEntity.setHeight(1);
+        cylEntity.setRadius(1);
+        Matrix.translateM(cylEntity.getModel(), 0, -1f, 0, -5.0f);
+        mEntityList.add(cylEntity);
+
 //Test Polyline
 //        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
 //        polyLineEntity.addVert(new Vec3d(0, 0, 0));
@@ -360,6 +376,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
         initPrograms();
+        mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
         setupCylinderCanvas();
         setupFloor();
@@ -367,8 +384,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         setupEntityActionButtonSet();
         setupEntityCreateButtonSet();
         setupTestObjects();
-
-        mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
         checkGLError("onSurfaceCreated");
     }

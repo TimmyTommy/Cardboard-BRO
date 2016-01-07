@@ -16,6 +16,9 @@ import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 /**
  * Created by dth on 27.11.2015.
  */
+
+//TODO weitere Entities: Quader, Kugel (evtl. Kegel, Kegelstumpf, Pyramide, Pyramidenstumpf, Torus)
+//Siehe hierfür: http://exchange.autodesk.com/autocadmechanical/deu/online-help/AMECH_PP/2012/DEU/attachments/ill_primitives.png
 public abstract class BaseEntity implements IEntity {
     protected EntityDisplayType displayType = EntityDisplayType.Absolute;
     protected float[] mCoords = new float[]{};
