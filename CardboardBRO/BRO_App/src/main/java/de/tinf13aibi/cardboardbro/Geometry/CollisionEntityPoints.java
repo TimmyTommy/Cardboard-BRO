@@ -40,6 +40,7 @@ public class CollisionEntityPoints {
         ArrayList<Triangle> triangles = entity.getAbsoluteTriangles();
         for (Triangle triangle : triangles) {
             CollisionTrianglePoint collisionPoint = new CollisionTrianglePoint(straight, triangle, entity);
+            collisionPoint.calcTriangleLineIntersection();
             if (collisionPoint.collisionPos!=null){
                 collisions.add(collisionPoint);
             }

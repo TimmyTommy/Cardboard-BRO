@@ -1,5 +1,7 @@
 package de.tinf13aibi.cardboardbro.Geometry;
 
+import android.opengl.Matrix;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
@@ -8,19 +10,18 @@ import de.tinf13aibi.cardboardbro.Constants;
  * Created by dthom on 07.01.2016.
  */
 public class GeomFactory {
-    private static float[] calcCycleSegment(float radius, float fromAngle, float toAngle){
-        float[] vertices = new float[6];
-        vertices[0] = (float)(radius * Math.sin(fromAngle));
-        vertices[1] = 0;
-        vertices[2] = (float)(radius * Math.cos(fromAngle));
 
-        vertices[3] = (float)(radius * Math.sin(toAngle));
-        vertices[4] = 0;
-        vertices[5] = (float)(radius * Math.cos(toAngle));
-        return vertices;
+    private static Line calcCycleSegmentLine(Vec3d firstPointOfCycle, Vec3d cycleNormal, float[] angles, Boolean normalsInverse){
+        Vec3d p1 = VecMath.calcRotateVecAroundAxis(firstPointOfCycle, cycleNormal, angles[0]);
+        Vec3d p2 = VecMath.calcRotateVecAroundAxis(firstPointOfCycle, cycleNormal, angles[1]);
+        if (normalsInverse) {
+            return new Line(p1, p2);
+        } else {
+            return new Line(p2, p1);
+        }
     }
 
-    private static float[] calcCycleSegmentAngles(int cycleEdgesCount, int edgeIndex){
+    private static float[] calcCycleSegmentAnglesRad(int cycleEdgesCount, int edgeIndex){
         float fromAngle = (float)(2*Math.PI*(1.0*edgeIndex/cycleEdgesCount));
         float toAngle = (float)(2*Math.PI*((1.0*edgeIndex+1)/cycleEdgesCount));
         float[] angles = new float[2];
@@ -29,25 +30,32 @@ public class GeomFactory {
         return angles;
     }
 
-    private static ArrayList<Triangle> calcCylinderSegmentFace(Line cycleSegment, float height){
+    private static float[] calcCycleSegmentAnglesDeg(int cycleEdgesCount, int edgeIndex){
+        float[] angles = calcCycleSegmentAnglesRad(cycleEdgesCount, edgeIndex);
+        angles[0] = VecMath.radToDeg(angles[0]);
+        angles[1] = VecMath.radToDeg(angles[1]);
+        return angles;
+    }
+
+    private static ArrayList<Triangle> calcCylinderSegmentFace(Line cycleSegment, Vec3d heightVec){
         Triangle triangle1 = new Triangle();
         Triangle triangle2 = new Triangle();
         ArrayList<Triangle> cylinderFace = new ArrayList<>();
         cylinderFace.add(triangle1);
         cylinderFace.add(triangle2);
 
-        triangle1.setP1(VecMath.calcVecPlusVec(cycleSegment.getP1(), new Vec3d(0, height, 0)));
+        triangle1.setP1(VecMath.calcVecPlusVec(cycleSegment.getP1(), heightVec));
         triangle1.setP2(cycleSegment.getP1().copy());
         triangle1.setP3(cycleSegment.getP2().copy());
 
         triangle2.setP1(cycleSegment.getP2().copy());
-        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP2(), new Vec3d(0, height, 0)));
-        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP1(), new Vec3d(0, height, 0)));
+        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP2(), heightVec));
+        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP1(), heightVec));
 
         return cylinderFace;
     }
 
-    private static ArrayList<Triangle> calcCylinderSegmentBottomAndTop(Vec3d center, Line cycleSegment, float height){
+    private static ArrayList<Triangle> calcCylinderSegmentBottomAndTop(Vec3d center, Line cycleSegment, Vec3d heightVec){
         Triangle triangle1 = new Triangle();
         Triangle triangle2 = new Triangle();
         ArrayList<Triangle> cylinderBottomAndTop = new ArrayList<>();
@@ -58,31 +66,21 @@ public class GeomFactory {
         triangle1.setP2(cycleSegment.getP2().copy());
         triangle1.setP3(cycleSegment.getP1().copy());
 
-        triangle2.setP1(VecMath.calcVecPlusVec(center, new Vec3d(0, height, 0)));
-        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP1(), new Vec3d(0, height, 0)));
-        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP2(), new Vec3d(0, height, 0)));
+        triangle2.setP1(VecMath.calcVecPlusVec(center, heightVec));
+        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP1(), heightVec));
+        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP2(), heightVec));
 
         return cylinderBottomAndTop;
     }
 
-    private static Line calcCycleSegmentLine(float radius, float fromAngle, float toAngle){
-        return new Line(calcCycleSegment(radius, fromAngle, toAngle));
-    }
-
-    private static ArrayList<Triangle> calcCylinderSegment(Vec3d center, float radius, float fromAngle, float toAngle, float height, Boolean normalsInverse){
+    private static ArrayList<Triangle> calcCylinderSegment(Vec3d center, Vec3d heightVec, Line cycleSegment){
         ArrayList<Triangle> cylinderSegment = new ArrayList<>();
-        Line cycleSegment;
-        if (normalsInverse) {
-            cycleSegment = calcCycleSegmentLine(radius, fromAngle, toAngle);
-        } else {
-            cycleSegment = calcCycleSegmentLine(radius, toAngle, fromAngle);
-        }
 
         cycleSegment.setP1(VecMath.calcVecPlusVec(cycleSegment.getP1(), center));
         cycleSegment.setP2(VecMath.calcVecPlusVec(cycleSegment.getP2(), center));
 
-        cylinderSegment.addAll(calcCylinderSegmentFace(cycleSegment, height));
-        cylinderSegment.addAll(calcCylinderSegmentBottomAndTop(center, cycleSegment, height));
+        cylinderSegment.addAll(calcCylinderSegmentFace(cycleSegment, heightVec));
+        cylinderSegment.addAll(calcCylinderSegmentBottomAndTop(center, cycleSegment, heightVec));
 
         return  cylinderSegment;
     }
@@ -125,25 +123,30 @@ public class GeomFactory {
         return array;
     }
 
-    public static GeometryStruct createCylinderGeom(Vec3d center, float radius, float height, float[] color, Boolean normalsInverse){
-        int SEGMENT_VERTICES_COUNT = 12;
-        int SEGMENT_COORDS_COUNT = SEGMENT_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
-        int SEGMENT_COLOR_ARRAY_LENGTH = SEGMENT_VERTICES_COUNT * 4;
-
-        int COORDS_COUNT = Constants.CYLINDER_SEGMENTS * SEGMENT_COORDS_COUNT;
-
+    public static GeometryStruct createCylinderGeom(Vec3d center, Vec3d baseNormal, float radius, float height, float[] color, Boolean normalsInverse){
+        final int SEGMENT_VERTICES_COUNT = 12;
+        final int SEGMENT_COORDS_COUNT = SEGMENT_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
+        final int COORDS_COUNT = Constants.CYLINDER_SEGMENTS * SEGMENT_COORDS_COUNT;
+        final int SEGMENT_COLOR_ARRAY_LENGTH = SEGMENT_VERTICES_COUNT * 4;
 
         float[] vertices = new float[COORDS_COUNT];
         float[] normals = new float[COORDS_COUNT];
-        float[] colors = new float[4*12*Constants.CYLINDER_SEGMENTS];
+        float[] colors = new float[4*COORDS_COUNT];
+
+        Vec3d firstCycleDir = new Vec3d();
+        Vec3d secondCycleDir = new Vec3d();
+        VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, baseNormal);
+        Vec3d firstPointOfBaseCycle = VecMath.calcVecTimesScalar(firstCycleDir, radius);
+        Vec3d heightVec = VecMath.calcVecTimesScalar(baseNormal, height);
 
         for (int i=0; i<Constants.CYLINDER_SEGMENTS; i++){
-            float[] angles = calcCycleSegmentAngles(Constants.CYLINDER_SEGMENTS, i);
-            ArrayList<Triangle> cylinderSegment = calcCylinderSegment(center, radius, angles[0], angles[1], height, normalsInverse);
+            float[] angles = calcCycleSegmentAnglesDeg(Constants.CYLINDER_SEGMENTS, i);
+            Line cycleSegment = calcCycleSegmentLine(firstPointOfBaseCycle, baseNormal, angles, normalsInverse);
+            ArrayList<Triangle> cylinderSegment = calcCylinderSegment(center, heightVec, cycleSegment);
             ArrayList<Vec3d> segmentNormals = calcNormalsOfTriangles(cylinderSegment);
+
             float[] segmentVerticesArray = transformTrianglesToFloatArray(cylinderSegment);
             float[] segmentNormalsArray = transformVec3dListToFloatArray(segmentNormals);
-
             float[] segmentColorsArray = new float[SEGMENT_COLOR_ARRAY_LENGTH];
             for (int j = 0; j < SEGMENT_VERTICES_COUNT; j++) {
                 System.arraycopy(color, 0, segmentColorsArray, j*4, 4);
@@ -160,4 +163,112 @@ public class GeomFactory {
         result.colors = colors;
         return result;
     }
+
+    //TODO wenn nicht mehr für Kugel gebraucht, dann entfernen
+
+//    private static float[] calcCycleSegment(float radius, float fromAngle, float toAngle){
+//        float[] vertices = new float[6];
+//        vertices[0] = (float)(radius * Math.sin(fromAngle));
+//        vertices[1] = 0;
+//        vertices[2] = (float)(radius * Math.cos(fromAngle));
+//
+//        vertices[3] = (float)(radius * Math.sin(toAngle));
+//        vertices[4] = 0;
+//        vertices[5] = (float)(radius * Math.cos(toAngle));
+//        return vertices;
+//    }
+
+//    private static ArrayList<Triangle> calcCylinderSegmentFace(Line cycleSegment, float height){
+//        Triangle triangle1 = new Triangle();
+//        Triangle triangle2 = new Triangle();
+//        ArrayList<Triangle> cylinderFace = new ArrayList<>();
+//        cylinderFace.add(triangle1);
+//        cylinderFace.add(triangle2);
+//
+//        triangle1.setP1(VecMath.calcVecPlusVec(cycleSegment.getP1(), new Vec3d(0, height, 0)));
+//        triangle1.setP2(cycleSegment.getP1().copy());
+//        triangle1.setP3(cycleSegment.getP2().copy());
+//
+//        triangle2.setP1(cycleSegment.getP2().copy());
+//        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP2(), new Vec3d(0, height, 0)));
+//        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP1(), new Vec3d(0, height, 0)));
+//
+//        return cylinderFace;
+//    }
+
+//    private static ArrayList<Triangle> calcCylinderSegmentBottomAndTop(Vec3d center, Line cycleSegment, float height){
+//        Triangle triangle1 = new Triangle();
+//        Triangle triangle2 = new Triangle();
+//        ArrayList<Triangle> cylinderBottomAndTop = new ArrayList<>();
+//        cylinderBottomAndTop.add(triangle1);
+//        cylinderBottomAndTop.add(triangle2);
+//
+//        triangle1.setP1(center.copy());
+//        triangle1.setP2(cycleSegment.getP2().copy());
+//        triangle1.setP3(cycleSegment.getP1().copy());
+//
+//        triangle2.setP1(VecMath.calcVecPlusVec(center, new Vec3d(0, height, 0)));
+//        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP1(), new Vec3d(0, height, 0)));
+//        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP2(), new Vec3d(0, height, 0)));
+//
+//        return cylinderBottomAndTop;
+//    }
+
+//    private static Line calcCycleSegmentLine(float radius, float fromAngle, float toAngle){
+//        return new Line(calcCycleSegment(radius, fromAngle, toAngle));
+//    }
+
+//    private static ArrayList<Triangle> calcCylinderSegment(Vec3d center, float radius, float fromAngle, float toAngle, float height, Boolean normalsInverse){
+//        ArrayList<Triangle> cylinderSegment = new ArrayList<>();
+//        Line cycleSegment;
+//        if (normalsInverse) {
+//            cycleSegment = calcCycleSegmentLine(radius, fromAngle, toAngle);
+//        } else {
+//            cycleSegment = calcCycleSegmentLine(radius, toAngle, fromAngle);
+//        }
+//
+//        cycleSegment.setP1(VecMath.calcVecPlusVec(cycleSegment.getP1(), center));
+//        cycleSegment.setP2(VecMath.calcVecPlusVec(cycleSegment.getP2(), center));
+//
+//        cylinderSegment.addAll(calcCylinderSegmentFace(cycleSegment, height));
+//        cylinderSegment.addAll(calcCylinderSegmentBottomAndTop(center, cycleSegment, height));
+//
+//        return  cylinderSegment;
+//    }
+
+//    public static GeometryStruct createCylinderGeom(Vec3d center, float radius, float height, float[] color, Boolean normalsInverse){
+//        int SEGMENT_VERTICES_COUNT = 12;
+//        int SEGMENT_COORDS_COUNT = SEGMENT_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
+//        int SEGMENT_COLOR_ARRAY_LENGTH = SEGMENT_VERTICES_COUNT * 4;
+//
+//        int COORDS_COUNT = Constants.CYLINDER_SEGMENTS * SEGMENT_COORDS_COUNT;
+//
+//
+//        float[] vertices = new float[COORDS_COUNT];
+//        float[] normals = new float[COORDS_COUNT];
+//        float[] colors = new float[4*12*Constants.CYLINDER_SEGMENTS];
+//
+//        for (int i=0; i<Constants.CYLINDER_SEGMENTS; i++){
+//            float[] angles = calcCycleSegmentAnglesRad(Constants.CYLINDER_SEGMENTS, i);
+//            ArrayList<Triangle> cylinderSegment = calcCylinderSegment(center, radius, angles[0], angles[1], height, normalsInverse);
+//            ArrayList<Vec3d> segmentNormals = calcNormalsOfTriangles(cylinderSegment);
+//            float[] segmentVerticesArray = transformTrianglesToFloatArray(cylinderSegment);
+//            float[] segmentNormalsArray = transformVec3dListToFloatArray(segmentNormals);
+//
+//            float[] segmentColorsArray = new float[SEGMENT_COLOR_ARRAY_LENGTH];
+//            for (int j = 0; j < SEGMENT_VERTICES_COUNT; j++) {
+//                System.arraycopy(color, 0, segmentColorsArray, j*4, 4);
+//            }
+//
+//            System.arraycopy(segmentVerticesArray, 0, vertices, i*SEGMENT_COORDS_COUNT, SEGMENT_COORDS_COUNT);
+//            System.arraycopy(segmentNormalsArray, 0, normals, i*SEGMENT_COORDS_COUNT, SEGMENT_COORDS_COUNT);
+//            System.arraycopy(segmentColorsArray, 0, colors, i*SEGMENT_COLOR_ARRAY_LENGTH, SEGMENT_COLOR_ARRAY_LENGTH);
+//        }
+//
+//        GeometryStruct result = new GeometryStruct();
+//        result.vertices = vertices;
+//        result.normals = normals;
+//        result.colors = colors;
+//        return result;
+//    }
 }

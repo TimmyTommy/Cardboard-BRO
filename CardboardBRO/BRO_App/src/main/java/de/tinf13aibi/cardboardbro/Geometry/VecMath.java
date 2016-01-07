@@ -1,5 +1,7 @@
 package de.tinf13aibi.cardboardbro.Geometry;
 
+import android.opengl.Matrix;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
@@ -114,8 +116,13 @@ public class VecMath {
         return calcScalarProcuct(v1.toFloatArray(), v2.toFloatArray());
     }
 
-    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
-        //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
+    public static boolean calcPlaneLineIntersection(float[] intersectPointOut, float[] trsOut, Triangle triangle, StraightLine line){
+        Vec3d triangleNormal = calcNormalVector(triangle);
+        float scalar = calcScalarProcuct(triangleNormal, line.dir);
+        final float eps = 0.000001f;
+        if (Math.abs(scalar)<eps){
+            return false;
+        }
 
         //Gerade: X = P + t*d
         final float[] p = line.pos.toFloatArray(); //point
@@ -150,8 +157,56 @@ public class VecMath {
         float[] intersectPoint = calcVecPlusVec(p, calcVecTimesScalar(d, trs[0]));
         System.arraycopy(intersectPoint, 0, intersectPointOut, 0, 3);
 
+        System.arraycopy(trs, 0, trsOut, 0, 3);
+        return true;
+    }
+
+    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
+        //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
+
+        float[] trs = new float[3];
+        calcPlaneLineIntersection(intersectPointOut, trs, triangle, line);
         return trs[0] > 0 && isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
     }
+
+//    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
+//        //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
+//
+//        //Gerade: X = P + t*d
+//        final float[] p = line.pos.toFloatArray(); //point
+//        final float[] d = line.dir.toFloatArray(); //direction
+//
+//        //triangle ABC  //Planeequation: X = A + r*(B-A) + s*(C-A)
+//        final float[] a = triangle.getP1().toFloatArray();
+//        final float[] b = triangle.getP2().toFloatArray();
+//        final float[] c = triangle.getP3().toFloatArray();
+//
+//        float[] u = calcVecMinusVec(b, a);
+//        float[] v = calcVecMinusVec(c, a);
+//        float[] w = calcVecMinusVec(p, a);
+//
+//        // (t, r, s) = 1/det(-d, u, v) * (det(w, u, v), det(−d, w, v), det(−d, u, w))
+//        // det (a, b, c) = a*(b x c)
+//
+//        // (t, r, s) = 1/(d x v)*u  * ( (w x u)*v, (d x v)*w, (w x u)*d )
+//
+//        float[] crossDV = calcCrossProduct(d, v);
+//        float[] crossWU = calcCrossProduct(w, u);
+//
+//        float factor = 1/calcScalarProcuct(crossDV, u);
+//
+//        float[] vec = new float[3];
+//        vec[0] = calcScalarProcuct(crossWU, v);
+//        vec[1] = calcScalarProcuct(crossDV, w);
+//        vec[2] = calcScalarProcuct(crossWU, d);
+//
+//        float[] trs = calcVecTimesScalar(vec, factor);
+//
+//        float[] intersectPoint = calcVecPlusVec(p, calcVecTimesScalar(d, trs[0]));
+//        System.arraycopy(intersectPoint, 0, intersectPointOut, 0, 3);
+//
+//        return trs[0] > 0 && isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
+//    }
 
     public static boolean isInRange(float x, float begin, float end){
         return (begin <= x) && (x <= end);
@@ -185,5 +240,68 @@ public class VecMath {
         cross = calcNormalizedVector(calcVecTimesScalar(cross, -normalsDirection)); //TODO testen wieso Normalvektor falschrum ist
 
         return cross;
+    }
+
+    public static void calcCrossedVectorsFromNormal(Vec3d vecHorizontalOut, Vec3d vecVerticalOut, Vec3d normal){
+        normal.assignPoint3d(VecMath.calcNormalizedVector(normal));
+        final float eps = 0.000001f;
+        vecHorizontalOut.y = 0;
+        if (Math.abs(normal.x)<eps){
+            vecHorizontalOut.x = 1;
+            vecHorizontalOut.z = 0;
+        } else if (Math.abs(normal.z)<eps) {
+            vecHorizontalOut.x = 0;
+            vecHorizontalOut.z = 1;
+        } else {
+            vecHorizontalOut.x = 1;
+            vecHorizontalOut.z = -normal.x*vecHorizontalOut.x/normal.z;
+        }
+        vecVerticalOut.assignPoint3d(VecMath.calcCrossProduct(normal, vecHorizontalOut));
+
+        vecHorizontalOut.assignPoint3d(VecMath.calcNormalizedVector(vecHorizontalOut));
+        vecVerticalOut.assignPoint3d(VecMath.calcNormalizedVector(vecVerticalOut));
+    }
+
+    public static float radToDeg(float rad){
+        return (float)(rad*180/Math.PI);
+    }
+
+    public static float degToRad(float deg){
+        return (float)(deg*Math.PI/180);
+    }
+
+    public static Vec3d calcRotateVecAroundAxis(Vec3d point, Vec3d axis, float angle){
+        float[] rotMat = new float[16];
+        float[] resPoint = new float[4];
+        Matrix.setRotateM(rotMat, 0, angle, axis.x, axis.y, axis.z);
+        Matrix.multiplyMV(resPoint, 0, rotMat, 0, point.toFloatArray4d(), 0);
+        return new Vec3d(resPoint);
+    }
+
+    public static float calcDistancePlanePoint(Plane plane, Vec3d point){
+        float[] intersectPoint = new float[3];
+        float[] trs = new float[3];
+        Vec3d planeNormal = calcNormalVector(plane);
+        StraightLine line = new StraightLine(point, planeNormal);
+        calcPlaneLineIntersection(intersectPoint, trs, plane, line);
+
+        Vec3d distanceVec = calcVecTimesScalar(planeNormal, trs[0]);
+        float distance;
+        distance = trs[0]<0 ? 1 : -1;
+        distance *= calcVectorLength(distanceVec);
+
+        return distance;
+    }
+
+    public static Plane calcPlaneFromPointAndNormal(Vec3d point, Vec3d normal){
+        Vec3d firstCycleDir = new Vec3d();
+        Vec3d secondCycleDir = new Vec3d();
+        normal = normal.copy();
+        VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, normal);
+
+        Vec3d p2 = VecMath.calcVecPlusVec(point, firstCycleDir);
+        Vec3d p3 = VecMath.calcVecPlusVec(point, secondCycleDir);
+
+        return new Plane(point, p2, p3);
     }
 }

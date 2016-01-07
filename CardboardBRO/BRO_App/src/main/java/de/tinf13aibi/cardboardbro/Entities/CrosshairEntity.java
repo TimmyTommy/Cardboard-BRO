@@ -22,6 +22,10 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         return mPosition;
     }
 
+    public Vec3d getNormal(){
+        return mNormal;
+    }
+
     @Override
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
         for (LineEntity lineEntity : mLines) {
@@ -30,22 +34,7 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
     }
 
     private void calcCrossVectors(Vec3d normal){
-        final float eps = 0.000001f;
-        mHoroizontalVec.y = 0;
-        if (Math.abs(normal.x)<eps){
-            mHoroizontalVec.x = 1;
-            mHoroizontalVec.z = 0;
-        } else if (Math.abs(normal.z)<eps) {
-            mHoroizontalVec.x = 0;
-            mHoroizontalVec.z = 1;
-        } else {
-            mHoroizontalVec.x = 1;
-            mHoroizontalVec.z = -normal.x*mHoroizontalVec.x/normal.z;
-        }
-        mVerticalVec.assignPoint3d(VecMath.calcCrossProduct(normal, mHoroizontalVec));
-
-        mHoroizontalVec.assignPoint3d(VecMath.calcNormalizedVector(mHoroizontalVec));
-        mVerticalVec.assignPoint3d(VecMath.calcNormalizedVector(mVerticalVec));
+        VecMath.calcCrossedVectorsFromNormal(mHoroizontalVec, mVerticalVec, normal);
 
         mHoroizontalVec.assignPoint3d(VecMath.calcVecTimesScalar(mHoroizontalVec, mDistance / 10));
         mVerticalVec.assignPoint3d(VecMath.calcVecTimesScalar(mVerticalVec, mDistance/10));

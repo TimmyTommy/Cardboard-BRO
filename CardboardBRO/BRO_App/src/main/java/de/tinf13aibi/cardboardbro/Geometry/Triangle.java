@@ -4,7 +4,7 @@ package de.tinf13aibi.cardboardbro.Geometry;
  * Created by dthom on 17.12.2015.
  */
 public class Triangle {
-    private Vec3d p1, p2, p3;
+    protected Vec3d p1, p2, p3;
     public Triangle(Vec3d p1, Vec3d p2, Vec3d p3){
         this.p1 = p1;
         this.p2 = p2;

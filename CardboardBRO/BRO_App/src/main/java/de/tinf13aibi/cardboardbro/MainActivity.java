@@ -17,6 +17,7 @@
 package de.tinf13aibi.cardboardbro;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
@@ -50,6 +51,8 @@ import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
 import de.tinf13aibi.cardboardbro.Enums.Shaders;
+import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
+import de.tinf13aibi.cardboardbro.Geometry.Plane;
 import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
@@ -60,13 +63,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private ButtonSet mEntityActionButtons = new ButtonSet();
     private ButtonSet mEntityCreateButtons = new ButtonSet();
     private ButtonSet mKeyboardButtons = new ButtonSet();
+//    private Plane mTempWorkingPlane = new Plane();
+    private Plane mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(new Vec3d(), new Vec3d(0, 1, 0));
 
     private static final String TAG = "MainActivity";
 
     //TODO: evtl nach User auslagern
 //    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
 //    private AppState mAppState = AppState.WaitForBeginFreeDraw; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+
+    private IEntity mEditingEntity;
 
     private User mUser = new User();
     private boolean mMoving = false;
@@ -132,6 +140,69 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         vibrator.vibrate(50);
     }
 
+    //Draw Cylinder
+
+    private void beginDrawCylinder(Vec3d point, Vec3d baseNormal){
+        CylinderEntity cylinderEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        cylinderEntity.setCenter(point);
+        cylinderEntity.setRadius(0.1f);
+        cylinderEntity.setHeight(0.1f);
+        cylinderEntity.setBaseNormal(baseNormal);
+        mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(point, baseNormal);
+        mEntityList.add(cylinderEntity);
+        vibrator.vibrate(50);
+    }
+
+    private void continueDrawCylinderRadius(Vec3d point){
+        IEntity entity = mEntityList.get(mEntityList.size()-1);
+        if (entity instanceof CylinderEntity) {
+            CylinderEntity cylinderEntity = (CylinderEntity) entity;
+            cylinderEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, cylinderEntity.getCenter())));
+        }
+    }
+
+    private void endDrawCylinderRadius(Vec3d point){
+        IEntity entity = mEntityList.get(mEntityList.size()-1);
+        if (entity instanceof CylinderEntity) {
+            CylinderEntity cylinderEntity = (CylinderEntity) entity;
+            cylinderEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, cylinderEntity.getCenter())));
+
+            //TODO das ganze auslagern und mTempWorkingPlane updaten, je nachdem in welche richtung user guckt
+            Vec3d baseNormal = cylinderEntity.getBaseNormal().copy();
+            Vec3d firstCycleDir = new Vec3d();
+            Vec3d secondCycleDir = new Vec3d();
+            VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, baseNormal);
+
+//            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), firstCycleDir);
+            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), secondCycleDir);
+        }
+
+        vibrator.vibrate(50);
+    }
+
+    private void continueDrawCylinderHeight(Vec3d point){
+        IEntity entity = mEntityList.get(mEntityList.size()-1);
+        if (entity instanceof CylinderEntity) {
+            CylinderEntity cylinderEntity = (CylinderEntity) entity;
+            Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), cylinderEntity.getBaseNormal());
+
+            float distance = VecMath.calcDistancePlanePoint(basePlane, point);
+            cylinderEntity.setHeight(distance);
+        }
+    }
+
+    private void endDrawCylinderHeight(Vec3d point){
+        IEntity entity = mEntityList.get(mEntityList.size()-1);
+        if (entity instanceof CylinderEntity) {
+            CylinderEntity cylinderEntity = (CylinderEntity) entity;
+            Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), cylinderEntity.getBaseNormal());
+
+            float distance = VecMath.calcDistancePlanePoint(basePlane, point);
+            cylinderEntity.setHeight(distance);
+        }
+        vibrator.vibrate(50);
+    }
+
     /**
     * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
     *
@@ -174,8 +245,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                             overlayView.show3DToast("Begin FreeDraw");
                             beginDrawFreeLine(mUser.getArmCrosshair().getPosition());
                             mAppState = AppState.DrawingFreeHand;
-                        }
-                        break;
+                        }break;
+
                     case MotionEvent.ACTION_UP:
                         //TODO : MYO-Waveout imitieren
 //                        overlayView.show3DToast("Slowing down");
@@ -210,6 +281,41 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                             endDrawPolyLine();
                             mAppState = AppState.WaitForBeginPolyLinePoint;
                         }
+
+
+                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds<=1) {
+                            overlayView.show3DToast("Begin Cylinder");
+                            beginDrawCylinder(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal());
+                            mAppState = AppState.WaitForCylinderRadiusPoint;
+                        }
+                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+                            overlayView.show3DToast("Leave Cylinder State --> SelectEntityToCreate");
+                            mEntityList.remove(mEntityList.size() - 1);
+                            mAppState = AppState.SelectEntityToCreate;
+                        }
+                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds<=1) {
+                            overlayView.show3DToast("Update Cylinder Radius");
+                            endDrawCylinderRadius(mUser.getArmCrosshair().getPosition());
+                            mAppState = AppState.WaitForCylinderHeightPoint;
+                        }
+                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+                            overlayView.show3DToast("Delete Cylinder");
+                            endDrawCylinderRadius(mUser.getArmCrosshair().getPosition());
+                            mEntityList.remove(mEntityList.size() - 1);
+                            mAppState = AppState.WaitForCylinderCenterPoint;
+                        }
+                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds<=1) {
+                            overlayView.show3DToast("End Cylinder with Height");
+                            endDrawCylinderHeight(mUser.getArmCrosshair().getPosition());
+                            mAppState = AppState.WaitForCylinderCenterPoint;
+                        }
+                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+                            overlayView.show3DToast("Delete Cylinder");
+                            endDrawCylinderHeight(mUser.getArmCrosshair().getPosition());
+                            mEntityList.remove(mEntityList.size() - 1);
+                            mAppState = AppState.WaitForCylinderCenterPoint;
+                        }
+
                         break;
                 }
                 return false;
@@ -246,7 +352,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     private void setupCylinderCanvas(){
         BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
-        mEntityList.add(entity); //TODO: später wieder einblenden
+        mEntityList.add(entity);
     }
 
     private void setupFloor(){
@@ -413,13 +519,49 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             case WaitForKeyboardInput:  entityListForArm = mKeyboardButtons.getButtonEntities(); break;
             default:                    entityListForArm = mEntityList; break;
         }
-        mUser.calcArmPointingAt(entityListForArm);
+
+        if (mAppState == AppState.WaitForCylinderRadiusPoint){
+            mUser.calcArmPointingAt(mTempWorkingPlane);
+        }
+        else if (mAppState == AppState.WaitForCylinderHeightPoint) {
+//            CylinderEntity cylEnt = (CylinderEntity) mEntityList.get(mEntityList.size() - 1);
+//            Vec3d cylCenter = cylEnt.getCenter();
+////            mTempWorkingPlane.setP1(new Vec3d(cylCenter.x, 0, cylCenter.z));
+////            mTempWorkingPlane.setP2(new Vec3d(cylCenter.x, 1, cylCenter.z));
+////            mTempWorkingPlane.setP3(new Vec3d(cylCenter.x, 0, cylCenter.z+1));
+//
+////            mTempWorkingPlane.setP1(new Vec3d(cylCenter.x, 0, cylCenter.z));
+////            mTempWorkingPlane.setP2(new Vec3d(cylCenter.x, 1, cylCenter.z));
+////            Vec3d dir = VecMath.calcCrossProduct(new Vec3d(0, 1, 0), mUser.getArmForward());
+////            Vec3d pnt = VecMath.calcVecPlusVec(new Vec3d(cylCenter.x, 0, cylCenter.z), dir);
+////            mTempWorkingPlane.setP3(pnt);
+//
+////            Vec3d baseNormal = cylEnt.getBaseNormal().copy();
+////            Vec3d firstCycleDir = new Vec3d();
+////            Vec3d secondCycleDir = new Vec3d();
+////            VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, baseNormal);
+////
+////            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylCenter, firstCycleDir);
+//
+//
+////            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylCenter, mUser.getArmForward());
+            mUser.calcArmPointingAt(mTempWorkingPlane);
+        }
+        else {
+            mUser.calcArmPointingAt(entityListForArm);
+        }
 
         if (mAppState == AppState.DrawingFreeHand) {
             continueDrawFreeLine(mUser.getArmCrosshair().getPosition());
         }
         else if (mAppState == AppState.WaitForNextPolyLinePoint) {
             continueDrawPolyLine(mUser.getArmCrosshair().getPosition(), false /*fix*/);
+        }
+        else if (mAppState == AppState.WaitForCylinderRadiusPoint) {
+            continueDrawCylinderRadius(mUser.getArmCrosshair().getPosition());
+        }
+        else if (mAppState == AppState.WaitForCylinderHeightPoint) {
+            continueDrawCylinderHeight(mUser.getArmCrosshair().getPosition());
         }
 
         mEntityActionButtons.rotateStep();

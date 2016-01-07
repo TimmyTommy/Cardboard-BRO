@@ -13,20 +13,18 @@ public class CollisionTrianglePoint {
     public Vec3d collisionPos;
     public IEntity entity;
     public float distance = -1;
-    public int normalDir = 1;
     public CollisionTrianglePoint(StraightLine straight, Triangle triangle , IEntity entity){
         this.straight = straight;
         this.triangle = triangle;
         this.entity = entity;
-        calcTriangleLineIntersection();
     }
 
-    private void calcDistance(){
+    protected void calcDistance(){
         Vec3d vec = VecMath.calcVecMinusVec(collisionPos, straight.pos);
         distance = VecMath.calcVectorLength(vec);
     }
 
-    private void calcTriangleLineIntersection(){
+    public void calcTriangleLineIntersection(){
         triangleNormal = VecMath.calcNormalVector(triangle);
         float[] pos = new float[3];
         if (VecMath.calcTriangleLineIntersection(pos, triangle, straight)){

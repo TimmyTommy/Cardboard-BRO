@@ -9,7 +9,9 @@ import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
+import de.tinf13aibi.cardboardbro.Geometry.CollisionPlanePoint;
 import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
+import de.tinf13aibi.cardboardbro.Geometry.Plane;
 import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
@@ -87,6 +89,14 @@ public class User {
         return mArmPointingAt;
     }
 
+    public CollisionTrianglePoint calcArmPointingAt(Plane plane){
+        StraightLine line = new StraightLine(mPosition, mArmForward);
+        mArmPointingAt = new CollisionPlanePoint(line, plane);
+        calcCrosshairPos(mArmCrosshair, mArmPointingAt, mArmForward);
+
+        mArmLine.setVerts(mPosition, mArmCrosshair.getPosition());
+        return mArmPointingAt;
+    }
 
     public float[] move(Vec3d acceleration){
         Date timeDelta = new Date(new Date().getTime()-mLastUpdate.getTime());
