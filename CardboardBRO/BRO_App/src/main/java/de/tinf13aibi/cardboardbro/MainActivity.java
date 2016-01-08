@@ -17,7 +17,6 @@
 package de.tinf13aibi.cardboardbro;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
@@ -31,6 +30,9 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
+import com.thalmic.myo.Hub;
+import com.thalmic.myo.Pose;
+import com.thalmic.myo.Quaternion;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,175 +46,370 @@ import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
+import de.tinf13aibi.cardboardbro.Enums.AppStateGroup;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
-import de.tinf13aibi.cardboardbro.Entities.LineEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
 import de.tinf13aibi.cardboardbro.Enums.Shaders;
-import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.Plane;
-import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
+import de.tinf13aibi.cardboardbro.GestureUtils.MyoData;
+import de.tinf13aibi.cardboardbro.GestureUtils.MyoDeviceListener;
+import de.tinf13aibi.cardboardbro.GestureUtils.MyoListenerTarget;
+import de.tinf13aibi.cardboardbro.GestureUtils.MyoStatus;
 
-public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
+public class MainActivity extends CardboardActivity implements MyoListenerTarget, CardboardView.StereoRenderer {
+    private static final String TAG = "MainActivity";
+
     private ArrayList<IEntity> mEntityList = new ArrayList<>();
-
     private ButtonSet mEntityActionButtons = new ButtonSet();
     private ButtonSet mEntityCreateButtons = new ButtonSet();
     private ButtonSet mKeyboardButtons = new ButtonSet();
-//    private Plane mTempWorkingPlane = new Plane();
     private Plane mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(new Vec3d(), new Vec3d(0, 1, 0));
 
-    private static final String TAG = "MainActivity";
+    private MyoData mMyoData = new MyoData();
+
 
     //TODO: evtl nach User auslagern
 //    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
-//    private AppState mAppState = AppState.WaitForBeginFreeDraw; //Zu Testzwecken manuell AppState setzen
-//    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
 
     private IEntity mEditingEntity;
 
     private User mUser = new User();
     private boolean mMoving = false;
 
-    private Date mClickTime; //TODO: nur temporär zum imitieren von "MYO-Fingerspread"
-
-//    private int score = 0;
-//    private float objectDistance = 12f;
+    private Date mClickTime; //TODO: nur temporär zum imitieren von "MYO-Gesten"
 
     private Vibrator vibrator;
     private CardboardOverlayView overlayView;
 
     //Draw FreeLine
-    private void beginDrawFreeLine(Vec3d point){
-        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
-        polyLineEntity.addVert(point);
-        mEntityList.add(polyLineEntity);
+    private void drawFreeLineBegin(Vec3d point){
+        mEditingEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
+        ((PolyLineEntity)mEditingEntity).addVert(point);
+        mEntityList.add(mEditingEntity);
+
         vibrator.vibrate(50);
+        overlayView.show3DToast("Begin FreeDraw --> WaitForEndFreeLine");
+        mAppState = AppState.WaitForEndFreeLine;
     }
 
-    private void continueDrawFreeLine(Vec3d point){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof PolyLineEntity) {
-            PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
-            polyLineEntity.addVert(point);
+    private void drawFreeLinePoint(Vec3d point){
+        if (mEditingEntity instanceof PolyLineEntity) {
+            ((PolyLineEntity)mEditingEntity).addVert(point);
         }
     }
 
-    private void endDrawFreeLine(Vec3d point){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof PolyLineEntity) {
-            PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
-            polyLineEntity.addVert(point);
-        }
+    private void drawFreeLineEnd(Vec3d point){
+        drawFreeLinePoint(point);
         vibrator.vibrate(50);
+        overlayView.show3DToast("End FreeDraw --> WaitForBeginFreeLine");
+        mAppState = AppState.WaitForBeginFreeLine;
+    }
+
+    private void drawFreeLineAbort(Boolean leave){
+        vibrator.vibrate(50);
+        if (leave){
+            overlayView.show3DToast("Leave FreeLine Mode --> SelectEntityToCreate");
+            mAppState = AppState.SelectEntityToCreate;
+        } else {
+            if (mEditingEntity instanceof PolyLineEntity) {
+                mEntityList.remove(mEditingEntity);
+            }
+            overlayView.show3DToast("Delete Drawed FreeLine --> WaitForBeginFreeLine");
+            mAppState = AppState.WaitForBeginFreeLine;
+        }
+        mEditingEntity = null;
     }
 
     //Draw PolyLine
-    private void beginDrawPolyLine(Vec3d point){
-        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
-        polyLineEntity.addVert(point);
-        polyLineEntity.addVert(point);
-        mEntityList.add(polyLineEntity);
+    private void drawPolyLineBegin(Vec3d point){
+        mEditingEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
+        ((PolyLineEntity)mEditingEntity).addVert(point);
+        ((PolyLineEntity)mEditingEntity).addVert(point);
+        mEntityList.add(mEditingEntity);
         vibrator.vibrate(50);
+        overlayView.show3DToast("Begin PolyLine --> WaitForNextPolyLinePoint");
+        mAppState = AppState.WaitForNextPolyLinePoint;
     }
 
-    private void continueDrawPolyLine(Vec3d point, Boolean fix){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof PolyLineEntity) {
-            PolyLineEntity polyLineEntity = (PolyLineEntity) entity;
-            polyLineEntity.setLastVert(point);
+    private void drawPolyLineNextPoint(Vec3d point, Boolean fix){
+        if (mEditingEntity instanceof PolyLineEntity) {
+            PolyLineEntity polyLineEntity = (PolyLineEntity) mEditingEntity;
+            polyLineEntity.changeLastVert(point);
             if (fix) {
                 polyLineEntity.addVert(point);
+                vibrator.vibrate(50);
+                overlayView.show3DToast("Update PolyLine --> WaitForNextPolyLinePoint");
+                mAppState = AppState.WaitForNextPolyLinePoint;
             }
         }
     }
 
-    private void endDrawPolyLine(){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof PolyLineEntity) {
-            ((PolyLineEntity)entity).delLastVert();
+    private void drawPolyLineEnd(){
+        if (mEditingEntity instanceof PolyLineEntity) {
+            ((PolyLineEntity)mEditingEntity).delLastVert();
         }
         vibrator.vibrate(50);
+        overlayView.show3DToast("End PolyLine --> WaitForBeginPolyLinePoint");
+        mAppState = AppState.WaitForBeginPolyLinePoint;
+    }
+
+    private void drawPolyLineLeave(){
+        mEditingEntity = null;
+        vibrator.vibrate(50);
+        overlayView.show3DToast("Leave PolyLine Mode --> SelectEntityToCreate");
+        mAppState = AppState.SelectEntityToCreate;
     }
 
     //Draw Cylinder
-
-    private void beginDrawCylinder(Vec3d point, Vec3d baseNormal){
-        CylinderEntity cylinderEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cylinderEntity.setCenter(point);
-        cylinderEntity.setRadius(0.1f);
-        cylinderEntity.setHeight(0.1f);
-        cylinderEntity.setBaseNormal(baseNormal);
+    private void drawCylinderBeginCenter(Vec3d point, Vec3d baseNormal){
         mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(point, baseNormal);
-        mEntityList.add(cylinderEntity);
+        mEditingEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+
+        float[] color = new float[]{0.7f, 0.3f, 0.5f, 1};
+        ((CylinderEntity)mEditingEntity).setAttributes(point, baseNormal, 0.1f, 0.1f, color);
+        mEntityList.add(mEditingEntity);
+
         vibrator.vibrate(50);
+        overlayView.show3DToast("Begin Draw Cylinder --> WaitForCylinderRadiusPoint");
+        mAppState = AppState.WaitForCylinderRadiusPoint;
     }
 
-    private void continueDrawCylinderRadius(Vec3d point){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof CylinderEntity) {
-            CylinderEntity cylinderEntity = (CylinderEntity) entity;
+    private void drawCylinderRadius(Vec3d point, Boolean fix){
+        if (mEditingEntity instanceof CylinderEntity) {
+            CylinderEntity cylinderEntity = (CylinderEntity) mEditingEntity;
             cylinderEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, cylinderEntity.getCenter())));
-        }
-    }
+            if (fix){
 
-    private void endDrawCylinderRadius(Vec3d point){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof CylinderEntity) {
-            CylinderEntity cylinderEntity = (CylinderEntity) entity;
-            cylinderEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, cylinderEntity.getCenter())));
-
-            //TODO das ganze auslagern und mTempWorkingPlane updaten, je nachdem in welche richtung user guckt
-            Vec3d baseNormal = cylinderEntity.getBaseNormal().copy();
-            Vec3d firstCycleDir = new Vec3d();
-            Vec3d secondCycleDir = new Vec3d();
-            VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, baseNormal);
+                //TODO das ganze auslagern und mTempWorkingPlane updaten, je nachdem in welche richtung user guckt
+                Vec3d baseNormal = cylinderEntity.getBaseNormal().copy();
+                Vec3d firstCycleDir = new Vec3d();
+                Vec3d secondCycleDir = new Vec3d();
+                VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, baseNormal);
 
 //            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), firstCycleDir);
-            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), secondCycleDir);
+                mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), secondCycleDir);
+                vibrator.vibrate(50);
+                overlayView.show3DToast("Update Cylinder Radius --> WaitForCylinderHeightPoint");
+                mAppState = AppState.WaitForCylinderHeightPoint;
+            }
         }
-
-        vibrator.vibrate(50);
     }
 
-    private void continueDrawCylinderHeight(Vec3d point){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof CylinderEntity) {
-            CylinderEntity cylinderEntity = (CylinderEntity) entity;
+    private void drawCylinderEndHeight(Vec3d point, Boolean fix){
+        if (mEditingEntity instanceof CylinderEntity) {
+            CylinderEntity cylinderEntity = (CylinderEntity) mEditingEntity;
             Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), cylinderEntity.getBaseNormal());
 
             float distance = VecMath.calcDistancePlanePoint(basePlane, point);
             cylinderEntity.setHeight(distance);
         }
-    }
-
-    private void endDrawCylinderHeight(Vec3d point){
-        IEntity entity = mEntityList.get(mEntityList.size()-1);
-        if (entity instanceof CylinderEntity) {
-            CylinderEntity cylinderEntity = (CylinderEntity) entity;
-            Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), cylinderEntity.getBaseNormal());
-
-            float distance = VecMath.calcDistancePlanePoint(basePlane, point);
-            cylinderEntity.setHeight(distance);
+        if (fix){
+            vibrator.vibrate(50);
+            overlayView.show3DToast("End Draw Cylinder --> WaitForCylinderCenterPoint");
+            mAppState = AppState.WaitForCylinderCenterPoint;
         }
-        vibrator.vibrate(50);
     }
 
-    /**
-    * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
-    *
-    * @param label Label to report in case of error.
-    */
-    private static void checkGLError(String label) {
-        int error;
-        if ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e(TAG, label + ": glError " + error);
-            throw new RuntimeException(label + ": glError " + error);
+    private void drawCylinderAbort(Boolean leave){
+        vibrator.vibrate(50);
+        if (leave){
+            overlayView.show3DToast("Leave Cylinder Mode --> SelectEntityToCreate");
+            mAppState = AppState.SelectEntityToCreate;
+        } else {
+            if (mEditingEntity instanceof CylinderEntity) {
+                mEntityList.remove(mEditingEntity);
+            }
+            overlayView.show3DToast("Delete Drawed Cylinder --> WaitForCylinderCenterPoint");
+            mAppState = AppState.WaitForCylinderCenterPoint;
+        }
+        mEditingEntity = null;
+    }
+
+    private void processPoseAndAppStateFreeLine(Pose pose, AppState appState){
+        switch (appState){
+            case WaitForBeginFreeLine:
+                switch (pose){
+                    case FIST: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
+                    case FINGERS_SPREAD: drawFreeLineAbort(true); break;
+                }
+                break;
+            case WaitForEndFreeLine:
+                switch (pose){
+                    case FIST: drawFreeLineEnd(mUser.getArmCrosshair().getPosition()); break;
+                    case FINGERS_SPREAD: drawFreeLineAbort(false); break;
+                }
+                break;
+        }
+    }
+
+    private void processPoseAndAppStatePolyLine(Pose pose, AppState appState){
+        switch (appState){
+            case WaitForBeginPolyLinePoint:
+                switch (pose){
+                    case FIST: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
+                    case FINGERS_SPREAD: drawPolyLineLeave(); break;
+                }
+                break;
+            case WaitForNextPolyLinePoint:
+                switch (pose){
+                    case FIST: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
+                    case FINGERS_SPREAD: drawPolyLineEnd(); break;
+                }
+                break;
+        }
+    }
+
+    private void processPoseAndAppStateCylinder(Pose pose, AppState appState){
+        switch (appState){
+            case WaitForCylinderCenterPoint:
+                switch (pose){
+                    case FIST: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+                    case FINGERS_SPREAD: drawCylinderAbort(true); break;
+                }
+                break;
+            case WaitForCylinderRadiusPoint:
+                switch (pose){
+                    case FIST: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
+                    case FINGERS_SPREAD: drawCylinderAbort(false); break;
+                }
+                break;
+            case WaitForCylinderHeightPoint:
+                switch (pose){
+                    case FIST: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+                    case FINGERS_SPREAD: drawCylinderAbort(false); break;
+                }
+                break;
+        }
+    }
+
+    private void processPoseAndAppState(Pose pose, AppState appState){
+        AppStateGroup appStateGroup = AppStateGroup.getFromAppState(appState);
+        switch (appStateGroup) {
+            case G_DrawFreeLine: processPoseAndAppStateFreeLine(pose, appState); break;
+            case G_DrawPolyLine: processPoseAndAppStatePolyLine(pose, appState); break;
+            case G_DrawCylinder: processPoseAndAppStateCylinder(pose, appState); break;
+            case G_DrawCuboid: break;
+            case G_DrawSphere: break;
+            case G_WriteText: break;
+            case G_SelectButton: break;
+            case G_MoveEntity: break;
+            case G_DeleteEntity: break;
+            case G_Unknown: mAppState = AppState.SelectAction; break;
+        }
+    }
+
+    private void initOnTouchListener(){
+        CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
+        cardboardView.setRestoreGLStateEnabled(false);
+        cardboardView.setRenderer(this);
+        setCardboardView(cardboardView);
+        cardboardView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        //TODO Moving später wieder aktiviedern
+//                        overlayView.show3DToast("Accelerating");
+//                        mMoving = true;
+                        mClickTime = new Date();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        //TODO Moving später wieder aktiviedern
+//                        overlayView.show3DToast("Slowing down");
+//                        mMoving = false;
+                        Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
+                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
+
+                        if (timeSeconds <= 1) { //TODO : Wechsel von FIST auf REST imitieren
+                            OnPoseChange(Pose.FIST, Pose.REST);
+                        } else if (timeSeconds > 1) {  //TODO : Wechsel von FINGERS_SPREAD auf REST imitieren
+                            OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
+                        }
+                        //TODO : MYO-Waveout imitieren
+
+                        //TODO später entfernen
+//                        if (mAppState == AppState.WaitForBeginFreeLine && timeSeconds<=1) {
+//                            drawFreeLineBegin(mUser.getArmCrosshair().getPosition());
+//                        }
+//                        else if (mAppState == AppState.WaitForBeginFreeLine && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawFreeLineAbort(true);
+//                        }
+//                        else if (mAppState == AppState.WaitForEndFreeLine && timeSeconds<=1) {
+//                            drawFreeLineEnd(mUser.getArmCrosshair().getPosition());
+//                        }
+//                        else if (mAppState == AppState.WaitForEndFreeLine && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawFreeLineAbort(false);
+//                        }
+//
+//                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds<=1) {
+//                            drawPolyLineBegin(mUser.getArmCrosshair().getPosition());
+//                        }
+//                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawPolyLineLeave();
+//                        }
+//                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds<=1) {
+//                            drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true);
+//                        }
+//                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawPolyLineEnd();
+//                        }
+//
+//                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds<=1) {
+//                            drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal());
+//                        }
+//                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawCylinderAbort(true);
+//                        }
+//                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds<=1) {
+//                            drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true);
+//                        }
+//                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawCylinderAbort(false);
+//                        }
+//                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds<=1) {
+//                            drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true);
+//                        }
+//                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
+//                            drawCylinderAbort(false);
+//                        }
+//                        break;
+                }
+                return false;
+            }
+        });
+    }
+
+    private void initializeMyoHub() {
+        MyoDeviceListener.getInstance().addTarget(this);
+        Hub myoHub = Hub.getInstance();
+        try {
+            if (!myoHub.init(this)) {
+                overlayView.show3DToast("Could not initialize MYO Hub");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        initializeMYOListenerForHub(myoHub);
+    }
+
+    private void initializeMYOListenerForHub(Hub hub) {
+        try {
+            hub.removeListener(MyoDeviceListener.getInstance());
+            hub.addListener(MyoDeviceListener.getInstance());
+            hub.setLockingPolicy(Hub.LockingPolicy.NONE);
+            if (hub.getConnectedDevices().size() == 0) {
+                hub.attachToAdjacentMyo();
+            }
+        } catch (Exception e) {
+            overlayView.show3DToast("Could not initialize MYO Listener");
         }
     }
 
@@ -224,103 +421,26 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.common_ui);
-        CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-        cardboardView.setRestoreGLStateEnabled(false);
-        cardboardView.setRenderer(this);
-        setCardboardView(cardboardView);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
         overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
         overlayView.show3DToast("Push the button to move around.");
-        cardboardView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-//                        overlayView.show3DToast("Accelerating");
-//                        mMoving = true;
-                        mClickTime = new Date();
-                        if (mAppState == AppState.WaitForBeginFreeDraw) {
-                            overlayView.show3DToast("Begin FreeDraw");
-                            beginDrawFreeLine(mUser.getArmCrosshair().getPosition());
-                            mAppState = AppState.DrawingFreeHand;
-                        }break;
 
-                    case MotionEvent.ACTION_UP:
-                        //TODO : MYO-Waveout imitieren
-//                        overlayView.show3DToast("Slowing down");
-//                        mMoving = false;
-                        Date diffBetweenDownAndUp = new Date(new Date().getTime()-mClickTime.getTime());
-                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
-                        if (mAppState == AppState.DrawingFreeHand) {
-                            overlayView.show3DToast("End FreeDraw");
-                            endDrawFreeLine(mUser.getArmCrosshair().getPosition());
-                            mAppState = AppState.WaitForBeginFreeDraw;
-                        }
-//                        else if (mAppState == AppState.WaitForBeginFreeDraw /*&& timeSeconds>1 bzw. Fingerspread*/) { //nicht möglich da durch ACTION_DOWN der Zustand "WaitForBeginFreeDraw"
-//                            overlayView.show3DToast("Leave FreeDraw State --> SelectEntityToCreate");                 //innerhalb von ACTION_UP nicht ermöglicht wird
-//                            mAppState = AppState.SelectEntityToCreate;
-//                        }
-                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds<=1) {
-                            overlayView.show3DToast("Begin PolyLine");
-                            beginDrawPolyLine(mUser.getArmCrosshair().getPosition());
-                            mAppState = AppState.WaitForNextPolyLinePoint;
-                        }
-                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-                            overlayView.show3DToast("Leave PolyLine State --> SelectEntityToCreate");
-                            mAppState = AppState.SelectEntityToCreate;
-                        }
-                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds<=1) {
-                            overlayView.show3DToast("Update PolyLine");
-                            continueDrawPolyLine(mUser.getArmCrosshair().getPosition(), true /*fix*/);
-                            mAppState = AppState.WaitForNextPolyLinePoint;
-                        }
-                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-                            overlayView.show3DToast("End PolyLine");
-                            endDrawPolyLine();
-                            mAppState = AppState.WaitForBeginPolyLinePoint;
-                        }
+        initOnTouchListener();
+        initializeMyoHub();
+        OnUpdateStatus(MyoDeviceListener.getInstance().getStatus());
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        MyoDeviceListener.getInstance().removeTarget(this);
+    }
 
-                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds<=1) {
-                            overlayView.show3DToast("Begin Cylinder");
-                            beginDrawCylinder(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal());
-                            mAppState = AppState.WaitForCylinderRadiusPoint;
-                        }
-                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-                            overlayView.show3DToast("Leave Cylinder State --> SelectEntityToCreate");
-                            mEntityList.remove(mEntityList.size() - 1);
-                            mAppState = AppState.SelectEntityToCreate;
-                        }
-                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds<=1) {
-                            overlayView.show3DToast("Update Cylinder Radius");
-                            endDrawCylinderRadius(mUser.getArmCrosshair().getPosition());
-                            mAppState = AppState.WaitForCylinderHeightPoint;
-                        }
-                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-                            overlayView.show3DToast("Delete Cylinder");
-                            endDrawCylinderRadius(mUser.getArmCrosshair().getPosition());
-                            mEntityList.remove(mEntityList.size() - 1);
-                            mAppState = AppState.WaitForCylinderCenterPoint;
-                        }
-                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds<=1) {
-                            overlayView.show3DToast("End Cylinder with Height");
-                            endDrawCylinderHeight(mUser.getArmCrosshair().getPosition());
-                            mAppState = AppState.WaitForCylinderCenterPoint;
-                        }
-                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-                            overlayView.show3DToast("Delete Cylinder");
-                            endDrawCylinderHeight(mUser.getArmCrosshair().getPosition());
-                            mEntityList.remove(mEntityList.size() - 1);
-                            mAppState = AppState.WaitForCylinderCenterPoint;
-                        }
-
-                        break;
-                }
-                return false;
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        OnUpdateStatus(MyoDeviceListener.getInstance().getStatus());
     }
 
     @Override
@@ -362,7 +482,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     }
 
     private void setupEntityCreateButtonSet(){
-        AppState[] appStates = new AppState[]{  AppState.SelectAction, AppState.WaitForBeginFreeDraw, AppState.WaitForBeginPolyLinePoint, AppState.WaitForSphereCenterPoint,
+        AppState[] appStates = new AppState[]{  AppState.SelectAction, AppState.WaitForBeginFreeLine, AppState.WaitForBeginPolyLinePoint, AppState.WaitForSphereCenterPoint,
                                                 AppState.WaitForCylinderCenterPoint, AppState.WaitForCuboidBasePoint1, AppState.WaitForKeyboardInput};
         for (int i=0; i<7; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
@@ -551,17 +671,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             mUser.calcArmPointingAt(entityListForArm);
         }
 
-        if (mAppState == AppState.DrawingFreeHand) {
-            continueDrawFreeLine(mUser.getArmCrosshair().getPosition());
+        if (mAppState == AppState.WaitForEndFreeLine) {
+            drawFreeLinePoint(mUser.getArmCrosshair().getPosition());
         }
         else if (mAppState == AppState.WaitForNextPolyLinePoint) {
-            continueDrawPolyLine(mUser.getArmCrosshair().getPosition(), false /*fix*/);
+            drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), false);
         }
         else if (mAppState == AppState.WaitForCylinderRadiusPoint) {
-            continueDrawCylinderRadius(mUser.getArmCrosshair().getPosition());
+            drawCylinderRadius(mUser.getArmCrosshair().getPosition(), false);
         }
         else if (mAppState == AppState.WaitForCylinderHeightPoint) {
-            continueDrawCylinderHeight(mUser.getArmCrosshair().getPosition());
+            drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), false);
         }
 
         mEntityActionButtons.rotateStep();
@@ -609,6 +729,52 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     @Override
     public void onFinishFrame(Viewport viewport) {}
+
+    /**
+     * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
+     *
+     * @param label Label to report in case of error.
+     */
+    private static void checkGLError(String label) {
+        int error;
+        if ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
+            Log.e(TAG, label + ": glError " + error);
+            throw new RuntimeException(label + ": glError " + error);
+        }
+    }
+
+    @Override
+    public void OnPoseChange(Pose previousPose, Pose newPose) {
+        reactOnPoseChange(previousPose, newPose);
+    }
+
+    @Override
+    public void OnArmForwardUpdate(Quaternion armForward) {
+        mMyoData.setArmForward(armForward);
+    }
+
+    @Override
+    public void OnArmCenterUpdate(Quaternion armForwardCenter) {
+        overlayView.show3DToast("TODO: react OnArmCenterUpdate");
+        mMyoData.setArmForwardCenter(armForwardCenter);
+    }
+
+    @Override
+    public void OnUpdateStatus(MyoStatus status) {
+        mMyoData.setMyoStatus(status);
+        reactOnStatus(status);
+    }
+
+    private void reactOnPoseChange(Pose previousPose, Pose newPose){
+//        overlayView.show3DToast("TODO: react on Pose Change:\n" + previousPose.toString() + " --> " + pose.toString());
+        if (newPose == Pose.REST) {
+            processPoseAndAppState(previousPose, mAppState);
+        }
+    }
+
+    private void reactOnStatus(MyoStatus status){
+        overlayView.show3DToast("TODO: react on Status: " + status.getValue());
+    }
 
     //Nicht verwenden, da es kein "onCardboardTriggerRelease" gibt
 //    @Override

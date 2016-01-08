@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "de.tinf13aibi.cardboardbro"
-        minSdkVersion 16
+        minSdkVersion 18
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -20,6 +20,12 @@ android {
 }
 
 dependencies {
+    repositories {
+        maven {
+            url '../BRO_App/libs/myosdk'
+        }
+    }
+    compile 'com.thalmic:myosdk:0.10.0@aar'
     compile files('libs/libprotobuf-java-2.6-nano.jar')
     compile files('libs/cardboard.jar')
     compile fileTree(include: ['*.jar'], dir: 'libs')

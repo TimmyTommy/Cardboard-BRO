@@ -78,4 +78,13 @@ public class CylinderEntity extends BaseEntity implements IEntity  {
         Matrix.setIdentityM(mModel, 0);
         Matrix.translateM(mModel, 0, mCenter.x, mCenter.y, mCenter.z);
     }
+
+    public void setAttributes(Vec3d center, Vec3d baseNormal, float radius, float height, float[] color){
+        setCenter(center);
+        mBaseNormal = baseNormal;
+        mRadius = radius;
+        mHeight = height;
+        mColor = color;
+        recreateGeometry();
+    }
 }
