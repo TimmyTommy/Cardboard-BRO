@@ -4,6 +4,7 @@ import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
 
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
  * Created by dthom on 08.01.2016.
@@ -26,15 +27,22 @@ public class MyoData {
         return mPose;
     }
 
-    public Pose setPose(Pose pose) {
-        Pose previousPose = mPose;
+    public void setPose(Pose pose) {
         mPose = pose;
-        return previousPose;
-        //TODO evtl wenn neue pose == REST --> auswerten was davor war: z.B. Wechsel von FINGERSPREAD auf REST bereutet
     }
 
     public Quaternion getArmForward() {
         return mArmForward;
+    }
+
+    public Vec3d getArmForwardVec() {
+        float[] quaternion = new float[]{
+            (float)mArmForward.x(),
+            (float)mArmForward.y(),
+            (float)mArmForward.z(),
+            (float)(float)mArmForward.w()
+        };
+        return VecMath.calcQuaternionToForwardVector(quaternion);
     }
 
     public void setArmForward(Quaternion armForward) {

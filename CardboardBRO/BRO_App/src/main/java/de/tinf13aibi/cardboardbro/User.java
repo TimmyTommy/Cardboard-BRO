@@ -237,4 +237,8 @@ public class User {
     public void setMoving(Boolean moving) {
         mMoving = moving;
     }
+
+    public void setArmForward(Vec3d armForward) {
+        mArmForward.assignPoint3d(armForward);
+    }
 }

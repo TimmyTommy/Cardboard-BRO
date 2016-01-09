@@ -2,14 +2,18 @@ package de.tinf13aibi.cardboardbro.Geometry;
 
 import android.opengl.Matrix;
 
-import java.util.ArrayList;
-
-import de.tinf13aibi.cardboardbro.Constants;
-
 /**
  * Created by dth on 27.11.2015.
  */
 public class VecMath {
+    public static Vec3d calcQuaternionToForwardVector(float[] quaternion){
+        float[] mat = calcQuaternionToMatrix(quaternion);
+        float[] initVec = new Vec3d(0,0,-1).toFloatArray4d();
+        float[] forwardVec = new float[4];
+        Matrix.multiplyMV(forwardVec, 0, mat, 0, initVec, 0);
+        return new Vec3d(forwardVec);
+    }
+
     public static float[] calcQuaternionToMatrix(float[] quaternion){
         float x = quaternion[0];
         float y = quaternion[1];
@@ -236,8 +240,8 @@ public class VecMath {
         v1v2 = calcVecMinusVec(triangle.getP2(), triangle.getP1());
         v1v3 = calcVecMinusVec(triangle.getP3(), triangle.getP1());
 
-        cross = calcCrossProduct(v1v2, v1v3);
-        cross = calcNormalizedVector(calcVecTimesScalar(cross, -normalsDirection)); //TODO testen wieso Normalvektor falschrum ist
+        cross = calcCrossProduct(v1v3, v1v2);
+        cross = calcNormalizedVector(calcVecTimesScalar(cross, normalsDirection)); //TODO testen wieso Normalvektor falschrum ist
 
         return cross;
     }

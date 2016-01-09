@@ -47,7 +47,7 @@ public class CollisionDrawingSpacePoints {
         }
     }
 
-    private boolean isCollideEntity(IEntity entity){ //TODO überdenken: vllt den Körper-Entities ein Attribut geben "mHasFaces"
+    private boolean isCollideEntity(IEntity entity){ //TODO überdenken: vllt den Körper-Entities ein Attribut geben "mHasFaces" um nich immer ergänzen zu müssen
         return  entity instanceof FloorEntity ||
                 entity instanceof CylinderCanvasEntity ||
                 entity instanceof CylinderEntity ||

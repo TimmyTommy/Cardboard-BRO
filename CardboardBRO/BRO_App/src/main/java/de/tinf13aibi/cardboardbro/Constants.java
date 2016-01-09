@@ -9,8 +9,8 @@ public interface Constants {
 //    int CYLINDER_SEGMENTS = 72; //360 / 72 = 5° pro Segment
 //    int CYLINDER_SEGMENTS = 36; //360 / 72 = 10° pro Segment
     int CYLINDER_SEGMENTS = 10; //aus performancegründen erstmal wenig segmente
-    //TODO: für performance eine "hitbox" um RUNDE objekte machen
-    //TODO: erstmal nur Collision mit Hinbox prüfen, wenn ja dann mit rundem Objekt
+    //TODO: für performance eine "hitbox" um RUNDE objekte erzeugen
+    //TODO: zuerst nur Collision mit Hinbox prüfen, wenn Collision dann mit rundem Objekt bzw. allen Dreiecken
     float Z_NEAR = 0.1f;
     float Z_FAR = 1000.0f;
     float CANVAS_CYL_RADIUS = 50.0f;

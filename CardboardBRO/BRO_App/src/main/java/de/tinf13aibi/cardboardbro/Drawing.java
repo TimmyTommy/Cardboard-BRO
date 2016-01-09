@@ -1,6 +1,5 @@
 package de.tinf13aibi.cardboardbro;
 
-import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import java.util.ArrayList;
@@ -31,17 +30,21 @@ public class Drawing {
     private ButtonSet mKeyboardButtons = new ButtonSet();
     private Plane mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(new Vec3d(), new Vec3d(0, 1, 0));
 
-    public Drawing(){
-
+    public void drawEntityList(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+        for (IEntity entity : mEntityList) {
+            entity.draw(view, perspective, lightPosInEyeSpace);
+        }
     }
 
-    public void init(){
+    public Drawing init(){
         setupCylinderCanvas();
         setupFloor();
 
         setupEntityActionButtonSet();
         setupEntityCreateButtonSet();
         setupTestObjects();
+
+        return this;
     }
 
     private void setupCylinderCanvas(){
@@ -168,4 +171,27 @@ public class Drawing {
 //        mEntityList.add(polyLineEntity);
     }
 
+    public Plane getTempWorkingPlane() {
+        return mTempWorkingPlane;
+    }
+
+    public ArrayList<IEntity> getEntityList() {
+        return mEntityList;
+    }
+
+    public ButtonSet getEntityActionButtons() {
+        return mEntityActionButtons;
+    }
+
+    public ButtonSet getEntityCreateButtons() {
+        return mEntityCreateButtons;
+    }
+
+    public ButtonSet getKeyboardButtons() {
+        return mKeyboardButtons;
+    }
+
+    public void setTempWorkingPlane(Plane tempWorkingPlane) {
+        mTempWorkingPlane = tempWorkingPlane;
+    }
 }
