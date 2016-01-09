@@ -17,6 +17,7 @@
 package de.tinf13aibi.cardboardbro;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
@@ -42,6 +43,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
+import de.tinf13aibi.cardboardbro.Entities.CubeEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
@@ -53,6 +55,8 @@ import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
 import de.tinf13aibi.cardboardbro.Enums.Shaders;
+import de.tinf13aibi.cardboardbro.Geometry.CollisionPlanePoint;
+import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
 import de.tinf13aibi.cardboardbro.Geometry.Plane;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
@@ -72,17 +76,19 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 
     private MyoData mMyoData = new MyoData();
 
-
     //TODO: evtl nach User auslagern
 //    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
 
     private IEntity mEditingEntity;
 
+    private Drawing mDrawing = new Drawing();
+
     private User mUser = new User();
-    private boolean mMoving = false;
+    private StateMachine mStateMachine = new StateMachine(mUser);
 
     private Date mClickTime; //TODO: nur temporär zum imitieren von "MYO-Gesten"
 
@@ -233,6 +239,72 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         mEditingEntity = null;
     }
 
+    //Draw Cylinder
+    private void drawCuboidBeginBasePoint1(Vec3d point, Vec3d baseNormal){
+        mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(point, baseNormal);
+        mEditingEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+
+        float[] color = new float[]{0.7f, 0.7f, 0.5f, 1};
+        ((CuboidEntity)mEditingEntity).setAttributes(point, baseNormal, 0.1f, 0.1f, 0.1f, color);
+        mEntityList.add(mEditingEntity);
+
+        vibrator.vibrate(50);
+        overlayView.show3DToast("Begin Draw Cuboid --> WaitForCuboidBasePoint2");
+        mAppState = AppState.WaitForCuboidBasePoint2;
+    }
+
+    private void drawCuboidBeginBasePoint2(CollisionTrianglePoint collisionPoint, Boolean fix){
+        if (mEditingEntity instanceof CuboidEntity && collisionPoint instanceof CollisionPlanePoint) {
+            CuboidEntity cuboidEntity = (CuboidEntity) mEditingEntity;
+            Vec3d pos = ((CollisionPlanePoint) collisionPoint).mTRS.copy();
+            cuboidEntity.setDepthAndWidth(pos.y, pos.z);
+            if (fix){
+
+                //TODO das ganze auslagern und mTempWorkingPlane updaten, je nachdem in welche richtung user guckt
+                Vec3d baseNormal = cuboidEntity.getBaseNormal().copy();
+                Vec3d depthDir = new Vec3d();
+                Vec3d widthDir = new Vec3d();
+                VecMath.calcCrossedVectorsFromNormal(widthDir, depthDir, baseNormal);
+
+//            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), depthDir);
+                mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), widthDir);
+                vibrator.vibrate(50);
+                overlayView.show3DToast("Update Cuboid Point2 --> WaitForCuboidHeightPoint");
+                mAppState = AppState.WaitForCuboidHeightPoint;
+            }
+        }
+    }
+
+    private void drawCuboidEndHeight(Vec3d point, Boolean fix){
+        if (mEditingEntity instanceof CuboidEntity) {
+            CuboidEntity cuboidEntity = (CuboidEntity) mEditingEntity;
+            Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), cuboidEntity.getBaseNormal());
+
+            float distance = VecMath.calcDistancePlanePoint(basePlane, point);
+            cuboidEntity.setHeight(distance);
+        }
+        if (fix){
+            vibrator.vibrate(50);
+            overlayView.show3DToast("End Draw Cuboid --> WaitForCuboidBasePoint1");
+            mAppState = AppState.WaitForCuboidBasePoint1;
+        }
+    }
+
+    private void drawCuboidAbort(Boolean leave){
+        vibrator.vibrate(50);
+        if (leave){
+            overlayView.show3DToast("Leave Cuboid Mode --> SelectEntityToCreate");
+            mAppState = AppState.SelectEntityToCreate;
+        } else {
+            if (mEditingEntity instanceof CuboidEntity) {
+                mEntityList.remove(mEditingEntity);
+            }
+            overlayView.show3DToast("Delete Drawed Cuboid --> WaitForCuboidBasePoint1");
+            mAppState = AppState.WaitForCuboidBasePoint1;
+        }
+        mEditingEntity = null;
+    }
+
     private void processPoseAndAppStateFreeLine(Pose pose, AppState appState){
         switch (appState){
             case WaitForBeginFreeLine:
@@ -290,13 +362,37 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         }
     }
 
+    private void processPoseAndAppStateCuboid(Pose pose, AppState appState){
+        switch (appState){
+            case WaitForCuboidBasePoint1:
+                switch (pose){
+                    case FIST: drawCuboidBeginBasePoint1(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+                    case FINGERS_SPREAD: drawCuboidAbort(true); break;
+                }
+                break;
+            case WaitForCuboidBasePoint2:
+                switch (pose){
+//                    case FIST: drawCuboidBeginBasePoint2(mUser.getArmCrosshair().getPosition(), true); break;
+                    case FIST: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
+                    case FINGERS_SPREAD: drawCuboidAbort(false); break;
+                }
+                break;
+            case WaitForCuboidHeightPoint:
+                switch (pose){
+                    case FIST: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+                    case FINGERS_SPREAD: drawCuboidAbort(false); break;
+                }
+                break;
+        }
+    }
+
     private void processPoseAndAppState(Pose pose, AppState appState){
         AppStateGroup appStateGroup = AppStateGroup.getFromAppState(appState);
         switch (appStateGroup) {
             case G_DrawFreeLine: processPoseAndAppStateFreeLine(pose, appState); break;
             case G_DrawPolyLine: processPoseAndAppStatePolyLine(pose, appState); break;
             case G_DrawCylinder: processPoseAndAppStateCylinder(pose, appState); break;
-            case G_DrawCuboid: break;
+            case G_DrawCuboid:   processPoseAndAppStateCuboid(pose, appState); break;
             case G_DrawSphere: break;
             case G_WriteText: break;
             case G_SelectButton: break;
@@ -318,13 +414,13 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
                     case MotionEvent.ACTION_DOWN:
                         //TODO Moving später wieder aktiviedern
 //                        overlayView.show3DToast("Accelerating");
-//                        mMoving = true;
+//                        mUser.setMoving(true);
                         mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
                         //TODO Moving später wieder aktiviedern
 //                        overlayView.show3DToast("Slowing down");
-//                        mMoving = false;
+                        mUser.setMoving(false);
                         Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
                         float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
 
@@ -334,53 +430,6 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
                             OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
                         }
                         //TODO : MYO-Waveout imitieren
-
-                        //TODO später entfernen
-//                        if (mAppState == AppState.WaitForBeginFreeLine && timeSeconds<=1) {
-//                            drawFreeLineBegin(mUser.getArmCrosshair().getPosition());
-//                        }
-//                        else if (mAppState == AppState.WaitForBeginFreeLine && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawFreeLineAbort(true);
-//                        }
-//                        else if (mAppState == AppState.WaitForEndFreeLine && timeSeconds<=1) {
-//                            drawFreeLineEnd(mUser.getArmCrosshair().getPosition());
-//                        }
-//                        else if (mAppState == AppState.WaitForEndFreeLine && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawFreeLineAbort(false);
-//                        }
-//
-//                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds<=1) {
-//                            drawPolyLineBegin(mUser.getArmCrosshair().getPosition());
-//                        }
-//                        else if (mAppState == AppState.WaitForBeginPolyLinePoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawPolyLineLeave();
-//                        }
-//                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds<=1) {
-//                            drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true);
-//                        }
-//                        else if (mAppState == AppState.WaitForNextPolyLinePoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawPolyLineEnd();
-//                        }
-//
-//                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds<=1) {
-//                            drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal());
-//                        }
-//                        else if (mAppState == AppState.WaitForCylinderCenterPoint && timeSeconds>1) {  //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawCylinderAbort(true);
-//                        }
-//                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds<=1) {
-//                            drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true);
-//                        }
-//                        else if (mAppState == AppState.WaitForCylinderRadiusPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawCylinderAbort(false);
-//                        }
-//                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds<=1) {
-//                            drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true);
-//                        }
-//                        else if (mAppState == AppState.WaitForCylinderHeightPoint && timeSeconds>1) { //Wenn ACTION_DOWN länger als 1 sec her ==> imitiere Fingerspread
-//                            drawCylinderAbort(false);
-//                        }
-//                        break;
                 }
                 return false;
             }
@@ -406,7 +455,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
             hub.addListener(MyoDeviceListener.getInstance());
             hub.setLockingPolicy(Hub.LockingPolicy.NONE);
             if (hub.getConnectedDevices().size() == 0) {
-                hub.attachToAdjacentMyo();
+//                hub.attachToAdjacentMyo(); //TODO später aktivieren
             }
         } catch (Exception e) {
             overlayView.show3DToast("Could not initialize MYO Listener");
@@ -520,47 +569,47 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
     private void setupTestObjects(){
         BaseEntity entity;
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 1, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, -1, 2, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 2, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, 1, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 3, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, -1, 0, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 0, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, 0, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         mEntityList.add(entity);
 
-        entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0.05f, 0, -0.50f);
         Matrix.scaleM(entity.getModel(), 0, 0.055f, 0.055f, 0.055f);
         mEntityList.add(entity);
@@ -574,10 +623,14 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 
         cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         cylEntity.setColor(new float[]{0, 0, 1, 1});
-        cylEntity.setHeight(1);
+        cylEntity.setHeight(-1);
         cylEntity.setRadius(1);
         Matrix.translateM(cylEntity.getModel(), 0, -1f, 0, -5.0f);
         mEntityList.add(cylEntity);
+
+        CuboidEntity cuboidEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        cuboidEntity.setAttributes(new Vec3d(2f, 0, -5.0f), new Vec3d(0,1,0), -1, -2, -1, new float[]{1, 1, 0, 1});
+        mEntityList.add(cuboidEntity);
 
 //Test Polyline
 //        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
@@ -602,7 +655,10 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
         initPrograms();
+
         mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
+
+        mDrawing.init();
 
         setupCylinderCanvas();
         setupFloor();
@@ -627,8 +683,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         mUser.setHeadView(headView);
         mUser.getArmForward().assignPoint3d(mUser.getEyeForward()); //TODO: ArmForward (Armrichtung) von MYO zuweisen
 
-        Vec3d acceleration = VecMath.calcVecTimesScalar(mUser.getEyeForward(), mMoving ? 5:0);
-        mUser.move(acceleration);
+        mUser.move();
 
         mUser.calcEyeLookingAt(mEntityList);
 
@@ -667,6 +722,12 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 ////            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylCenter, mUser.getArmForward());
             mUser.calcArmPointingAt(mTempWorkingPlane);
         }
+        else if (mAppState == AppState.WaitForCuboidBasePoint2) {
+            mUser.calcArmPointingAt(mTempWorkingPlane);
+        }
+        else if (mAppState == AppState.WaitForCuboidHeightPoint) {
+            mUser.calcArmPointingAt(mTempWorkingPlane);
+        }
         else {
             mUser.calcArmPointingAt(entityListForArm);
         }
@@ -682,6 +743,12 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         }
         else if (mAppState == AppState.WaitForCylinderHeightPoint) {
             drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), false);
+        }
+        else if (mAppState == AppState.WaitForCuboidBasePoint2) {
+            drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), false);
+        }
+        else if (mAppState == AppState.WaitForCuboidHeightPoint) {
+            drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), false);
         }
 
         mEntityActionButtons.rotateStep();

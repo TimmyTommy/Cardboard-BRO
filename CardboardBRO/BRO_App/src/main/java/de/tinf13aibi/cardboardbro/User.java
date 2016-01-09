@@ -42,6 +42,8 @@ public class User {
 
     private Date mLastUpdate = new Date();
 
+    private Boolean mMoving = false;
+
     public void drawCrosshairs(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         if (mEyeCrosshair != null) {
             mEyeCrosshair.draw(view, perspective, lightPosInEyeSpace);
@@ -98,6 +100,11 @@ public class User {
         return mArmPointingAt;
     }
 
+    public float[] move(){
+        Vec3d acceleration = VecMath.calcVecTimesScalar(getEyeForward(), mMoving ? 5:0);
+        return move(acceleration);
+    }
+
     public float[] move(Vec3d acceleration){
         Date timeDelta = new Date(new Date().getTime()-mLastUpdate.getTime());
         float timeSeconds = timeDelta.getTime() * 0.001f;
@@ -148,9 +155,9 @@ public class User {
 
     public float[] getCamera() {
         float[] camera = new float[16];
-        Matrix.setLookAtM(camera,0, mPosition.x, mPosition.y, mPosition.z,
-                                    mCenterOfView.x, mCenterOfView.y, mCenterOfView.z,
-                                    mUpVector.x, mUpVector.y, mUpVector.z);
+        Matrix.setLookAtM(camera, 0, mPosition.x, mPosition.y, mPosition.z,
+                mCenterOfView.x, mCenterOfView.y, mCenterOfView.z,
+                mUpVector.x, mUpVector.y, mUpVector.z);
         return camera;
     }
 
@@ -221,5 +228,13 @@ public class User {
 
     public CrosshairEntity getArmCrosshair() {
         return mArmCrosshair;
+    }
+
+    public Boolean getMoving() {
+        return mMoving;
+    }
+
+    public void setMoving(Boolean moving) {
+        mMoving = moving;
     }
 }

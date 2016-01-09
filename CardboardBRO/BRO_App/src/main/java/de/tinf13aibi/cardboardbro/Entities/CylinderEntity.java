@@ -24,7 +24,7 @@ public class CylinderEntity extends BaseEntity implements IEntity  {
     }
 
     private void recreateGeometry(){ //TODO: optimieren, damit nicht immer ganze geom recreated wird
-        GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mHeight, mColor, mHeight<0);
+        GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
     }
 

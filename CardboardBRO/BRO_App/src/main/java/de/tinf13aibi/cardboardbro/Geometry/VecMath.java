@@ -256,7 +256,8 @@ public class VecMath {
             vecHorizontalOut.x = 1;
             vecHorizontalOut.z = -normal.x*vecHorizontalOut.x/normal.z;
         }
-        vecVerticalOut.assignPoint3d(VecMath.calcCrossProduct(normal, vecHorizontalOut));
+//        vecVerticalOut.assignPoint3d(VecMath.calcCrossProduct(normal, vecHorizontalOut));
+        vecVerticalOut.assignPoint3d(VecMath.calcCrossProduct(vecHorizontalOut, normal));
 
         vecHorizontalOut.assignPoint3d(VecMath.calcNormalizedVector(vecHorizontalOut));
         vecVerticalOut.assignPoint3d(VecMath.calcNormalizedVector(vecVerticalOut));
@@ -287,7 +288,7 @@ public class VecMath {
 
         Vec3d distanceVec = calcVecTimesScalar(planeNormal, trs[0]);
         float distance;
-        distance = trs[0]<0 ? 1 : -1;
+        distance = trs[0]<0 ? -1 : 1;
         distance *= calcVectorLength(distanceVec);
 
         return distance;

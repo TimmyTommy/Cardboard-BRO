@@ -37,7 +37,7 @@ public class GeomFactory {
         return angles;
     }
 
-    private static ArrayList<Triangle> calcCylinderSegmentFace(Line cycleSegment, Vec3d heightVec){
+    private static ArrayList<Triangle> calcRectangularFace(Line cycleSegment, Vec3d heightVec){
         Triangle triangle1 = new Triangle();
         Triangle triangle2 = new Triangle();
         ArrayList<Triangle> cylinderFace = new ArrayList<>();
@@ -79,7 +79,7 @@ public class GeomFactory {
         cycleSegment.setP1(VecMath.calcVecPlusVec(cycleSegment.getP1(), center));
         cycleSegment.setP2(VecMath.calcVecPlusVec(cycleSegment.getP2(), center));
 
-        cylinderSegment.addAll(calcCylinderSegmentFace(cycleSegment, heightVec));
+        cylinderSegment.addAll(calcRectangularFace(cycleSegment, heightVec));
         cylinderSegment.addAll(calcCylinderSegmentBottomAndTop(center, cycleSegment, heightVec));
 
         return  cylinderSegment;
@@ -99,7 +99,7 @@ public class GeomFactory {
     private static float[] transformTrianglesToFloatArray(ArrayList<Triangle> triangleArray){
         float[] array = new float[triangleArray.size()*9];
         for (int i = 0; i < triangleArray.size(); i++) {
-            System.arraycopy(triangleArray.get(i).toFloatArray(), 0, array, i*9, 9);
+            System.arraycopy(triangleArray.get(i).toFloatArray(), 0, array, i * 9, 9);
         }
         return array;
     }
@@ -118,7 +118,7 @@ public class GeomFactory {
     private static float[] transformVec3dListToFloatArray(ArrayList<Vec3d> list){
         float[] array = new float[list.size()*3];
         for (int i = 0; i < list.size(); i++) {
-            System.arraycopy(list.get(i).toFloatArray(), 0, array, i*3, 3);
+            System.arraycopy(list.get(i).toFloatArray(), 0, array, i * 3, 3);
         }
         return array;
     }
@@ -128,6 +128,8 @@ public class GeomFactory {
         final int SEGMENT_COORDS_COUNT = SEGMENT_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
         final int COORDS_COUNT = Constants.CYLINDER_SEGMENTS * SEGMENT_COORDS_COUNT;
         final int SEGMENT_COLOR_ARRAY_LENGTH = SEGMENT_VERTICES_COUNT * 4;
+
+        normalsInverse = normalsInverse ^ height<0;
 
         float[] vertices = new float[COORDS_COUNT];
         float[] normals = new float[COORDS_COUNT];
@@ -163,6 +165,101 @@ public class GeomFactory {
         result.colors = colors;
         return result;
     }
+
+
+    private static ArrayList<Line> calcBaseRectLines(Vec3d baseVert, Vec3d baseNormal, float depth, float width, Boolean normalsInverse){
+        ArrayList<Line> lines = new ArrayList<>();
+
+        Vec3d depthVec = new Vec3d();
+        Vec3d widthVec = new Vec3d();
+        VecMath.calcCrossedVectorsFromNormal(widthVec, depthVec, baseNormal);
+        depthVec.assignPoint3d(VecMath.calcVecTimesScalar(depthVec, depth));
+        widthVec.assignPoint3d(VecMath.calcVecTimesScalar(widthVec, width));
+
+        Vec3d A = baseVert.copy();                          // ^       D --- c --- C
+        Vec3d B = VecMath.calcVecPlusVec(A, widthVec);      // |     /           /
+        Vec3d C = VecMath.calcVecPlusVec(B, depthVec);      // n   d   BASE    b
+        Vec3d D = VecMath.calcVecPlusVec(A, depthVec);      // | /           /
+                                                            // A --- a --- B
+        if (!normalsInverse){
+            lines.add(new Line(A, B));
+            lines.add(new Line(B, C));
+            lines.add(new Line(C, D));
+            lines.add(new Line(D, A));
+        } else {
+            lines.add(new Line(A, D));
+            lines.add(new Line(D, C));
+            lines.add(new Line(C, B));
+            lines.add(new Line(B, A));
+        }
+        return lines;
+    }
+
+    // ^       D --- c --- C
+    // |     /           /
+    // h   d   BASE    b
+    // | /           /
+    // A --- a --- B
+    public static ArrayList<Triangle> calcCuboidBottomAndTop(ArrayList<Line> lines, Vec3d heightVec){
+        ArrayList<Triangle> triangles = new ArrayList<>();
+        Vec3d A = lines.get(0).getP1();
+        Vec3d B = lines.get(0).getP2();
+        Vec3d C = lines.get(1).getP2();
+        Vec3d D = lines.get(2).getP2();
+
+        Triangle bottom1 = new Triangle(B, A, C);
+        Triangle bottom2 = new Triangle(D, C, A);
+
+        Vec3d AT = VecMath.calcVecPlusVec(A, heightVec);
+        Vec3d BT = VecMath.calcVecPlusVec(B, heightVec);
+        Vec3d CT = VecMath.calcVecPlusVec(C, heightVec);
+        Vec3d DT = VecMath.calcVecPlusVec(D, heightVec);
+
+        Triangle top1 = new Triangle(AT, BT, CT);
+        Triangle top2 = new Triangle(CT, DT, AT);
+
+        triangles.add(bottom1);
+        triangles.add(bottom2);
+        triangles.add(top1);
+        triangles.add(top2);
+
+        return triangles;
+    }
+
+    public static GeometryStruct createCuboidGeom(Vec3d baseVert, Vec3d baseNormal, float depth, float width, float height, float[] color, Boolean normalsInverse){
+        final int CUBOID_TRIANGLE_COUNT = 12;
+        final int TRIANGLE_VERTICES_COUNT = 3;
+        final int TRIANGLE_COORDS_COUNT = TRIANGLE_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
+        final int COORDS_COUNT = CUBOID_TRIANGLE_COUNT * TRIANGLE_COORDS_COUNT;
+
+        normalsInverse = depth<0 ^ width<0 ^ height<0 ^ normalsInverse;
+
+        Vec3d heightVec = new Vec3d();
+        heightVec.assignPoint3d(VecMath.calcVecTimesScalar(baseNormal, height));
+
+        ArrayList<Line> baseRectLines = calcBaseRectLines(baseVert, baseNormal, depth, width, normalsInverse);
+        ArrayList<Triangle> cuboidTriangles = new ArrayList<>();
+
+        for (int i = 0; i < baseRectLines.size(); i++) {
+            cuboidTriangles.addAll(calcRectangularFace(baseRectLines.get(i), heightVec));
+        }
+        cuboidTriangles.addAll(calcCuboidBottomAndTop(baseRectLines, heightVec));
+
+        float[] vertices = transformTrianglesToFloatArray(cuboidTriangles);
+        float[] normals = transformVec3dListToFloatArray(calcNormalsOfTriangles(cuboidTriangles));
+        float[] colors = new float[4*COORDS_COUNT];
+        for (int i = 0; i < COORDS_COUNT; i++) {
+            System.arraycopy(color, 0, colors, i*4, 4);
+        }
+
+        GeometryStruct result = new GeometryStruct();
+        result.vertices = vertices;
+        result.normals = normals;
+        result.colors = colors;
+        return result;
+    }
+
+
 
     //TODO wenn nicht mehr für Kugel gebraucht, dann entfernen
 

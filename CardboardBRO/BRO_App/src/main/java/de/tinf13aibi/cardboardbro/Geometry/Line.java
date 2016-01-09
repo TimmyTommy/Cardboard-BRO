@@ -7,8 +7,8 @@ public class Line {
     private Vec3d p1, p2;
 
     public Line(Vec3d p1, Vec3d p2){
-        this.p1 = p1;
-        this.p2 = p2;
+        this.p1 = p1.copy();
+        this.p2 = p2.copy();
     }
 
     public Line(float[] line){

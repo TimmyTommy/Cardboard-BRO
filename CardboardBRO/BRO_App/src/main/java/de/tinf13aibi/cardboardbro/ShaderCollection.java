@@ -15,12 +15,12 @@ import de.tinf13aibi.cardboardbro.Enums.Shaders;
  * Created by Tommy on 02.01.2016.
  */
 public class ShaderCollection {
-    private static ShaderCollection ourInstance = new ShaderCollection();
+    private static ShaderCollection mInstance = new ShaderCollection();
     private static HashMap<Shaders, Integer> mShaders = new HashMap<>();
     private static HashMap<Programs, Integer> mPrograms = new HashMap<>();
 
     public static ShaderCollection getInstance() {
-        return ourInstance;
+        return mInstance;
     }
 
     private ShaderCollection() {

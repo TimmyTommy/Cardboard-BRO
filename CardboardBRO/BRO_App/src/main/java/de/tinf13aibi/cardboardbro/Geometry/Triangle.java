@@ -6,9 +6,9 @@ package de.tinf13aibi.cardboardbro.Geometry;
 public class Triangle {
     protected Vec3d p1, p2, p3;
     public Triangle(Vec3d p1, Vec3d p2, Vec3d p3){
-        this.p1 = p1;
-        this.p2 = p2;
-        this.p3 = p3;
+        this.p1 = p1.copy();
+        this.p2 = p2.copy();
+        this.p3 = p3.copy();
     }
     public Triangle(){
         p1 = new Vec3d();
