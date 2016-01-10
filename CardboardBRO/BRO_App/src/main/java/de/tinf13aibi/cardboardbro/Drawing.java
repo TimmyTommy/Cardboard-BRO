@@ -36,11 +36,11 @@ public class Drawing {
     private FloorEntity mFloorEntity;
 
     public void drawEntityList(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-//        mCylinderCanvasEntity.draw(view, perspective, lightPosInEyeSpace);
-//        mFloorEntity.draw(view, perspective, lightPosInEyeSpace);
         for (IEntity entity : mEntityList) {
             entity.draw(view, perspective, lightPosInEyeSpace);
         }
+        mCylinderCanvasEntity.draw(view, perspective, lightPosInEyeSpace);
+        mFloorEntity.draw(view, perspective, lightPosInEyeSpace);
     }
 
     public void drawTempWorkingPlane(float[] view, float[] perspective, float[] lightPosInEyeSpace){
@@ -65,21 +65,21 @@ public class Drawing {
     }
 
     private void setupCylinderCanvas(){
-//        mCylinderCanvasEntity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-//        Matrix.translateM(mCylinderCanvasEntity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
+        mCylinderCanvasEntity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        Matrix.translateM(mCylinderCanvasEntity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
 
-        BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
-        mEntityList.add(entity);
+//        BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
+//        mEntityList.add(entity);
     }
 
     private void setupFloor(){
-//        mFloorEntity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
-//        Matrix.translateM(mFloorEntity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
+        mFloorEntity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
+        Matrix.translateM(mFloorEntity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
 
-        BaseEntity entity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
-        Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
-        mEntityList.add(entity);
+//        BaseEntity entity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
+//        Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
+//        mEntityList.add(entity);
     }
 
     private void setupEntityCreateButtonSet(){
@@ -170,16 +170,15 @@ public class Drawing {
         cylEntity.setAttributes(new Vec3d(1f, 1, -5.0f), new Vec3d(0, 1, 0), 0.5f, 2, new float[]{1, 0, 0, 1});
         mEntityList.add(cylEntity);
 
-//        cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-//        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0, 1, 0), 1, -1, new float[]{0, 0, 1, 1});
-//        mEntityList.add(cylEntity);
+        cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0, 1, 0), 1, -1, new float[]{0, 0, 1, 1});
+        mEntityList.add(cylEntity);
 
         CuboidEntity cuboidEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         cuboidEntity.setAttributes(new Vec3d(2f, 0, -5.0f), new Vec3d(0,1,0), -1, -2, -1, new float[]{1, 1, 0, 1});
         mEntityList.add(cuboidEntity);
 
         SphereEntity sphereEntity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-//        sphereEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0,1,0), 1, new float[]{1, 0.5f, 0, 1});
         sphereEntity.setAttributes(new Vec3d(4, 2, 0), new Vec3d(0,1,0), 1, new float[]{1, 0.5f, 0, 1});
         mEntityList.add(sphereEntity);
 
@@ -200,6 +199,15 @@ public class Drawing {
 
     public ArrayList<IEntity> getEntityList() {
         return mEntityList;
+    }
+
+    public ArrayList<IEntity> getEntityListWithFloorAndCanvas(){
+        ArrayList<IEntity> collidableEntityList = new ArrayList<>();
+        collidableEntityList.addAll(mEntityList);
+        collidableEntityList.add(mCylinderCanvasEntity);
+        collidableEntityList.add(mFloorEntity);
+
+        return collidableEntityList;
     }
 
     public ButtonSet getEntityActionButtons() {

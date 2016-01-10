@@ -35,9 +35,7 @@ public class LineEntity extends BaseEntity implements IEntity {
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
 
         GLES20.glLineWidth(3);
-//        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
-//        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glLineWidth(1);
     }
 

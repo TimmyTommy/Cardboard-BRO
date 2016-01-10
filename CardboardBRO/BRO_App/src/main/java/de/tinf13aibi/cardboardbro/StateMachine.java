@@ -28,15 +28,14 @@ public class StateMachine {
 
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
-//    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;
     private User mUser;
     private Drawing mDrawing;
-    private ArrayList<IEntity> mEntityList;
     private IEntity mEditingEntity;
 
     public StateMachine(Vibrator vibrator, CardboardOverlayView overlayView){
@@ -44,7 +43,6 @@ public class StateMachine {
         mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
 
         mDrawing = new Drawing().init();
-        mEntityList = mDrawing.getEntityList();
         mVibrator = vibrator;
         mOverlayView = overlayView;
     }
@@ -54,9 +52,10 @@ public class StateMachine {
     }
 
     public void processAppStateOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-        //TODO: Zeichenreihenfolge prüfen und evtl sortieren //evtl Linien zu erst oder linien als letztes
-        mDrawing.drawEntityList(view, perspective, lightPosInEyeSpace);
+        //Linien zuerst zeichnen sonst unsichtbar
         mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
+
+        mDrawing.drawEntityList(view, perspective, lightPosInEyeSpace);
         switch (mAppState) {
             case SelectAction:          mDrawing.getEntityActionButtons().draw(view, perspective, lightPosInEyeSpace); break;
             case SelectEntityToCreate:  mDrawing.getEntityCreateButtons().draw(view, perspective, lightPosInEyeSpace); break;
@@ -84,14 +83,15 @@ public class StateMachine {
 
     public void processAppStateOnNewFrame(){
         mUser.move();
-        mUser.calcEyeLookingAt(mEntityList);
+        mUser.calcEyeLookingAt(mDrawing.getEntityListWithFloorAndCanvas());
 
         ArrayList<IEntity> entityListForArm;
         switch (mAppState){
             case SelectAction:          entityListForArm = mDrawing.getEntityActionButtons().getButtonEntities(); break;
             case SelectEntityToCreate:  entityListForArm = mDrawing.getEntityCreateButtons().getButtonEntities(); break;
             case WaitForKeyboardInput:  entityListForArm = mDrawing.getKeyboardButtons().getButtonEntities(); break;
-            default:                    entityListForArm = mEntityList; break;
+            default:
+                entityListForArm = mDrawing.getEntityListWithFloorAndCanvas(); break;
         }
 
 //        CylinderEntity cylEnt = (CylinderEntity) mEntityList.get(mEntityList.size() - 1);
@@ -266,7 +266,7 @@ public class StateMachine {
     private void drawFreeLineBegin(Vec3d point){
         mEditingEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
         ((PolyLineEntity)mEditingEntity).addVert(point);
-        mEntityList.add(mEditingEntity);
+        mDrawing.getEntityList().add(0, mEditingEntity); //Linien zuerst zeichnen sonst unsichtbar
         changeState(AppState.WaitForEndFreeLine, "Begin FreeDraw");
     }
 
@@ -286,7 +286,7 @@ public class StateMachine {
             changeState(AppState.SelectEntityToCreate, "Leave FreeLine Mode");
         } else {
             if (mEditingEntity instanceof PolyLineEntity) {
-                mEntityList.remove(mEditingEntity);
+                mDrawing.getEntityList().remove(mEditingEntity);
             }
             changeState(AppState.WaitForBeginFreeLine, "Delete Drawed FreeLine");
         }
@@ -298,7 +298,7 @@ public class StateMachine {
         mEditingEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
         ((PolyLineEntity)mEditingEntity).addVert(point);
         ((PolyLineEntity)mEditingEntity).addVert(point);
-        mEntityList.add(mEditingEntity);
+        mDrawing.getEntityList().add(0, mEditingEntity); //Linien zuerst zeichnen sonst unsichtbar
         changeState(AppState.WaitForNextPolyLinePoint, "Begin PolyLine");
     }
 
@@ -330,9 +330,9 @@ public class StateMachine {
         mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(point, baseNormal));
         mEditingEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
 
-        float[] color = new float[]{0.7f, 0.3f, 0.5f, 1};
-        ((CylinderEntity)mEditingEntity).setAttributes(point, baseNormal, 0.1f, 0.1f, color);
-        mEntityList.add(mEditingEntity);
+        float[] color = new float[]{0.7f, 0.7f, 0.5f, 1};
+        ((CylinderEntity)mEditingEntity).setAttributes(point, baseNormal, 0.01f, 0.01f, color);
+        mDrawing.getEntityList().add(mEditingEntity);
 
         changeState(AppState.WaitForCylinderRadiusPoint, "Begin Draw Cylinder");
     }
@@ -376,7 +376,7 @@ public class StateMachine {
             changeState(AppState.SelectEntityToCreate, "Leave Cylinder Mode");
         } else {
             if (mEditingEntity instanceof CylinderEntity) {
-                mEntityList.remove(mEditingEntity);
+                mDrawing.getEntityList().remove(mEditingEntity);
             }
             changeState(AppState.WaitForCylinderCenterPoint, "Delete Drawed Cylinder");
         }
@@ -390,8 +390,8 @@ public class StateMachine {
         mEditingEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
 
         float[] color = new float[]{0.7f, 0.7f, 0.5f, 1};
-        ((CuboidEntity) mEditingEntity).setAttributes(point, baseNormal, 0.1f, 0.1f, 0.1f, color);
-        mEntityList.add(mEditingEntity);
+        ((CuboidEntity) mEditingEntity).setAttributes(point, baseNormal, 0.01f, 0.01f, 0.01f, color);
+        mDrawing.getEntityList().add(mEditingEntity);
 
         changeState(AppState.WaitForCuboidBasePoint2, "Begin Draw Cuboid");
     }
@@ -437,7 +437,7 @@ public class StateMachine {
             changeState(AppState.SelectEntityToCreate, "Leave Cuboid Mode");
         } else {
             if (mEditingEntity instanceof CuboidEntity) {
-                mEntityList.remove(mEditingEntity);
+                mDrawing.getEntityList().remove(mEditingEntity);
             }
             changeState(AppState.WaitForCuboidBasePoint1, "Delete Drawed Cuboid");
         }
@@ -451,8 +451,8 @@ public class StateMachine {
         mEditingEntity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));
 
         float[] color = new float[]{0.3f, 0.7f, 0.5f, 1};
-        ((SphereEntity)mEditingEntity).setAttributes(point, baseNormal, 0.1f, color);
-        mEntityList.add(mEditingEntity);
+        ((SphereEntity)mEditingEntity).setAttributes(point, baseNormal, 0.01f, color);
+        mDrawing.getEntityList().add(mEditingEntity);
 
         changeState(AppState.WaitForSphereRadiusPoint, "Begin Draw Sphere");
     }
@@ -473,7 +473,7 @@ public class StateMachine {
             changeState(AppState.SelectEntityToCreate, "Leave Sphere Mode");
         } else {
             if (mEditingEntity instanceof SphereEntity) {
-                mEntityList.remove(mEditingEntity);
+                mDrawing.getEntityList().remove(mEditingEntity);
             }
             changeState(AppState.WaitForSphereCenterPoint, "Delete Drawed Sphere");
         }
