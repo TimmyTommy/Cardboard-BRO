@@ -9,6 +9,7 @@ import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.IManySidedEntity;
 
 /**
  * Created by dthom on 17.12.2015.
@@ -35,16 +36,41 @@ public class CollisionDrawingSpacePoints {
         }
     }
 
+    private Boolean isHitboxHit(StraightLine straight, CuboidEntity hitbox){
+        CollisionEntityPoints collisionPoints = new CollisionEntityPoints(straight, hitbox);
+        return collisionPoints.collisions.size() > 0;
+    }
+
+    private void doCalcEntityCollisions(StraightLine straight, IEntity entity){
+        CollisionEntityPoints collisionPoints = new CollisionEntityPoints(straight, entity);
+        if (collisionPoints.collisions.size() > 0) {
+            entityCollisions.add(collisionPoints);
+        }
+    }
+
     private void calcEntityCollisions(){
         for (int i=0; i<entityList.size(); i++) {
             IEntity entity = entityList.get(i);
             if (isCollideEntity(entity)) {
-                CollisionEntityPoints collisionPoints = new CollisionEntityPoints(straight, entity);
-                if (collisionPoints.collisions.size() > 0) {
-                    entityCollisions.add(collisionPoints);
+                if (isManySidedEntity(entity)){
+                    CuboidEntity hitbox = ((IManySidedEntity)entity).getHitBox();
+                    if (isHitboxHit(straight, hitbox)){
+                        doCalcEntityCollisions(straight, entity);
+                    }
+                } else {
+                    doCalcEntityCollisions(straight, entity);
                 }
             }
         }
+    }
+
+    private boolean isManySidedEntity(IEntity entity){
+        if (entity instanceof IManySidedEntity){
+            return true;
+        } else {
+            return false;
+        }
+//        return entity instanceof IManySidedEntity;
     }
 
     private boolean isCollideEntity(IEntity entity){ //TODO überdenken: vllt den Körper-Entities ein Attribut geben "mHasFaces" um nich immer ergänzen zu müssen

@@ -27,7 +27,6 @@ public class StateMachine {
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
-
     private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
@@ -52,13 +51,16 @@ public class StateMachine {
     }
 
     public void processAppStateOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+        //TODO: Zeichenreihenfolge prüfen und evtl sortieren //evtl Linien zu erst oder linien als letztes
         mDrawing.drawEntityList(view, perspective, lightPosInEyeSpace);
         mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
         switch (mAppState) {
             case SelectAction:          mDrawing.getEntityActionButtons().draw(view, perspective, lightPosInEyeSpace); break;
             case SelectEntityToCreate:  mDrawing.getEntityCreateButtons().draw(view, perspective, lightPosInEyeSpace); break;
-            case WaitForKeyboardInput:  mDrawing.getKeyboardButtons().draw(view, perspective, lightPosInEyeSpace); break;
+            case WaitForKeyboardInput:  mDrawing.getKeyboardButtons().draw(view, perspective, lightPosInEyeSpace);
+                break;
         }
+        mDrawing.drawTempWorkingPlane(view, perspective, lightPosInEyeSpace);
     }
 
     public void processInputActionAndAppState(InputAction inputAction){
@@ -345,6 +347,7 @@ public class StateMachine {
         }
         if (fix){
             changeState(AppState.WaitForCylinderCenterPoint, "End Draw Cylinder");
+            mDrawing.setTempWorkingPlane(null);
         }
     }
 
@@ -358,6 +361,7 @@ public class StateMachine {
             changeState(AppState.WaitForCylinderCenterPoint, "Delete Drawed Cylinder");
         }
         mEditingEntity = null;
+        mDrawing.setTempWorkingPlane(null);
     }
 
     //Draw Cylinder
@@ -366,7 +370,7 @@ public class StateMachine {
         mEditingEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
 
         float[] color = new float[]{0.7f, 0.7f, 0.5f, 1};
-        ((CuboidEntity)mEditingEntity).setAttributes(point, baseNormal, 0.1f, 0.1f, 0.1f, color);
+        ((CuboidEntity) mEditingEntity).setAttributes(point, baseNormal, 0.1f, 0.1f, 0.1f, color);
         mEntityList.add(mEditingEntity);
 
         changeState(AppState.WaitForCuboidBasePoint2, "Begin Draw Cuboid");
@@ -386,7 +390,8 @@ public class StateMachine {
                 VecMath.calcCrossedVectorsFromNormal(widthDir, depthDir, baseNormal);
 
 //            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), depthDir);
-                mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), widthDir));
+//                mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), widthDir));
+                mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(collisionPoint.collisionPos, widthDir));
 
                 changeState(AppState.WaitForCuboidHeightPoint, "Update Cuboid Point2");
             }
@@ -403,6 +408,7 @@ public class StateMachine {
         }
         if (fix){
             changeState(AppState.WaitForCuboidBasePoint1, "End Draw Cuboid");
+            mDrawing.setTempWorkingPlane(null);
         }
     }
 
@@ -416,6 +422,7 @@ public class StateMachine {
             changeState(AppState.WaitForCuboidBasePoint1, "Delete Drawed Cuboid");
         }
         mEditingEntity = null;
+        mDrawing.setTempWorkingPlane(null);
     }
 
     public Drawing getDrawing() {

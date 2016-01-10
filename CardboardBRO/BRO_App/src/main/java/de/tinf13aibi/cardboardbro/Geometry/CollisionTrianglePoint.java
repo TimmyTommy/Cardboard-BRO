@@ -24,15 +24,17 @@ public class CollisionTrianglePoint {
         distance = VecMath.calcVectorLength(vec);
     }
 
-    public void calcTriangleLineIntersection(){
+    public Boolean calcTriangleLineIntersection(){
         triangleNormal = VecMath.calcNormalVector(triangle);
         float[] pos = new float[3];
         if (VecMath.calcTriangleLineIntersection(pos, triangle, straight)){
             collisionPos = new Vec3d(pos);
             calcDistance();
+            return true;
         } else {
             collisionPos = null;
             distance = -1;
+            return false;
         }
     }
 }

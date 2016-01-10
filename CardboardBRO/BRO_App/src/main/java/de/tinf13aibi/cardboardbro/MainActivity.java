@@ -53,7 +53,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
                     case MotionEvent.ACTION_DOWN:
                         //TODO Moving später wieder aktiviedern
 //                        mOverlayView.show3DToast("Accelerating");
-//                        mStateMachine.setUserMoving(false);
+//                        mStateMachine.setUserMoving(true);
                         mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:

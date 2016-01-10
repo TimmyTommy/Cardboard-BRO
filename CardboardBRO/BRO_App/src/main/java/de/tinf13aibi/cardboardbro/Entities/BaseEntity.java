@@ -79,7 +79,7 @@ public abstract class BaseEntity implements IEntity {
         mProgram = program;
     }
 
-    private void fillParameters(int program){
+    protected void fillParameters(int program){
         //TODO auslagern nach ShaderCollection Programs in eine ProgramClass mit den folgenden Attibuten + int mProgram
         mPositionParam = GLES20.glGetAttribLocation(program, "a_Position");
         mNormalParam = GLES20.glGetAttribLocation(program, "a_Normal");

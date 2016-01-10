@@ -33,6 +33,7 @@ public class LineEntity extends BaseEntity implements IEntity {
         GLES20.glUniform4fv(mColorParam, 1, color, 0);
         GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, modelViewProjection, 0);
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
+
         GLES20.glLineWidth(3);
 //        GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
@@ -58,7 +59,8 @@ public class LineEntity extends BaseEntity implements IEntity {
         fillBufferVertices(mCoords);
     }
 
-    private void fillParameters(int program){
+    @Override
+    protected void fillParameters(int program){
         mPositionParam = GLES20.glGetAttribLocation(program, "vPosition");
         mColorParam = GLES20.glGetUniformLocation(program, "vColor");
         mModelViewProjectionParam = GLES20.glGetUniformLocation(program, "uMVPMatrix");

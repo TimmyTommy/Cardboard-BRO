@@ -259,6 +259,49 @@ public class GeomFactory {
         return result;
     }
 
+    public static GeometryStruct createPlaneGeom(Vec3d point, Vec3d normal, float[] color){
+        final int PLANE_TRIANGLE_COUNT = 2;
+        final int TRIANGLE_VERTICES_COUNT = 3;
+        final int TRIANGLE_COORDS_COUNT = TRIANGLE_VERTICES_COUNT * Constants.COORDS_PER_VERTEX;
+        final int COORDS_COUNT = PLANE_TRIANGLE_COUNT * TRIANGLE_COORDS_COUNT;
+
+        Vec3d depthDir = new Vec3d();
+        Vec3d widthDir = new Vec3d();
+        Vec3d heightDir = normal.copy();
+        VecMath.calcCrossedVectorsFromNormal(widthDir, depthDir, heightDir);
+
+        Vec3d diagonalVec = VecMath.calcVecPlusVec(widthDir, depthDir);
+        Vec3d diagonalVecTimesRadius = VecMath.calcVecTimesScalar(diagonalVec, 500);
+        Vec3d basePoint = VecMath.calcVecMinusVec(point, diagonalVecTimesRadius);
+
+        ArrayList<Line> rectLines = calcBaseRectLines(basePoint, normal, 1000, 1000, false);
+
+        Vec3d A = rectLines.get(0).getP1();
+        Vec3d B = rectLines.get(0).getP2();
+        Vec3d C = rectLines.get(1).getP2();
+        Vec3d D = rectLines.get(2).getP2();
+
+        Triangle top1 = new Triangle(A, B, C);
+        Triangle top2 = new Triangle(C, D, A);
+
+        ArrayList<Triangle> triangles = new ArrayList<>();
+        triangles.add(top1);
+        triangles.add(top2);
+
+        float[] vertices = transformTrianglesToFloatArray(triangles);
+        float[] normals = transformVec3dListToFloatArray(calcNormalsOfTriangles(triangles));
+        float[] colors = new float[4*COORDS_COUNT];
+        for (int i = 0; i < COORDS_COUNT; i++) {
+            System.arraycopy(color, 0, colors, i*4, 4);
+        }
+
+        GeometryStruct result = new GeometryStruct();
+        result.vertices = vertices;
+        result.normals = normals;
+        result.colors = colors;
+        return result;
+    }
+
 
 
     //TODO wenn nicht mehr für Kugel gebraucht, dann entfernen

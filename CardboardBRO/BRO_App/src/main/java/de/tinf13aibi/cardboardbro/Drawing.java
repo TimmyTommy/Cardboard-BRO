@@ -13,6 +13,8 @@ import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.PlaneEntity;
+import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
@@ -28,11 +30,25 @@ public class Drawing {
     private ButtonSet mEntityActionButtons = new ButtonSet();
     private ButtonSet mEntityCreateButtons = new ButtonSet();
     private ButtonSet mKeyboardButtons = new ButtonSet();
-    private Plane mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(new Vec3d(), new Vec3d(0, 1, 0));
+    private Plane mTempWorkingPlane;
+    private CylinderCanvasEntity mCylinderCanvasEntity;
+    private FloorEntity mFloorEntity;
 
     public void drawEntityList(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+//        mCylinderCanvasEntity.draw(view, perspective, lightPosInEyeSpace);
+//        mFloorEntity.draw(view, perspective, lightPosInEyeSpace);
         for (IEntity entity : mEntityList) {
             entity.draw(view, perspective, lightPosInEyeSpace);
+        }
+    }
+
+    public void drawTempWorkingPlane(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+        if (mTempWorkingPlane!= null){
+            Vec3d center = mTempWorkingPlane.getP1();
+            Vec3d normal = VecMath.calcNormalVector(mTempWorkingPlane);
+            float[] color = new float[]{0, 1, 0, 1f};
+            PlaneEntity planeEntity = new PlaneEntity(ShaderCollection.getProgram(Programs.BodyProgram), center, normal, color);
+            planeEntity.draw(view, perspective, lightPosInEyeSpace);
         }
     }
 
@@ -48,12 +64,18 @@ public class Drawing {
     }
 
     private void setupCylinderCanvas(){
+//        mCylinderCanvasEntity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(mCylinderCanvasEntity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
+
         BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
         mEntityList.add(entity);
     }
 
     private void setupFloor(){
+//        mFloorEntity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
+//        Matrix.translateM(mFloorEntity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
+
         BaseEntity entity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
         Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
         mEntityList.add(entity);
@@ -144,17 +166,11 @@ public class Drawing {
         mEntityList.add(entity);
 
         CylinderEntity cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cylEntity.setColor(new float[]{1, 0, 0, 1});
-        cylEntity.setHeight(2);
-        cylEntity.setRadius(0.5f);
-        Matrix.translateM(cylEntity.getModel(), 0, 1f, 1, -5.0f);
+        cylEntity.setAttributes(new Vec3d(1f, 1, -5.0f), new Vec3d(0,1,0), 0.5f, 2, new float[]{1, 0, 0, 1});
         mEntityList.add(cylEntity);
 
         cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cylEntity.setColor(new float[]{0, 0, 1, 1});
-        cylEntity.setHeight(-1);
-        cylEntity.setRadius(1);
-        Matrix.translateM(cylEntity.getModel(), 0, -1f, 0, -5.0f);
+        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0,1,0), 1, -1, new float[]{0, 0, 1, 1});
         mEntityList.add(cylEntity);
 
         CuboidEntity cuboidEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
@@ -168,6 +184,7 @@ public class Drawing {
 //        polyLineEntity.addVert(new Vec3d(0, 2, -10));
 //        polyLineEntity.addVert(new Vec3d(0, 2, -5));
 //        polyLineEntity.addVert(new Vec3d(8, 2, -5));
+//        polyLineEntity.setColor(1,1,0,1);
 //        mEntityList.add(polyLineEntity);
     }
 
