@@ -41,6 +41,11 @@ public class LineEntity extends BaseEntity implements IEntity {
         GLES20.glLineWidth(1);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return false;
+    }
+
     public void setVerts(Vec3d from, Vec3d to) {
         setVerts(from.toFloatArray(), to.toFloatArray());
     }

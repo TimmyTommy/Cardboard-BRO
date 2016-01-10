@@ -9,6 +9,7 @@ import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
+import de.tinf13aibi.cardboardbro.Entities.SphereEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.AppStateGroup;
 import de.tinf13aibi.cardboardbro.Enums.InputAction;
@@ -23,11 +24,13 @@ import de.tinf13aibi.cardboardbro.Geometry.VecMath;
  * Created by dthom on 09.01.2016.
  */
 public class StateMachine {
-//    private AppState mAppState = AppState.SelectAction;  //Bei Appstart default: SelectAction
+//    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
+
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;
@@ -71,7 +74,7 @@ public class StateMachine {
             case G_DrawPolyLine: processInputAndAppStatePolyLine(inputAction, mAppState); break;
             case G_DrawCylinder: processInputAndAppStateCylinder(inputAction, mAppState); break;
             case G_DrawCuboid:   processInputAndAppStateCuboid(inputAction, mAppState); break;
-            case G_DrawSphere: break;
+            case G_DrawSphere: processInputAndAppStateSphere(inputAction, mAppState); break;
             case G_WriteText: break;
             case G_MoveEntity: break;
             case G_DeleteEntity: break;
@@ -81,7 +84,6 @@ public class StateMachine {
 
     public void processAppStateOnNewFrame(){
         mUser.move();
-
         mUser.calcEyeLookingAt(mEntityList);
 
         ArrayList<IEntity> entityListForArm;
@@ -109,6 +111,7 @@ public class StateMachine {
             case WaitForCylinderHeightPoint:
             case WaitForCuboidBasePoint2:
             case WaitForCuboidHeightPoint:
+            case WaitForSphereRadiusPoint:
                 mUser.calcArmPointingAt(mDrawing.getTempWorkingPlane()); break;
             default:
                 mUser.calcArmPointingAt(entityListForArm); break;
@@ -122,6 +125,7 @@ public class StateMachine {
             case WaitForCylinderHeightPoint: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), false);   break;
             case WaitForCuboidBasePoint2:    drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), false);            break;
             case WaitForCuboidHeightPoint:   drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), false);     break;
+            case WaitForSphereRadiusPoint:   drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), false);     break;
         }
 
         mDrawing.getEntityActionButtons().rotateStep();
@@ -210,7 +214,6 @@ public class StateMachine {
                 break;
             case WaitForCuboidBasePoint2:
                 switch (inputAction){
-//                    case FIST: drawCuboidBeginBasePoint2(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
                     case DoStateBack: drawCuboidAbort(false); break;
                 }
@@ -219,6 +222,23 @@ public class StateMachine {
                 switch (inputAction){
                     case DoSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoStateBack: drawCuboidAbort(false); break;
+                }
+                break;
+        }
+    }
+
+    private void processInputAndAppStateSphere(InputAction inputAction, AppState appState){
+        switch (appState){
+            case WaitForSphereCenterPoint:
+                switch (inputAction){
+                    case DoSelect: drawSphereBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+                    case DoStateBack: drawSphereAbort(true); break;
+                }
+                break;
+            case WaitForSphereRadiusPoint:
+                switch (inputAction){
+                    case DoSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
+                    case DoStateBack: drawSphereAbort(false); break;
                 }
                 break;
         }
@@ -420,6 +440,42 @@ public class StateMachine {
                 mEntityList.remove(mEditingEntity);
             }
             changeState(AppState.WaitForCuboidBasePoint1, "Delete Drawed Cuboid");
+        }
+        mEditingEntity = null;
+        mDrawing.setTempWorkingPlane(null);
+    }
+
+    //Draw Cylinder
+    private void drawSphereBeginCenter(Vec3d point, Vec3d baseNormal){
+        mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(point, baseNormal));
+        mEditingEntity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+
+        float[] color = new float[]{0.3f, 0.7f, 0.5f, 1};
+        ((SphereEntity)mEditingEntity).setAttributes(point, baseNormal, 0.1f, color);
+        mEntityList.add(mEditingEntity);
+
+        changeState(AppState.WaitForSphereRadiusPoint, "Begin Draw Sphere");
+    }
+
+    private void drawSphereEndRadius(Vec3d point, Boolean fix){
+        if (mEditingEntity instanceof SphereEntity) {
+            SphereEntity sphereEntity = (SphereEntity) mEditingEntity;
+            sphereEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, sphereEntity.getCenter())));
+            if (fix){
+                mDrawing.setTempWorkingPlane(null);
+                changeState(AppState.WaitForSphereCenterPoint, "End Sphere Radius");
+            }
+        }
+    }
+
+    private void drawSphereAbort(Boolean leave){
+        if (leave){
+            changeState(AppState.SelectEntityToCreate, "Leave Sphere Mode");
+        } else {
+            if (mEditingEntity instanceof SphereEntity) {
+                mEntityList.remove(mEditingEntity);
+            }
+            changeState(AppState.WaitForSphereCenterPoint, "Delete Drawed Sphere");
         }
         mEditingEntity = null;
         mDrawing.setTempWorkingPlane(null);

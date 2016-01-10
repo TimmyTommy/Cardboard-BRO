@@ -15,6 +15,11 @@ public class CylinderCanvasEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return true;
+    }
+
     public CylinderCanvasEntity(int program){
         super(program);
         GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), new Vec3d(0, 1, 0), Constants.CANVAS_CYL_RADIUS, Constants.CANVAS_CYL_HEIGHT, GeometryDatabase.CANVAS_CYL_COLOR, true);

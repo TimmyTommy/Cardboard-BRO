@@ -23,7 +23,12 @@ public class CuboidEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
-    private void recreateGeometry(){ //TODO: optimieren, damit nicht immer ganze geom recreated wird
+    @Override
+    public Boolean hasFaces() {
+        return true;
+    }
+
+    private void recreateGeometry(){
         GeometryStruct geometry = GeomFactory.createCuboidGeom(new Vec3d(0, 0, 0), mBaseNormal, mDepth, mWidth, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
     }

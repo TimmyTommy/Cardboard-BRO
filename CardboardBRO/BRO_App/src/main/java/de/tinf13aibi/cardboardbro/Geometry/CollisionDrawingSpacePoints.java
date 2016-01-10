@@ -10,6 +10,7 @@ import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.IManySidedEntity;
+import de.tinf13aibi.cardboardbro.Entities.SphereEntity;
 
 /**
  * Created by dthom on 17.12.2015.
@@ -65,21 +66,11 @@ public class CollisionDrawingSpacePoints {
     }
 
     private boolean isManySidedEntity(IEntity entity){
-        if (entity instanceof IManySidedEntity){
-            return true;
-        } else {
-            return false;
-        }
-//        return entity instanceof IManySidedEntity;
+        return entity instanceof IManySidedEntity;
     }
 
-    private boolean isCollideEntity(IEntity entity){ //TODO überdenken: vllt den Körper-Entities ein Attribut geben "mHasFaces" um nich immer ergänzen zu müssen
-        return  entity instanceof FloorEntity ||
-                entity instanceof CylinderCanvasEntity ||
-                entity instanceof CylinderEntity ||
-                entity instanceof CuboidEntity ||
-                entity instanceof ButtonEntity || //Aktivieren, wenn Buttons "anzielbar" sein sollen
-                entity instanceof CubeEntity;
+    private boolean isCollideEntity(IEntity entity){
+        return entity.hasFaces();
     }
 
     public CollisionDrawingSpacePoints(StraightLine straight, ArrayList<IEntity> entityList){

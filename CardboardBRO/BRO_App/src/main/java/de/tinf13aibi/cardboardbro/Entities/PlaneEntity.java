@@ -48,6 +48,11 @@ public class PlaneEntity extends BaseEntity implements IEntity {
         GLES20.glDisable(GLES20.GL_BLEND);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return true;
+    }
+
     public PlaneEntity(int program, Vec3d center, Vec3d baseNormal, float[] color){
         super(program);
 

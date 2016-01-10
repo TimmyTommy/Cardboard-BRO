@@ -1,28 +1,26 @@
 package de.tinf13aibi.cardboardbro.Entities;
 
-import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import java.util.ArrayList;
-
-import de.tinf13aibi.cardboardbro.Constants;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
-import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
-import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
- * Created by dthom on 07.01.2016.
+ * Created by dthom on 10.01.2016.
  */
-public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEntity {
+public class SphereEntity extends BaseEntity implements IEntity, IManySidedEntity {
     private float[] mColor = new float[]{0, 0.7f, 0, 1};
     private float mRadius = 1;
-    private float mHeight = 1;
     private Vec3d mBaseNormal = new Vec3d(0, 1, 0);
     private Vec3d mCenter = new Vec3d();
     private CuboidEntity mHitBox;
+
+    @Override
+    public CuboidEntity getHitBox() {
+        return mHitBox;
+    }
 
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         super.draw(view, perspective, lightPosInEyeSpace);
@@ -38,11 +36,6 @@ public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEnt
         return true;
     }
 
-    @Override
-    public CuboidEntity getHitBox() {
-        return mHitBox;
-    }
-
     private void calcHitbox(){
         Vec3d depthDir = new Vec3d();
         Vec3d widthDir = new Vec3d();
@@ -50,19 +43,21 @@ public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEnt
         VecMath.calcCrossedVectorsFromNormal(widthDir, depthDir, heightDir);
 
         Vec3d diagonalVec = VecMath.calcVecPlusVec(widthDir, depthDir);
+        diagonalVec = VecMath.calcVecPlusVec(diagonalVec, heightDir);
+
         Vec3d diagonalVecTimesRadius = VecMath.calcVecTimesScalar(diagonalVec, mRadius);
         Vec3d basePoint = VecMath.calcVecMinusVec(mCenter, diagonalVecTimesRadius);
 
-        mHitBox.setAttributes(basePoint, mBaseNormal, mRadius * 2, mRadius * 2, mHeight, new float[]{0.5f, 0.5f, 1, 0.5f});
+        mHitBox.setAttributes(basePoint, mBaseNormal, mRadius * 2, mRadius * 2, mRadius * 2, new float[]{0.5f, 0.5f, 1, 0.5f});
     }
 
     private void recreateGeometry(){
-        GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mHeight, mColor, false);
+        GeometryStruct geometry = GeomFactory.createSphereGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
         calcHitbox();
     }
 
-    public CylinderEntity(int program){
+    public SphereEntity(int program){
         super(program);
         mHitBox = new CuboidEntity(program);
         recreateGeometry();
@@ -86,15 +81,6 @@ public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEnt
         recreateGeometry();
     }
 
-    public float getHeight() {
-        return mHeight;
-    }
-
-    public void setHeight(float height) {
-        mHeight = height;
-        recreateGeometry();
-    }
-
     public Vec3d getBaseNormal() {
         return mBaseNormal;
     }
@@ -114,11 +100,10 @@ public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEnt
         Matrix.translateM(mModel, 0, mCenter.x, mCenter.y, mCenter.z);
     }
 
-    public void setAttributes(Vec3d center, Vec3d baseNormal, float radius, float height, float[] color){
+    public void setAttributes(Vec3d center, Vec3d baseNormal, float radius, float[] color){
         setCenter(center);
         mBaseNormal = baseNormal;
         mRadius = radius;
-        mHeight = height;
         mColor = color;
         recreateGeometry();
     }

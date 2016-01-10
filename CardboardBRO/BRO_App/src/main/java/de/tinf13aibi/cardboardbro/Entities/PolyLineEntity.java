@@ -44,6 +44,11 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
         GLES20.glLineWidth(1);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return false;
+    }
+
     private float[] transformPointsToCoords(ArrayList<Vec3d> points){
         float[] pointCoords = new float[points.size()*3];
         for (int i=0; i<points.size(); i++){

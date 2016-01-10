@@ -193,6 +193,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 //        mStateMachine.getUser().setArmForward(mMyoData.getArmForwardVec());
 
         mStateMachine.processAppStateOnNewFrame();
+
         checkGLError("onReadyToDraw");
     }
 

@@ -17,4 +17,5 @@ public interface IEntity {
     void resetModelToBase();
     ArrayList<Vec3d> getAbsoluteCoords();
     ArrayList<Triangle> getAbsoluteTriangles();
+    Boolean hasFaces();
 }

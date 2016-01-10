@@ -17,7 +17,7 @@ import de.tinf13aibi.cardboardbro.Geometry.Triangle;
  * Created by dth on 27.11.2015.
  */
 
-//TODO weitere Entities: Kugel (evtl. Kegel, Kegelstumpf, Pyramide, Pyramidenstumpf, Torus)
+//TODO weitere Entities: (evtl. Kegel, Kegelstumpf, Pyramide, Pyramidenstumpf, Torus, Spheroid, Ellipsoid)
 //Siehe hierfür: http://exchange.autodesk.com/autocadmechanical/deu/online-help/AMECH_PP/2012/DEU/attachments/ill_primitives.png
 public abstract class BaseEntity implements IEntity {
     protected EntityDisplayType displayType = EntityDisplayType.Absolute;
@@ -26,7 +26,7 @@ public abstract class BaseEntity implements IEntity {
     protected FloatBuffer mVertices;
     protected FloatBuffer mColors;
     protected FloatBuffer mNormals;
-    protected FloatBuffer mFoundColors;
+//    protected FloatBuffer mFoundColors;
 
     protected int mProgram;
 
@@ -105,20 +105,26 @@ public abstract class BaseEntity implements IEntity {
         mVertices.position(0);
     }
 
-    protected void fillBuffers(float[] coords, float[] normals, float[] colors){
-        fillBufferVertices(coords);
-
+    protected void fillBufferNormals(float[] normals){
         ByteBuffer bbNormals = ByteBuffer.allocateDirect(normals.length * 4);
         bbNormals.order(ByteOrder.nativeOrder());
         mNormals = bbNormals.asFloatBuffer();
         mNormals.put(normals);
         mNormals.position(0);
+    }
 
+    protected void fillBufferColors(float[] colors){
         ByteBuffer bbColors = ByteBuffer.allocateDirect(colors.length * 4);
         bbColors.order(ByteOrder.nativeOrder());
         mColors = bbColors.asFloatBuffer();
         mColors.put(colors);
         mColors.position(0);
+    }
+
+    protected void fillBuffers(float[] coords, float[] normals, float[] colors){
+        fillBufferVertices(coords);
+        fillBufferNormals(normals);
+        fillBufferColors(colors);
     }
 
     public float[] getModel(){

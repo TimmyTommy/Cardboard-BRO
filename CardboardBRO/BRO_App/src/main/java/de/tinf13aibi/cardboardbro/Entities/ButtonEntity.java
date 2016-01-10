@@ -13,6 +13,11 @@ public class ButtonEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return true;
+    }
+
     public ButtonEntity(int program){
         super(program);
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);

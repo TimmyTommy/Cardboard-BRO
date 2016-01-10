@@ -10,6 +10,11 @@ public class FloorEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return true;
+    }
+
     public FloorEntity(int program){
         super(program);
         fillBuffers(GeometryDatabase.FLOOR_COORDS, GeometryDatabase.FLOOR_NORMALS, GeometryDatabase.FLOOR_COLORS);

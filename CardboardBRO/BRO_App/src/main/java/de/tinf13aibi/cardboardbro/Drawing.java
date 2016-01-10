@@ -15,6 +15,7 @@ import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.PlaneEntity;
 import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
+import de.tinf13aibi.cardboardbro.Entities.SphereEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
@@ -166,16 +167,21 @@ public class Drawing {
         mEntityList.add(entity);
 
         CylinderEntity cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cylEntity.setAttributes(new Vec3d(1f, 1, -5.0f), new Vec3d(0,1,0), 0.5f, 2, new float[]{1, 0, 0, 1});
+        cylEntity.setAttributes(new Vec3d(1f, 1, -5.0f), new Vec3d(0, 1, 0), 0.5f, 2, new float[]{1, 0, 0, 1});
         mEntityList.add(cylEntity);
 
-        cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0,1,0), 1, -1, new float[]{0, 0, 1, 1});
-        mEntityList.add(cylEntity);
+//        cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0, 1, 0), 1, -1, new float[]{0, 0, 1, 1});
+//        mEntityList.add(cylEntity);
 
         CuboidEntity cuboidEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         cuboidEntity.setAttributes(new Vec3d(2f, 0, -5.0f), new Vec3d(0,1,0), -1, -2, -1, new float[]{1, 1, 0, 1});
         mEntityList.add(cuboidEntity);
+
+        SphereEntity sphereEntity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        sphereEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0,1,0), 1, new float[]{1, 0.5f, 0, 1});
+        sphereEntity.setAttributes(new Vec3d(4, 2, 0), new Vec3d(0,1,0), 1, new float[]{1, 0.5f, 0, 1});
+        mEntityList.add(sphereEntity);
 
 //Test Polyline
 //        PolyLineEntity polyLineEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));

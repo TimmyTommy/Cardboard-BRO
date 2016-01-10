@@ -10,6 +10,11 @@ public class CubeEntity extends BaseEntity implements IEntity {
         super.draw(view, perspective, lightPosInEyeSpace);
     }
 
+    @Override
+    public Boolean hasFaces() {
+        return true;
+    }
+
     public CubeEntity(int program){
         super(program);
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);

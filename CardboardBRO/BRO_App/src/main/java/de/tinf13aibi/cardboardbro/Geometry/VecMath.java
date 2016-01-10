@@ -241,7 +241,7 @@ public class VecMath {
         v1v3 = calcVecMinusVec(triangle.getP3(), triangle.getP1());
 
         cross = calcCrossProduct(v1v3, v1v2);
-        cross = calcNormalizedVector(calcVecTimesScalar(cross, normalsDirection)); //TODO testen wieso Normalvektor falschrum ist
+        cross = calcNormalizedVector(calcVecTimesScalar(cross, normalsDirection));
 
         return cross;
     }
