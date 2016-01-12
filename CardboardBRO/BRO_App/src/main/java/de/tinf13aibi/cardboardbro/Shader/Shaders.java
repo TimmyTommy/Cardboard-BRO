@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro.Enums;
+package de.tinf13aibi.cardboardbro.Shader;
 
 /**
  * Created by DTH on 02.01.2016.

@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.UiMain;
 
 import android.content.Context;
 import android.opengl.GLES20;
@@ -22,13 +22,17 @@ import java.util.Date;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
-import de.tinf13aibi.cardboardbro.Enums.InputAction;
-import de.tinf13aibi.cardboardbro.Enums.Programs;
-import de.tinf13aibi.cardboardbro.Enums.Shaders;
+import de.tinf13aibi.cardboardbro.Engine.Constants;
+import de.tinf13aibi.cardboardbro.Engine.InputAction;
+import de.tinf13aibi.cardboardbro.Shader.Programs;
+import de.tinf13aibi.cardboardbro.Shader.Shaders;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoData;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoDeviceListener;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoListenerTarget;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoStatus;
+import de.tinf13aibi.cardboardbro.R;
+import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
+import de.tinf13aibi.cardboardbro.Engine.StateMachine;
 
 public class MainActivity extends CardboardActivity implements MyoListenerTarget, CardboardView.StereoRenderer {
     private static final String TAG = "MainActivity";

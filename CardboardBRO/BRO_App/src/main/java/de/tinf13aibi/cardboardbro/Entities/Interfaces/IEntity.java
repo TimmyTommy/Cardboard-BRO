@@ -2,7 +2,7 @@ package de.tinf13aibi.cardboardbro.Entities.Interfaces;
 
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
+import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**

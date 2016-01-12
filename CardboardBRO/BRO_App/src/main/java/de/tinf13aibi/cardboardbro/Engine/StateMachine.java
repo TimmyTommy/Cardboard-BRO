@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.Engine;
 
 import android.os.Vibrator;
 
@@ -10,15 +10,14 @@ import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.Lined.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.SphereEntity;
-import de.tinf13aibi.cardboardbro.Enums.AppState;
-import de.tinf13aibi.cardboardbro.Enums.AppStateGroup;
-import de.tinf13aibi.cardboardbro.Enums.InputAction;
-import de.tinf13aibi.cardboardbro.Enums.Programs;
+import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionPlane;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
+import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
+import de.tinf13aibi.cardboardbro.UiMain.CardboardOverlayView;
 
 /**
  * Created by dthom on 09.01.2016.

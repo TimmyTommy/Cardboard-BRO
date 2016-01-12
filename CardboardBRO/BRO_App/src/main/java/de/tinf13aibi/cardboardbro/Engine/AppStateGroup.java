@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro.Enums;
+package de.tinf13aibi.cardboardbro.Engine;
 
 /**
  * Created by dthom on 08.01.2016.

@@ -3,7 +3,7 @@ package de.tinf13aibi.cardboardbro.Entities;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
-import de.tinf13aibi.cardboardbro.Enums.AppState;
+import de.tinf13aibi.cardboardbro.Engine.AppState;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
 

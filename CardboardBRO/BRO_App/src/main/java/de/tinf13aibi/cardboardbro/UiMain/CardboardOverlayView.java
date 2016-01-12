@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.UiMain;
 
 import android.content.Context;
 import android.graphics.Color;

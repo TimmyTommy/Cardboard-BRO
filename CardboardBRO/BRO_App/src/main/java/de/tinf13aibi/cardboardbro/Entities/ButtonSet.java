@@ -4,9 +4,8 @@ import android.opengl.Matrix;
 
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Engine.Constants;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
-import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**

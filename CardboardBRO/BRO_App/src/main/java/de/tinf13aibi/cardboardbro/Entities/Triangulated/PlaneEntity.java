@@ -5,7 +5,7 @@ import android.opengl.Matrix;
 
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Engine.Constants;
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;

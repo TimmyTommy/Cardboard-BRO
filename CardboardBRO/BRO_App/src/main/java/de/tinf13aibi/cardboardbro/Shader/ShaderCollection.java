@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.Shader;
 
 import android.opengl.GLES20;
 
@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-
-import de.tinf13aibi.cardboardbro.Enums.Programs;
-import de.tinf13aibi.cardboardbro.Enums.Shaders;
 
 /**
  * Created by Tommy on 02.01.2016.

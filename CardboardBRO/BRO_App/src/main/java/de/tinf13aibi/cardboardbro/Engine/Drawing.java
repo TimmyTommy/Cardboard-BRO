@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro;
+package de.tinf13aibi.cardboardbro.Engine;
 
 import android.opengl.Matrix;
 
@@ -15,11 +15,11 @@ import de.tinf13aibi.cardboardbro.Entities.Triangulated.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.PlaneEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.SphereEntity;
-import de.tinf13aibi.cardboardbro.Enums.AppState;
-import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
-import de.tinf13aibi.cardboardbro.Enums.Programs;
+import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
+import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 
 /**
  * Created by dthom on 09.01.2016.
