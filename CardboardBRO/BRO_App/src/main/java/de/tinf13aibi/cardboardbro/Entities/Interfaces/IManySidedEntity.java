@@ -1,8 +1,6 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Entities.Interfaces;
 
-import java.util.ArrayList;
-
-import de.tinf13aibi.cardboardbro.Geometry.Triangle;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
 
 /**
  * Created by dthom on 10.01.2016.

@@ -5,15 +5,15 @@ import android.opengl.Matrix;
 import java.util.ArrayList;
 import java.util.Date;
 
-import de.tinf13aibi.cardboardbro.Entities.CrosshairEntity;
-import de.tinf13aibi.cardboardbro.Entities.IEntity;
-import de.tinf13aibi.cardboardbro.Entities.LineEntity;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionDrawingSpacePoints;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionPlanePoint;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
-import de.tinf13aibi.cardboardbro.Geometry.Plane;
-import de.tinf13aibi.cardboardbro.Geometry.StraightLine;
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Entities.Lined.CrosshairEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.LineEntity;
+import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionEntityList;
+import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionPlane;
+import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Straight;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
@@ -29,8 +29,8 @@ public class User {
     private Vec3d mEyeForward = new Vec3d(0, 0, -0.01f);
     private Vec3d mArmForward = new Vec3d(0, 0, -0.01f);
 
-    private CollisionTrianglePoint mEyeLookingAt;
-    private CollisionTrianglePoint mArmPointingAt;
+    private IntersectionTriangle mEyeLookingAt;
+    private IntersectionTriangle mArmPointingAt;
 
     private CrosshairEntity mEyeCrosshair;
     private CrosshairEntity mArmCrosshair;
@@ -63,9 +63,9 @@ public class User {
     }
 
 
-    private void calcCrosshairPos(CrosshairEntity crosshairEntity, CollisionTrianglePoint pointingAt, Vec3d forwardVec){
+    private void calcCrosshairPos(CrosshairEntity crosshairEntity, IntersectionTriangle pointingAt, Vec3d forwardVec){
         if (pointingAt!=null) {
-            crosshairEntity.setPosition(pointingAt.collisionPos, pointingAt.triangleNormal, pointingAt.distance);
+            crosshairEntity.setPosition(pointingAt.intersectionPos, pointingAt.triangleNormal, pointingAt.distance);
         } else {
             //calc cross some meters away from eyes
             Vec3d farPointOnEyeLine = VecMath.calcVecPlusVec(mPosition, VecMath.calcVecTimesScalar(forwardVec, 100));
@@ -75,25 +75,25 @@ public class User {
         }
     }
 
-    public CollisionTrianglePoint calcEyeLookingAt(ArrayList<IEntity> entityList){
-        StraightLine line = new StraightLine(mPosition, mEyeForward);
-        mEyeLookingAt = new CollisionDrawingSpacePoints(line, entityList).nearestCollision;
+    public IntersectionTriangle calcEyeLookingAt(ArrayList<IEntity> entityList){
+        Straight line = new Straight(mPosition, mEyeForward);
+        mEyeLookingAt = new IntersectionEntityList(line, entityList).nearestIntersection;
         calcCrosshairPos(mEyeCrosshair, mEyeLookingAt, mEyeForward);
         return mEyeLookingAt;
     }
 
-    public CollisionTrianglePoint calcArmPointingAt(ArrayList<IEntity> entityList){
-        StraightLine line = new StraightLine(mPosition, mArmForward);
-        mArmPointingAt = new CollisionDrawingSpacePoints(line, entityList).nearestCollision;
+    public IntersectionTriangle calcArmPointingAt(ArrayList<IEntity> entityList){
+        Straight line = new Straight(mPosition, mArmForward);
+        mArmPointingAt = new IntersectionEntityList(line, entityList).nearestIntersection;
         calcCrosshairPos(mArmCrosshair, mArmPointingAt, mArmForward);
 
         mArmLine.setVerts(mPosition, mArmCrosshair.getPosition());
         return mArmPointingAt;
     }
 
-    public CollisionTrianglePoint calcArmPointingAt(Plane plane){
-        StraightLine line = new StraightLine(mPosition, mArmForward);
-        mArmPointingAt = new CollisionPlanePoint(line, plane);
+    public IntersectionTriangle calcArmPointingAt(Plane plane){
+        Straight line = new Straight(mPosition, mArmForward);
+        mArmPointingAt = new IntersectionPlane(line, plane);
         calcCrosshairPos(mArmCrosshair, mArmPointingAt, mArmForward);
 
         mArmLine.setVerts(mPosition, mArmCrosshair.getPosition());
@@ -214,11 +214,11 @@ public class User {
         return mLastUpdate;
     }
 
-    public CollisionTrianglePoint getEyeLookingAt() {
+    public IntersectionTriangle getEyeLookingAt() {
         return mEyeLookingAt;
     }
 
-    public CollisionTrianglePoint getArmPointingAt() {
+    public IntersectionTriangle getArmPointingAt() {
         return mArmPointingAt;
     }
 

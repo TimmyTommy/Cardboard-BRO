@@ -1,4 +1,4 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Entities.Triangulated;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
@@ -6,10 +6,12 @@ import android.opengl.Matrix;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
-import de.tinf13aibi.cardboardbro.Geometry.Triangle;
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**
  * Created by dthom on 10.01.2016.

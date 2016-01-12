@@ -2,6 +2,11 @@ package de.tinf13aibi.cardboardbro.Geometry;
 
 import android.opengl.Matrix;
 
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Straight;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+
 /**
  * Created by dth on 27.11.2015.
  */
@@ -128,7 +133,7 @@ public class VecMath {
         return calcScalarProcuct(v1.toFloatArray(), v2.toFloatArray());
     }
 
-    public static boolean calcPlaneLineIntersection(float[] intersectPointOut, float[] trsOut, Triangle triangle, StraightLine line){
+    public static boolean calcPlaneLineIntersection(float[] intersectPointOut, float[] trsOut, Triangle triangle, Straight line){
 //        Vec3d triangleNormal = calcNormalVector(triangle);
         Vec3d triangleNormal = triangle.getN1();
         float scalar = calcScalarProcuct(triangleNormal, line.dir);
@@ -174,7 +179,7 @@ public class VecMath {
         return true;
     }
 
-    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
+    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, Straight line){
         //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
 
         float[] trs = new float[3];
@@ -182,7 +187,7 @@ public class VecMath {
         return trs[0] > 0 && isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
     }
 
-//    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, StraightLine line){
+//    public static boolean calcTriangleLineIntersection(float[] intersectPointOut, Triangle triangle, Straight line){
 //        //http://www2.in.tu-clausthal.de/~zach/teaching/cg2_10/folien/07_raytracing_2.pdf
 //
 //        //Gerade: X = P + t*d
@@ -297,7 +302,7 @@ public class VecMath {
         float[] trs = new float[3];
 //        Vec3d planeNormal = calcNormalVector(plane);
         Vec3d planeNormal = plane.getN1();
-        StraightLine line = new StraightLine(point, planeNormal);
+        Straight line = new Straight(point, planeNormal);
         calcPlaneLineIntersection(intersectPoint, trs, plane, line);
 
         Vec3d distanceVec = calcVecTimesScalar(planeNormal, trs[0]);

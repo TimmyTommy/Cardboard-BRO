@@ -1,4 +1,6 @@
-package de.tinf13aibi.cardboardbro.Geometry;
+package de.tinf13aibi.cardboardbro.Geometry.Simple;
+
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
  * Created by dthom on 17.12.2015.

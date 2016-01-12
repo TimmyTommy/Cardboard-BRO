@@ -1,10 +1,12 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Entities.Lined;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import de.tinf13aibi.cardboardbro.Constants;
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**
  * Created by dth on 27.11.2015.

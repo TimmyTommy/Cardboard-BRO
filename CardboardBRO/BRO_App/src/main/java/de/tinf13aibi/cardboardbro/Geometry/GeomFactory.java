@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Line;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**
  * Created by dthom on 07.01.2016.

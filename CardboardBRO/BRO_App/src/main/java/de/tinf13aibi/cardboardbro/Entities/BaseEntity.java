@@ -9,9 +9,10 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Constants;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
-import de.tinf13aibi.cardboardbro.Geometry.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
 
 /**
  * Created by dth on 27.11.2015.

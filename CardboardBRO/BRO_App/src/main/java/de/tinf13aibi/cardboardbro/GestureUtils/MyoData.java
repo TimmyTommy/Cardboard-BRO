@@ -3,7 +3,7 @@ package de.tinf13aibi.cardboardbro.GestureUtils;
 import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
 
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**

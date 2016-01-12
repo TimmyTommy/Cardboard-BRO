@@ -7,21 +7,19 @@ import java.util.ArrayList;
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
-import de.tinf13aibi.cardboardbro.Entities.CubeEntity;
-import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
-import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
-import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
-import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
-import de.tinf13aibi.cardboardbro.Entities.IEntity;
-import de.tinf13aibi.cardboardbro.Entities.PlaneEntity;
-import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
-import de.tinf13aibi.cardboardbro.Entities.SphereEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CubeEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderCanvasEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.FloorEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.PlaneEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.SphereEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
-import de.tinf13aibi.cardboardbro.Geometry.Plane;
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
-import de.tinf13aibi.cardboardbro.Geometry.VecMath;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**
  * Created by dthom on 09.01.2016.

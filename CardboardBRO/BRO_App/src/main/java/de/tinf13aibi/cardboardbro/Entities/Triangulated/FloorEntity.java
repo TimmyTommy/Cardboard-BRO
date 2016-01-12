@@ -1,9 +1,11 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Entities.Triangulated;
 
 import java.util.ArrayList;
 
+import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
-import de.tinf13aibi.cardboardbro.Geometry.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
 
 /**
  * Created by dth on 27.11.2015.

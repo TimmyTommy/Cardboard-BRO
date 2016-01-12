@@ -5,19 +5,19 @@ import android.os.Vibrator;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
-import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
-import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
-import de.tinf13aibi.cardboardbro.Entities.IEntity;
-import de.tinf13aibi.cardboardbro.Entities.PolyLineEntity;
-import de.tinf13aibi.cardboardbro.Entities.SphereEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.PolyLineEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.SphereEntity;
 import de.tinf13aibi.cardboardbro.Enums.AppState;
 import de.tinf13aibi.cardboardbro.Enums.AppStateGroup;
 import de.tinf13aibi.cardboardbro.Enums.InputAction;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionPlanePoint;
-import de.tinf13aibi.cardboardbro.Geometry.CollisionTrianglePoint;
-import de.tinf13aibi.cardboardbro.Geometry.Plane;
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionPlane;
+import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
@@ -245,11 +245,11 @@ public class StateMachine {
     }
 
     //Change States
-    private void selectButton(CollisionTrianglePoint collisionPoint){
-        if (collisionPoint!=null){
-            if (collisionPoint.entity != null){
-                if (collisionPoint.entity instanceof ButtonEntity) {
-                    ButtonEntity buttonEntity = (ButtonEntity)collisionPoint.entity;
+    private void selectButton(IntersectionTriangle intersectionPoint){
+        if (intersectionPoint!=null){
+            if (intersectionPoint.entity != null){
+                if (intersectionPoint.entity instanceof ButtonEntity) {
+                    ButtonEntity buttonEntity = (ButtonEntity)intersectionPoint.entity;
                     changeState(buttonEntity.getNextState(), "Change state");
                 }
             }
@@ -396,10 +396,10 @@ public class StateMachine {
         changeState(AppState.WaitForCuboidBasePoint2, "Begin Draw Cuboid");
     }
 
-    private void drawCuboidBeginBasePoint2(CollisionTrianglePoint collisionPoint, Boolean fix){
-        if (mEditingEntity instanceof CuboidEntity && collisionPoint instanceof CollisionPlanePoint) {
+    private void drawCuboidBeginBasePoint2(IntersectionTriangle intersectionPoint, Boolean fix){
+        if (mEditingEntity instanceof CuboidEntity && intersectionPoint instanceof IntersectionPlane) {
             CuboidEntity cuboidEntity = (CuboidEntity) mEditingEntity;
-            Vec3d pos = ((CollisionPlanePoint) collisionPoint).mTRS.copy();
+            Vec3d pos = ((IntersectionPlane) intersectionPoint).mTRS.copy();
             cuboidEntity.setDepthAndWidth(pos.y, pos.z);
             if (fix){
 
@@ -411,7 +411,7 @@ public class StateMachine {
 
 //            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), depthDir);
 //                mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), widthDir));
-                mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(collisionPoint.collisionPos, widthDir));
+                mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(intersectionPoint.intersectionPos, widthDir));
 
                 changeState(AppState.WaitForCuboidHeightPoint, "Update Cuboid Point2");
             }

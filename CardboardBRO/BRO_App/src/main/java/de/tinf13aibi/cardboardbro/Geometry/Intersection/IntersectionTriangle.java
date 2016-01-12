@@ -1,26 +1,29 @@
-package de.tinf13aibi.cardboardbro.Geometry;
+package de.tinf13aibi.cardboardbro.Geometry.Intersection;
 
-import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
-import de.tinf13aibi.cardboardbro.Entities.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Straight;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
  * Created by dthom on 17.12.2015.
  */
-public class CollisionTrianglePoint {
+public class IntersectionTriangle {
     public Triangle triangle;
     public Vec3d triangleNormal;
-    public StraightLine straight;
-    public Vec3d collisionPos;
+    public Straight straight;
+    public Vec3d intersectionPos;
     public IEntity entity;
     public float distance = -1;
-    public CollisionTrianglePoint(StraightLine straight, Triangle triangle , IEntity entity){
+    public IntersectionTriangle(Straight straight, Triangle triangle, IEntity entity){
         this.straight = straight;
         this.triangle = triangle;
         this.entity = entity;
     }
 
     protected void calcDistance(){
-        Vec3d vec = VecMath.calcVecMinusVec(collisionPos, straight.pos);
+        Vec3d vec = VecMath.calcVecMinusVec(intersectionPos, straight.pos);
         distance = VecMath.calcVectorLength(vec);
     }
 
@@ -29,11 +32,11 @@ public class CollisionTrianglePoint {
         triangleNormal = triangle.getN1().copy();
         float[] pos = new float[3];
         if (VecMath.calcTriangleLineIntersection(pos, triangle, straight)){
-            collisionPos = new Vec3d(pos);
+            intersectionPos = new Vec3d(pos);
             calcDistance();
             return true;
         } else {
-            collisionPos = null;
+            intersectionPos = null;
             distance = -1;
             return false;
         }

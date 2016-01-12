@@ -1,8 +1,10 @@
-package de.tinf13aibi.cardboardbro.Entities;
+package de.tinf13aibi.cardboardbro.Entities.Lined;
 
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**

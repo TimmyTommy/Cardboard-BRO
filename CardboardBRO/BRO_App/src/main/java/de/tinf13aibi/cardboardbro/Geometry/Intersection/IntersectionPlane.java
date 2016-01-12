@@ -1,14 +1,17 @@
-package de.tinf13aibi.cardboardbro.Geometry;
+package de.tinf13aibi.cardboardbro.Geometry.Intersection;
 
-import de.tinf13aibi.cardboardbro.Entities.IEntity;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Straight;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
  * Created by dthom on 07.01.2016.
  */
-public class CollisionPlanePoint extends CollisionTrianglePoint {
+public class IntersectionPlane extends IntersectionTriangle {
     public Vec3d mTRS = new Vec3d();
 
-    public CollisionPlanePoint(StraightLine straight, Plane plane){
+    public IntersectionPlane(Straight straight, Plane plane){
         super(straight, plane, null);
         calcPlaneLineIntersection();
     }
@@ -19,12 +22,12 @@ public class CollisionPlanePoint extends CollisionTrianglePoint {
         float[] trs = new float[3];
         float[] pos = new float[3];
         if (VecMath.calcPlaneLineIntersection(pos, trs, triangle, straight)){
-            collisionPos = new Vec3d(pos);
+            intersectionPos = new Vec3d(pos);
             mTRS.assignFloatArray(trs);
             distance = trs[0];
 //            calcDistance();
         } else {
-            collisionPos = null;
+            intersectionPos = null;
             distance = -1;
         }
     }
