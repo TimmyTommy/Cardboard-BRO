@@ -60,10 +60,6 @@ public abstract class BaseEntity implements IEntity {
         mTriangles = new ArrayList<>();
         if (absoluteCoords.size()%3==0) {
             for (int i = 0; i<absoluteCoords.size()/3; i++) {
-//                float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
-//                float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
-//                float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
-//                mTriangles.add(new Triangle(new Vec3d(coord0), new Vec3d(coord1), new Vec3d(coord2)));
                 mTriangles.add(new Triangle(absoluteCoords.get(i*3), absoluteCoords.get(i*3+1), absoluteCoords.get(i*3+2)));
             }
         }
@@ -71,17 +67,6 @@ public abstract class BaseEntity implements IEntity {
 
     protected ArrayList<Triangle> getAbsoluteTriangles(){
         return mTriangles;
-//        ArrayList<Vec3d> absoluteCoords = getAbsoluteCoords();
-//        ArrayList<Triangle> absoluteTriangles = new ArrayList<>();
-//        if (absoluteCoords.size()%3==0) {
-//            for (int i = 0; i<absoluteCoords.size()/3; i++) {
-//                float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
-//                float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
-//                float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
-//                absoluteTriangles.add(new Triangle(new Vec3d(coord0), new Vec3d(coord1), new Vec3d(coord2)));
-//            }
-//        }
-//        return absoluteTriangles;
     }
 
     public BaseEntity(){

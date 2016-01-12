@@ -239,40 +239,21 @@ public class VecMath {
         return new Vec3d(calcCrossProduct(v1.toFloatArray(), v2.toFloatArray()));
     }
 
-//    public static Vec3d calcNormalVector(Vec3d v1v2, Vec3d v1v3){
-//        Vec3d cross;
-//
-//        cross = calcCrossProduct(v1v2, v1v3);
-//        return calcNormalizedVector(cross);
-//    }
-//
-//
-//    public static Vec3d calcNormalVector(Triangle triangle){
+    public static Vec3d calcNormalVector(Triangle triangle){
+        return calcNormalizedVector(calcCrossProduct(triangle.getV1V3(), triangle.getV1V2()));
+    }
+
+//    private static Vec3d calcNormalVector(Triangle triangle, int normalsDirection){
 //        Vec3d v1v2, v1v3, cross;
-//
+//        //Vorbereitung
 //        v1v2 = calcVecMinusVec(triangle.getP2(), triangle.getP1());
 //        v1v3 = calcVecMinusVec(triangle.getP3(), triangle.getP1());
 //
-////        cross = calcCrossProduct(v1v3, v1v2);
-//        cross = calcCrossProduct(v1v2, v1v3);
-//        return calcNormalizedVector(cross);
+//        cross = calcCrossProduct(v1v3, v1v2);
+//        cross = calcNormalizedVector(calcVecTimesScalar(cross, normalsDirection));
+//
+//        return cross;
 //    }
-
-    public static Vec3d calcNormalVector(Triangle triangle){
-        return calcNormalVector(triangle, 1);
-    }
-
-    public static Vec3d calcNormalVector(Triangle triangle, int normalsDirection){
-        Vec3d v1v2, v1v3, cross;
-        //Vorbereitung
-        v1v2 = calcVecMinusVec(triangle.getP2(), triangle.getP1());
-        v1v3 = calcVecMinusVec(triangle.getP3(), triangle.getP1());
-
-        cross = calcCrossProduct(v1v3, v1v2);
-        cross = calcNormalizedVector(calcVecTimesScalar(cross, normalsDirection));
-
-        return cross;
-    }
 
     public static void calcCrossedVectorsFromNormal(Vec3d vecHorizontalOut, Vec3d vecVerticalOut, Vec3d normal){
         normal.assignPoint3d(VecMath.calcNormalizedVector(normal));

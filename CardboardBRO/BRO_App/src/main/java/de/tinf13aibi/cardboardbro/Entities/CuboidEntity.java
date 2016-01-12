@@ -21,11 +21,6 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
     private float mDepth = 1;
     private float mHeight = 1;
 
-
-    public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-        super.draw(view, perspective, lightPosInEyeSpace);
-    }
-
     @Override
     public ArrayList<Triangle> getAbsoluteTriangles(){
         return super.getAbsoluteTriangles();

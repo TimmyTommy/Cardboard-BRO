@@ -12,10 +12,6 @@ import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
     private AppState mNextState = AppState.Unknown;
 
-    public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-        super.draw(view, perspective, lightPosInEyeSpace);
-    }
-
     @Override
     public ArrayList<Triangle> getAbsoluteTriangles(){
         return super.getAbsoluteTriangles();

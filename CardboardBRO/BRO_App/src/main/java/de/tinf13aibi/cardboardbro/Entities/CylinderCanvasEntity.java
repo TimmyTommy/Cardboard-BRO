@@ -14,10 +14,6 @@ import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
  * Created by dth on 27.11.2015.
  */
 public class CylinderCanvasEntity extends BaseEntity implements ITriangulatedEntity {
-    public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-        super.draw(view, perspective, lightPosInEyeSpace);
-    }
-
     @Override
     public ArrayList<Triangle> getAbsoluteTriangles(){
         return super.getAbsoluteTriangles();

@@ -42,9 +42,6 @@ public class CollisionEntityPoints {
     private void calcTriangleCollisions(){
         ArrayList<Triangle> triangles = entity.getAbsoluteTriangles();
         for (Triangle triangle : triangles) {
-//            float angle = VecMath.calcAngleBetweenVecsDeg(triangle.n1, straight.dir);
-//            Vec3d normal = VecMath.calcNormalVector(triangle);
-////            float angle = VecMath.calcAngleBetweenVecsDeg(normal, straight.dir);
             float angle = VecMath.calcAngleBetweenVecsDeg(triangle.n1, VecMath.calcVecTimesScalar(straight.dir, -1));
             if (angle<90) {
                 CollisionTrianglePoint collisionPoint = new CollisionTrianglePoint(straight, triangle, entity);

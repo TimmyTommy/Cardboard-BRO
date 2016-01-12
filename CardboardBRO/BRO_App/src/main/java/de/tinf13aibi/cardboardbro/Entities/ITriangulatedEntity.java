@@ -9,5 +9,4 @@ import de.tinf13aibi.cardboardbro.Geometry.Triangle;
  */
 public interface ITriangulatedEntity extends IEntity{
     ArrayList<Triangle> getAbsoluteTriangles();
-//    Boolean hasFaces();
 }
