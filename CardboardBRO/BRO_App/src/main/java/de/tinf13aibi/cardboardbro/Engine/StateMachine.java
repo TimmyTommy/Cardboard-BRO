@@ -264,6 +264,7 @@ public class StateMachine {
     //Draw FreeLine
     private void drawFreeLineBegin(Vec3d point){
         mEditingEntity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
+        ((PolyLineEntity)mEditingEntity).setColor(1,0,0,1);
         ((PolyLineEntity)mEditingEntity).addVert(point);
         mDrawing.getEntityList().add(0, mEditingEntity); //Linien zuerst zeichnen sonst unsichtbar
         changeState(AppState.WaitForEndFreeLine, "Begin FreeDraw");
@@ -329,7 +330,7 @@ public class StateMachine {
         mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(point, baseNormal));
         mEditingEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
 
-        float[] color = new float[]{0.7f, 0.7f, 0.5f, 1};
+        float[] color = new float[]{0.2f, 1f, 0.7f, 1};
         ((CylinderEntity)mEditingEntity).setAttributes(point, baseNormal, 0.01f, 0.01f, color);
         mDrawing.getEntityList().add(mEditingEntity);
 
@@ -339,7 +340,7 @@ public class StateMachine {
     private void drawCylinderRadius(Vec3d point, Boolean fix){
         if (mEditingEntity instanceof CylinderEntity) {
             CylinderEntity cylinderEntity = (CylinderEntity) mEditingEntity;
-            cylinderEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, cylinderEntity.getCenter())));
+            cylinderEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, cylinderEntity.getCenter())), fix);
             if (fix){
 
                 //TODO das ganze auslagern und mTempWorkingPlane updaten, je nachdem in welche richtung user guckt
@@ -362,7 +363,7 @@ public class StateMachine {
             Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cylinderEntity.getCenter(), cylinderEntity.getBaseNormal());
 
             float distance = VecMath.calcDistancePlanePoint(basePlane, point);
-            cylinderEntity.setHeight(distance);
+            cylinderEntity.setHeight(distance, fix);
         }
         if (fix){
             changeState(AppState.WaitForCylinderCenterPoint, "End Draw Cylinder");
@@ -399,7 +400,7 @@ public class StateMachine {
         if (mEditingEntity instanceof CuboidEntity && intersectionPoint instanceof IntersectionPlane) {
             CuboidEntity cuboidEntity = (CuboidEntity) mEditingEntity;
             Vec3d pos = ((IntersectionPlane) intersectionPoint).mTRS.copy();
-            cuboidEntity.setDepthAndWidth(pos.y, pos.z);
+            cuboidEntity.setDepthAndWidth(pos.y, pos.z, fix);
             if (fix){
 
                 //TODO das ganze auslagern und mTempWorkingPlane updaten, je nachdem in welche richtung user guckt
@@ -423,7 +424,7 @@ public class StateMachine {
             Plane basePlane = VecMath.calcPlaneFromPointAndNormal(cuboidEntity.getBaseVert(), cuboidEntity.getBaseNormal());
 
             float distance = VecMath.calcDistancePlanePoint(basePlane, point);
-            cuboidEntity.setHeight(distance);
+            cuboidEntity.setHeight(distance, fix);
         }
         if (fix){
             changeState(AppState.WaitForCuboidBasePoint1, "End Draw Cuboid");
@@ -459,7 +460,7 @@ public class StateMachine {
     private void drawSphereEndRadius(Vec3d point, Boolean fix){
         if (mEditingEntity instanceof SphereEntity) {
             SphereEntity sphereEntity = (SphereEntity) mEditingEntity;
-            sphereEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, sphereEntity.getCenter())));
+            sphereEntity.setRadius(VecMath.calcVectorLength(VecMath.calcVecMinusVec(point, sphereEntity.getCenter())), fix);
             if (fix){
                 mDrawing.setTempWorkingPlane(null);
                 changeState(AppState.WaitForSphereCenterPoint, "End Sphere Radius");

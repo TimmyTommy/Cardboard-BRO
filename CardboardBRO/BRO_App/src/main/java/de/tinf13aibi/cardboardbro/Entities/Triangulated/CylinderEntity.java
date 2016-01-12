@@ -55,17 +55,19 @@ public class CylinderEntity extends BaseEntity implements IManySidedEntity {
         mHitBox.setAttributes(basePoint, mBaseNormal, mRadius * 2, mRadius * 2, mHeight, new float[]{0.5f, 0.5f, 1, 0.5f});
     }
 
-    private void recreateGeometry(){
+    private void recreateGeometry(boolean fix){
         GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
-        calcAbsoluteTriangles();
-        calcHitbox();
+        if (fix) {
+            calcAbsoluteTriangles();
+            calcHitbox();
+        }
     }
 
     public CylinderEntity(int program){
         super(program);
         mHitBox = new CuboidEntity(program);
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public float[] getColor() {
@@ -74,25 +76,25 @@ public class CylinderEntity extends BaseEntity implements IManySidedEntity {
 
     public void setColor(float[] color) {
         mColor = color;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public float getRadius() {
         return mRadius;
     }
 
-    public void setRadius(float radius) {
+    public void setRadius(float radius, boolean fix) {
         mRadius = radius;
-        recreateGeometry();
+        recreateGeometry(fix);
     }
 
     public float getHeight() {
         return mHeight;
     }
 
-    public void setHeight(float height) {
+    public void setHeight(float height, boolean fix) {
         mHeight = height;
-        recreateGeometry();
+        recreateGeometry(fix);
     }
 
     public Vec3d getBaseNormal() {
@@ -101,7 +103,7 @@ public class CylinderEntity extends BaseEntity implements IManySidedEntity {
 
     public void setBaseNormal(Vec3d baseNormal) {
         mBaseNormal = baseNormal;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public Vec3d getCenter() {
@@ -120,6 +122,6 @@ public class CylinderEntity extends BaseEntity implements IManySidedEntity {
         mRadius = radius;
         mHeight = height;
         mColor = color;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 }

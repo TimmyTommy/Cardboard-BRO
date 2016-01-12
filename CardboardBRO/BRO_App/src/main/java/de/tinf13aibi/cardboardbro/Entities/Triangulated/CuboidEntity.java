@@ -28,14 +28,16 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
         return super.getAbsoluteTriangles();
     }
 
-    private void recreateGeometry(){
+    private void recreateGeometry(boolean fix){
         GeometryStruct geometry = GeomFactory.createCuboidGeom(new Vec3d(0, 0, 0), mBaseNormal, mDepth, mWidth, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
-        calcAbsoluteTriangles();
+        if (fix) {
+            calcAbsoluteTriangles();
+        }
     }
     public CuboidEntity(int program){
         super(program);
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public float[] getColor() {
@@ -44,7 +46,7 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
 
     public void setColor(float[] color) {
         mColor = color;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public float getDepth() {
@@ -53,33 +55,33 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
 
     public void setDepth(float depth) {
         mDepth = depth;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public float getWidth() {
         return mWidth;
     }
 
-    public void setDepthAndWidth(float depth, float width) {
+    public void setDepthAndWidth(float depth, float width, boolean fix) {
         mDepth = depth;
         mWidth = width;
-        recreateGeometry();
+        recreateGeometry(fix);
     }
 
 
 
     public void setWidth(float width) {
         mWidth = width;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public float getHeight() {
         return mHeight;
     }
 
-    public void setHeight(float height) {
+    public void setHeight(float height, boolean fix) {
         mHeight = height;
-        recreateGeometry();
+        recreateGeometry(fix);
     }
 
     public Vec3d getBaseNormal() {
@@ -88,7 +90,7 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
 
     public void setBaseNormal(Vec3d baseNormal) {
         mBaseNormal = baseNormal;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 
     public Vec3d getBaseVert() {
@@ -108,6 +110,6 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
         mWidth = width;
         mHeight = height;
         mColor = color;
-        recreateGeometry();
+        recreateGeometry(true);
     }
 }
