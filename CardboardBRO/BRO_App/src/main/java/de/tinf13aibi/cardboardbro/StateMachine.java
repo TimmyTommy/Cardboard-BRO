@@ -28,9 +28,9 @@ public class StateMachine {
 
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
-//    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;

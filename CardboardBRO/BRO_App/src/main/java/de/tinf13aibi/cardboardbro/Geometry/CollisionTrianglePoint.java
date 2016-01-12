@@ -25,7 +25,8 @@ public class CollisionTrianglePoint {
     }
 
     public Boolean calcTriangleLineIntersection(){
-        triangleNormal = VecMath.calcNormalVector(triangle);
+//        triangleNormal = VecMath.calcNormalVector(triangle);
+        triangleNormal = triangle.getN1().copy();
         float[] pos = new float[3];
         if (VecMath.calcTriangleLineIntersection(pos, triangle, straight)){
             collisionPos = new Vec3d(pos);

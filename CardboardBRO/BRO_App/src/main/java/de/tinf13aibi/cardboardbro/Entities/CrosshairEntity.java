@@ -33,11 +33,6 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         }
     }
 
-    @Override
-    public Boolean hasFaces() {
-        return true;
-    }
-
     private void calcCrossVectors(Vec3d normal){
         VecMath.calcCrossedVectorsFromNormal(mHoroizontalVec, mVerticalVec, normal);
 

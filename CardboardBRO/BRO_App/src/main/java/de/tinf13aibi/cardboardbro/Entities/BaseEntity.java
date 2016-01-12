@@ -28,6 +28,8 @@ public abstract class BaseEntity implements IEntity {
     protected FloatBuffer mNormals;
 //    protected FloatBuffer mFoundColors;
 
+    protected ArrayList<Triangle> mTriangles = new ArrayList<>();
+
     protected int mProgram;
 
     protected int mPositionParam;
@@ -53,18 +55,33 @@ public abstract class BaseEntity implements IEntity {
         return absoluteCoords;
     }
 
-    public ArrayList<Triangle> getAbsoluteTriangles(){
+    protected void calcAbsoluteTriangles(){
         ArrayList<Vec3d> absoluteCoords = getAbsoluteCoords();
-        ArrayList<Triangle> absoluteTriangles = new ArrayList<>();
+        mTriangles = new ArrayList<>();
         if (absoluteCoords.size()%3==0) {
             for (int i = 0; i<absoluteCoords.size()/3; i++) {
-                float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
-                float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
-                float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
-                absoluteTriangles.add(new Triangle(new Vec3d(coord0), new Vec3d(coord1), new Vec3d(coord2)));
+//                float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
+//                float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
+//                float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
+//                mTriangles.add(new Triangle(new Vec3d(coord0), new Vec3d(coord1), new Vec3d(coord2)));
+                mTriangles.add(new Triangle(absoluteCoords.get(i*3), absoluteCoords.get(i*3+1), absoluteCoords.get(i*3+2)));
             }
         }
-        return absoluteTriangles;
+    }
+
+    protected ArrayList<Triangle> getAbsoluteTriangles(){
+        return mTriangles;
+//        ArrayList<Vec3d> absoluteCoords = getAbsoluteCoords();
+//        ArrayList<Triangle> absoluteTriangles = new ArrayList<>();
+//        if (absoluteCoords.size()%3==0) {
+//            for (int i = 0; i<absoluteCoords.size()/3; i++) {
+//                float[] coord0 = absoluteCoords.get(i*3).toFloatArray();
+//                float[] coord1 = absoluteCoords.get(i*3+1).toFloatArray();
+//                float[] coord2 = absoluteCoords.get(i*3+2).toFloatArray();
+//                absoluteTriangles.add(new Triangle(new Vec3d(coord0), new Vec3d(coord1), new Vec3d(coord2)));
+//            }
+//        }
+//        return absoluteTriangles;
     }
 
     public BaseEntity(){
@@ -129,6 +146,10 @@ public abstract class BaseEntity implements IEntity {
 
     public float[] getModel(){
         return mModel;
+    }
+
+    public void changedModel(){
+        calcAbsoluteTriangles();
     }
 
     public float[] getBaseModel() {

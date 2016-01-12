@@ -16,7 +16,7 @@ import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 /**
  * Created by dthom on 07.01.2016.
  */
-public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEntity {
+public class CylinderEntity extends BaseEntity implements IManySidedEntity {
     private float[] mColor = new float[]{0, 0.7f, 0, 1};
     private float mRadius = 1;
     private float mHeight = 1;
@@ -34,8 +34,8 @@ public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEnt
     }
 
     @Override
-    public Boolean hasFaces() {
-        return true;
+    public ArrayList<Triangle> getAbsoluteTriangles(){
+        return super.getAbsoluteTriangles();
     }
 
     @Override
@@ -59,6 +59,7 @@ public class CylinderEntity extends BaseEntity implements IEntity, IManySidedEnt
     private void recreateGeometry(){
         GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+        calcAbsoluteTriangles();
         calcHitbox();
     }
 

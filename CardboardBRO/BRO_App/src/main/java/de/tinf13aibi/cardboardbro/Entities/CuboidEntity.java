@@ -2,14 +2,17 @@ package de.tinf13aibi.cardboardbro.Entities;
 
 import android.opengl.Matrix;
 
+import java.util.ArrayList;
+
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
+import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 
 /**
  * Created by dthom on 09.01.2016.
  */
-public class CuboidEntity extends BaseEntity implements IEntity {
+public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
     private float[] mColor = new float[]{0, 0.7f, 0, 1};
     private Vec3d mBaseNormal = new Vec3d(0, 1, 0);
     private Vec3d mBaseVert = new Vec3d();
@@ -24,13 +27,14 @@ public class CuboidEntity extends BaseEntity implements IEntity {
     }
 
     @Override
-    public Boolean hasFaces() {
-        return true;
+    public ArrayList<Triangle> getAbsoluteTriangles(){
+        return super.getAbsoluteTriangles();
     }
 
     private void recreateGeometry(){
         GeometryStruct geometry = GeomFactory.createCuboidGeom(new Vec3d(0, 0, 0), mBaseNormal, mDepth, mWidth, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+        calcAbsoluteTriangles();
     }
     public CuboidEntity(int program){
         super(program);

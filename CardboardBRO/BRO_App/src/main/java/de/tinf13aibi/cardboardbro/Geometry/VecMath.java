@@ -75,6 +75,14 @@ public class VecMath {
 //        Log.i("ergZ", String.valueOf(mHoroizontalVec.z));
 //    }
 
+    public static float calcAngleBetweenVecsRad(Vec3d v1, Vec3d v2){
+        return (float)Math.acos(calcScalarProcuct(v1, v2)/calcVectorLength(v1)*calcVectorLength(v2));
+    }
+
+    public static float calcAngleBetweenVecsDeg(Vec3d v1, Vec3d v2){
+        return radToDeg(calcAngleBetweenVecsRad(v1, v2));
+    }
+
     public static float[] calcVecPlusVec(float[] v1, float[] v2){
         float[] res = new float[3];
         res[0] = v1[0] + v2[0];
@@ -121,7 +129,8 @@ public class VecMath {
     }
 
     public static boolean calcPlaneLineIntersection(float[] intersectPointOut, float[] trsOut, Triangle triangle, StraightLine line){
-        Vec3d triangleNormal = calcNormalVector(triangle);
+//        Vec3d triangleNormal = calcNormalVector(triangle);
+        Vec3d triangleNormal = triangle.getN1();
         float scalar = calcScalarProcuct(triangleNormal, line.dir);
         final float eps = 0.000001f;
         if (Math.abs(scalar)<eps){
@@ -230,11 +239,30 @@ public class VecMath {
         return new Vec3d(calcCrossProduct(v1.toFloatArray(), v2.toFloatArray()));
     }
 
+//    public static Vec3d calcNormalVector(Vec3d v1v2, Vec3d v1v3){
+//        Vec3d cross;
+//
+//        cross = calcCrossProduct(v1v2, v1v3);
+//        return calcNormalizedVector(cross);
+//    }
+//
+//
+//    public static Vec3d calcNormalVector(Triangle triangle){
+//        Vec3d v1v2, v1v3, cross;
+//
+//        v1v2 = calcVecMinusVec(triangle.getP2(), triangle.getP1());
+//        v1v3 = calcVecMinusVec(triangle.getP3(), triangle.getP1());
+//
+////        cross = calcCrossProduct(v1v3, v1v2);
+//        cross = calcCrossProduct(v1v2, v1v3);
+//        return calcNormalizedVector(cross);
+//    }
+
     public static Vec3d calcNormalVector(Triangle triangle){
         return calcNormalVector(triangle, 1);
     }
 
-    private static Vec3d calcNormalVector(Triangle triangle, int normalsDirection){
+    public static Vec3d calcNormalVector(Triangle triangle, int normalsDirection){
         Vec3d v1v2, v1v3, cross;
         //Vorbereitung
         v1v2 = calcVecMinusVec(triangle.getP2(), triangle.getP1());
@@ -286,7 +314,8 @@ public class VecMath {
     public static float calcDistancePlanePoint(Plane plane, Vec3d point){
         float[] intersectPoint = new float[3];
         float[] trs = new float[3];
-        Vec3d planeNormal = calcNormalVector(plane);
+//        Vec3d planeNormal = calcNormalVector(plane);
+        Vec3d planeNormal = plane.getN1();
         StraightLine line = new StraightLine(point, planeNormal);
         calcPlaneLineIntersection(intersectPoint, trs, plane, line);
 

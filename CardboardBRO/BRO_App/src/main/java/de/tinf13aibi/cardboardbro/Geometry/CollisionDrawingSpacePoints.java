@@ -2,15 +2,10 @@ package de.tinf13aibi.cardboardbro.Geometry;
 
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
-import de.tinf13aibi.cardboardbro.Entities.CubeEntity;
 import de.tinf13aibi.cardboardbro.Entities.CuboidEntity;
-import de.tinf13aibi.cardboardbro.Entities.CylinderCanvasEntity;
-import de.tinf13aibi.cardboardbro.Entities.CylinderEntity;
-import de.tinf13aibi.cardboardbro.Entities.FloorEntity;
 import de.tinf13aibi.cardboardbro.Entities.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.IManySidedEntity;
-import de.tinf13aibi.cardboardbro.Entities.SphereEntity;
+import de.tinf13aibi.cardboardbro.Entities.ITriangulatedEntity;
 
 /**
  * Created by dthom on 17.12.2015.
@@ -42,7 +37,7 @@ public class CollisionDrawingSpacePoints {
         return collisionPoints.collisions.size() > 0;
     }
 
-    private void doCalcEntityCollisions(StraightLine straight, IEntity entity){
+    private void doCalcEntityCollisions(StraightLine straight, ITriangulatedEntity entity){
         CollisionEntityPoints collisionPoints = new CollisionEntityPoints(straight, entity);
         if (collisionPoints.collisions.size() > 0) {
             entityCollisions.add(collisionPoints);
@@ -51,8 +46,9 @@ public class CollisionDrawingSpacePoints {
 
     private void calcEntityCollisions(){
         for (int i=0; i<entityList.size(); i++) {
-            IEntity entity = entityList.get(i);
-            if (isCollideEntity(entity)) {
+            IEntity ent = entityList.get(i);
+            if (isTriangulatedEntity(ent)) {
+                ITriangulatedEntity entity = (ITriangulatedEntity)ent;
                 if (isManySidedEntity(entity)){
                     CuboidEntity hitbox = ((IManySidedEntity)entity).getHitBox();
                     if (isHitboxHit(straight, hitbox)){
@@ -69,8 +65,9 @@ public class CollisionDrawingSpacePoints {
         return entity instanceof IManySidedEntity;
     }
 
-    private boolean isCollideEntity(IEntity entity){
-        return entity.hasFaces();
+    private boolean isTriangulatedEntity(IEntity entity){
+//        return entity.hasFaces();
+        return entity instanceof ITriangulatedEntity;
     }
 
     public CollisionDrawingSpacePoints(StraightLine straight, ArrayList<IEntity> entityList){

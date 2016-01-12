@@ -25,6 +25,8 @@ import javax.microedition.khronos.egl.EGLConfig;
 import de.tinf13aibi.cardboardbro.Enums.InputAction;
 import de.tinf13aibi.cardboardbro.Enums.Programs;
 import de.tinf13aibi.cardboardbro.Enums.Shaders;
+import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoData;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoDeviceListener;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoListenerTarget;

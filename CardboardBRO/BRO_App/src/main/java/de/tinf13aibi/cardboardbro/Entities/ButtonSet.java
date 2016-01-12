@@ -80,6 +80,7 @@ public class ButtonSet {
             if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
                 entity.resetModelToBase();
                 Matrix.multiplyMM(entity.getModel(), 0, finalOp, 0, entity.getModel(), 0);
+                entity.changedModel();
             }
         }
     }

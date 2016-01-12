@@ -36,8 +36,8 @@ public class Drawing {
     private FloorEntity mFloorEntity;
 
     public void drawEntityList(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-        for (IEntity entity : mEntityList) {
-            entity.draw(view, perspective, lightPosInEyeSpace);
+        for (int i = 0; i < mEntityList.size(); i++) {
+            mEntityList.get(i).draw(view, perspective, lightPosInEyeSpace);
         }
         mCylinderCanvasEntity.draw(view, perspective, lightPosInEyeSpace);
         mFloorEntity.draw(view, perspective, lightPosInEyeSpace);
@@ -46,7 +46,8 @@ public class Drawing {
     public void drawTempWorkingPlane(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         if (mTempWorkingPlane!= null){
             Vec3d center = mTempWorkingPlane.getP1();
-            Vec3d normal = VecMath.calcNormalVector(mTempWorkingPlane);
+//            Vec3d normal = VecMath.calcNormalVector(mTempWorkingPlane);
+            Vec3d normal = mTempWorkingPlane.getN1();
             float[] color = new float[]{0, 1, 0, 1f};
             PlaneEntity planeEntity = new PlaneEntity(ShaderCollection.getProgram(Programs.BodyProgram), center, normal, color);
             planeEntity.draw(view, perspective, lightPosInEyeSpace);
@@ -67,7 +68,7 @@ public class Drawing {
     private void setupCylinderCanvas(){
         mCylinderCanvasEntity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(mCylinderCanvasEntity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
-
+        mCylinderCanvasEntity.changedModel();
 //        BaseEntity entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
 //        Matrix.translateM(entity.getModel(), 0, 0, Constants.CANVAS_CYL_DEPTH, 0);
 //        mEntityList.add(entity);
@@ -76,7 +77,7 @@ public class Drawing {
     private void setupFloor(){
         mFloorEntity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
         Matrix.translateM(mFloorEntity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
-
+        mFloorEntity.changedModel();
 //        BaseEntity entity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
 //        Matrix.translateM(entity.getModel(), 0, 0, Constants.FLOOR_DEPTH, 0);
 //        mEntityList.add(entity);
@@ -124,46 +125,55 @@ public class Drawing {
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 1, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, -1, 2, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 2, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, 1, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 3, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, -1, 0, 1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 1, 0, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0, 0, -1.25f);
         Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         Matrix.translateM(entity.getModel(), 0, 0.05f, 0, -0.50f);
         Matrix.scaleM(entity.getModel(), 0, 0.055f, 0.055f, 0.055f);
+        entity.changedModel();
         mEntityList.add(entity);
 
         CylinderEntity cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));

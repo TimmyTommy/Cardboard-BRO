@@ -2,15 +2,18 @@ package de.tinf13aibi.cardboardbro.Entities;
 
 import android.opengl.Matrix;
 
+import java.util.ArrayList;
+
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
+import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
  * Created by dthom on 10.01.2016.
  */
-public class SphereEntity extends BaseEntity implements IEntity, IManySidedEntity {
+public class SphereEntity extends BaseEntity implements IManySidedEntity {
     private float[] mColor = new float[]{0, 0.7f, 0, 1};
     private float mRadius = 1;
     private Vec3d mBaseNormal = new Vec3d(0, 1, 0);
@@ -32,8 +35,8 @@ public class SphereEntity extends BaseEntity implements IEntity, IManySidedEntit
     }
 
     @Override
-    public Boolean hasFaces() {
-        return true;
+    public ArrayList<Triangle> getAbsoluteTriangles(){
+        return super.getAbsoluteTriangles();
     }
 
     private void calcHitbox(){
@@ -54,6 +57,7 @@ public class SphereEntity extends BaseEntity implements IEntity, IManySidedEntit
     private void recreateGeometry(){
         GeometryStruct geometry = GeomFactory.createSphereGeom(new Vec3d(0, 0, 0), mBaseNormal, mRadius, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+        calcAbsoluteTriangles();
         calcHitbox();
     }
 

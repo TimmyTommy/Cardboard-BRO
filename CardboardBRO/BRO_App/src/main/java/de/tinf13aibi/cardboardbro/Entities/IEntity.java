@@ -12,10 +12,11 @@ import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 public interface IEntity {
     void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace);
     float[] getModel();
+    void changedModel();
     float[] getBaseModel();
     EntityDisplayType getDisplayType();
     void resetModelToBase();
     ArrayList<Vec3d> getAbsoluteCoords();
-    ArrayList<Triangle> getAbsoluteTriangles();
-    Boolean hasFaces();
+//    ArrayList<Triangle> getAbsoluteTriangles();
+//    Boolean hasFaces();
 }

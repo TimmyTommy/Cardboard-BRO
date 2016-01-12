@@ -3,15 +3,18 @@ package de.tinf13aibi.cardboardbro.Entities;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import java.util.ArrayList;
+
 import de.tinf13aibi.cardboardbro.Constants;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
+import de.tinf13aibi.cardboardbro.Geometry.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Vec3d;
 
 /**
  * Created by dthom on 10.01.2016.
  */
-public class PlaneEntity extends BaseEntity implements IEntity {
+public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
     private float[] mColor = new float[]{0, 0.7f, 0, 1};
     private Vec3d mBaseNormal = new Vec3d(0, 1, 0);
     private Vec3d mCenter = new Vec3d();
@@ -26,7 +29,6 @@ public class PlaneEntity extends BaseEntity implements IEntity {
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
         GLES20.glUseProgram(mProgram);
-
 
         // Set ModelView, MVP, position, normals, and color.
         GLES20.glUniform3fv(mLightPosParam, 1, lightPosInEyeSpace, 0);
@@ -49,8 +51,8 @@ public class PlaneEntity extends BaseEntity implements IEntity {
     }
 
     @Override
-    public Boolean hasFaces() {
-        return true;
+    public ArrayList<Triangle> getAbsoluteTriangles(){
+        return super.getAbsoluteTriangles();
     }
 
     public PlaneEntity(int program, Vec3d center, Vec3d baseNormal, float[] color){

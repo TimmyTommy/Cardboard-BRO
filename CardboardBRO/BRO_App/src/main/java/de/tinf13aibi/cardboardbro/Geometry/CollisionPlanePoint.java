@@ -14,7 +14,8 @@ public class CollisionPlanePoint extends CollisionTrianglePoint {
     }
 
     public void calcPlaneLineIntersection(){
-        triangleNormal = VecMath.calcNormalVector(triangle);
+//        triangleNormal = VecMath.calcNormalVector(triangle);
+        triangleNormal = triangle.getN1().copy();
         float[] trs = new float[3];
         float[] pos = new float[3];
         if (VecMath.calcPlaneLineIntersection(pos, trs, triangle, straight)){

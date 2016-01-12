@@ -96,37 +96,41 @@ public class GeomFactory {
     }
 
     private static ArrayList<Triangle> calcRectangularFace(Line segmentBottom, Line segmentTop){
-        Triangle triangle1 = new Triangle();
-        Triangle triangle2 = new Triangle();
+        Triangle triangle1 = new Triangle(segmentTop.getP1(), segmentBottom.getP1(), segmentBottom.getP2());
+//        triangle1.setP1(segmentTop.getP1().copy());
+//        triangle1.setP2(segmentBottom.getP1().copy());
+//        triangle1.setP3(segmentBottom.getP2().copy());
+
+        Triangle triangle2 = new Triangle(segmentBottom.getP2(), segmentTop.getP2(), segmentTop.getP1());
+//        triangle2.setP1(segmentBottom.getP2().copy());
+//        triangle2.setP2(segmentTop.getP2().copy());
+//        triangle2.setP3(segmentTop.getP1().copy());
+
         ArrayList<Triangle> cylinderFace = new ArrayList<>();
         cylinderFace.add(triangle1);
         cylinderFace.add(triangle2);
-
-        triangle1.setP1(segmentTop.getP1().copy());
-        triangle1.setP2(segmentBottom.getP1().copy());
-        triangle1.setP3(segmentBottom.getP2().copy());
-
-        triangle2.setP1(segmentBottom.getP2().copy());
-        triangle2.setP2(segmentTop.getP2().copy());
-        triangle2.setP3(segmentTop.getP1().copy());
 
         return cylinderFace;
     }
 
     private static ArrayList<Triangle> calcCylinderSegmentBottomAndTop(Vec3d center, Line cycleSegment, Vec3d heightVec){
-        Triangle triangle1 = new Triangle();
-        Triangle triangle2 = new Triangle();
+        Triangle triangle1 = new Triangle(center, cycleSegment.getP2(), cycleSegment.getP1());
+//        triangle1.setP1(center.copy());
+//        triangle1.setP2(cycleSegment.getP2().copy());
+//        triangle1.setP3(cycleSegment.getP1().copy());
+
+        Triangle triangle2 = new Triangle(
+            VecMath.calcVecPlusVec(center, heightVec),
+            VecMath.calcVecPlusVec(cycleSegment.getP1(), heightVec),
+            VecMath.calcVecPlusVec(cycleSegment.getP2(), heightVec)
+        );
+//        triangle2.setP1(VecMath.calcVecPlusVec(center, heightVec));
+//        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP1(), heightVec));
+//        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP2(), heightVec));
+
         ArrayList<Triangle> cylinderBottomAndTop = new ArrayList<>();
         cylinderBottomAndTop.add(triangle1);
         cylinderBottomAndTop.add(triangle2);
-
-        triangle1.setP1(center.copy());
-        triangle1.setP2(cycleSegment.getP2().copy());
-        triangle1.setP3(cycleSegment.getP1().copy());
-
-        triangle2.setP1(VecMath.calcVecPlusVec(center, heightVec));
-        triangle2.setP2(VecMath.calcVecPlusVec(cycleSegment.getP1(), heightVec));
-        triangle2.setP3(VecMath.calcVecPlusVec(cycleSegment.getP2(), heightVec));
 
         return cylinderBottomAndTop;
     }
@@ -146,10 +150,11 @@ public class GeomFactory {
     private static ArrayList<Vec3d> calcNormalsOfTriangles(ArrayList<Triangle> triangleArray){
         ArrayList<Vec3d> normals = new ArrayList<>();
         for (int i = 0; i < triangleArray.size(); i++) {
-            Vec3d normal = VecMath.calcNormalVector(triangleArray.get(i));
-            normals.add(normal);
-            normals.add(normal);
-            normals.add(normal);
+//            Vec3d normal = VecMath.calcNormalVector(triangleArray.get(i));
+            Vec3d normal = triangleArray.get(i).getN1();
+            normals.add(normal.copy());
+            normals.add(normal.copy());
+            normals.add(normal.copy());
         }
         return normals;
     }
