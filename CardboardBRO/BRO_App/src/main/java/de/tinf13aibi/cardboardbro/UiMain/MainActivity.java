@@ -14,6 +14,7 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
+
 import com.thalmic.myo.Hub;
 import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
