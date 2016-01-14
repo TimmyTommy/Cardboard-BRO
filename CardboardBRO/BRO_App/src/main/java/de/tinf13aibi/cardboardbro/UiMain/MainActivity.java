@@ -34,6 +34,7 @@ import de.tinf13aibi.cardboardbro.GestureUtils.MyoStatus;
 import de.tinf13aibi.cardboardbro.R;
 import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 import de.tinf13aibi.cardboardbro.Engine.StateMachine;
+import de.tinf13aibi.cardboardbro.Shader.Textures;
 
 public class MainActivity extends CardboardActivity implements MyoListenerTarget, CardboardView.StereoRenderer {
     private static final String TAG = "MainActivity";
@@ -147,19 +148,38 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
     }
 
     private void initShaders(){
-        ShaderCollection.loadGLShader(Shaders.BodyVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
-        ShaderCollection.loadGLShader(Shaders.BodyFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.passthrough_fragment));
-        ShaderCollection.loadGLShader(Shaders.GridVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.light_vertex));
-        ShaderCollection.loadGLShader(Shaders.GridFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.grid_fragment));
+        ShaderCollection.loadGLShader(Shaders.BodyVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_body));
+        ShaderCollection.loadGLShader(Shaders.BodyFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_body));
+        ShaderCollection.loadGLShader(Shaders.GridVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_body));
+        ShaderCollection.loadGLShader(Shaders.GridFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_grid));
         ShaderCollection.loadGLShader(Shaders.LineVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_line));
         ShaderCollection.loadGLShader(Shaders.LineFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_line));
+        ShaderCollection.loadGLShader(Shaders.BodyTexturedVertexShader, GLES20.GL_VERTEX_SHADER, getResources().openRawResource(R.raw.vertex_textured_body));
+        ShaderCollection.loadGLShader(Shaders.BodyTexturedFragmentShader, GLES20.GL_FRAGMENT_SHADER, getResources().openRawResource(R.raw.fragment_textured_body));
+
+    }
+
+    private void initTextures(){
+        ShaderCollection.loadTexture(this, Textures.TextureButtonCreateEntity,  R.drawable.button_create);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonMoveEntity,    R.drawable.button_move);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonDeleteEntity,  R.drawable.button_delete);
+
+        ShaderCollection.loadTexture(this, Textures.TextureButtonBack,      R.drawable.button_back);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonFreeLine,  R.drawable.button_freeline);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonPolyLine,  R.drawable.button_polyline);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonCylinder,  R.drawable.button_cylinder);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonCuboid,    R.drawable.button_cuboid);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonSphere,    R.drawable.button_sphere);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonText,      R.drawable.button_text);
     }
 
     private void initPrograms(){
         initShaders();
+        initTextures();
         ShaderCollection.addProgram(Programs.BodyProgram, Shaders.BodyVertexShader, Shaders.BodyFragmentShader);
         ShaderCollection.addProgram(Programs.GridProgram, Shaders.GridVertexShader, Shaders.GridFragmentShader);
         ShaderCollection.addProgram(Programs.LineProgram, Shaders.LineVertexShader, Shaders.LineFragmentShader);
+        ShaderCollection.addProgram(Programs.BodyTexturedProgram, Shaders.BodyTexturedVertexShader, Shaders.BodyTexturedFragmentShader);
     }
 
     /**
@@ -174,6 +194,8 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
     public void onSurfaceCreated(EGLConfig config){
         Log.i(TAG, "onSurfaceCreated");
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+
         initPrograms();
 
         mStateMachine = new StateMachine(mVibrator, mOverlayView);
@@ -211,6 +233,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
     public void onDrawEye(Eye eye) {
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
         checkGLError("colorParam");
         // Apply the eye transformation to the camera.
         float[] view = new float[16];

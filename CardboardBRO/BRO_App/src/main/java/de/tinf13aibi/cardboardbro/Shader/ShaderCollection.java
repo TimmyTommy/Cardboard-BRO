@@ -1,6 +1,10 @@
 package de.tinf13aibi.cardboardbro.Shader;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +19,7 @@ public class ShaderCollection {
     private static ShaderCollection mInstance = new ShaderCollection();
     private static HashMap<Shaders, Integer> mShaders = new HashMap<>();
     private static HashMap<Programs, Integer> mPrograms = new HashMap<>();
+    public static HashMap<Textures, Integer> mTextures = new HashMap<>();
 
     public static ShaderCollection getInstance() {
         return mInstance;
@@ -25,6 +30,10 @@ public class ShaderCollection {
 
     public static int getProgram(Programs program){
         return mPrograms.get(program);
+    }
+
+    public static int getTexture(Textures texture){
+        return mTextures.get(texture);
     }
 
     public static int addProgram(Programs program, Shaders vertexShader, Shaders fragmentShader){
@@ -79,5 +88,35 @@ public class ShaderCollection {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void loadTexture(final Context context, Textures texture, final int resourceId) {
+        final int[] textureHandle = new int[1];
+        GLES20.glGenTextures(1, textureHandle, 0);
+        if (textureHandle[0] != 0)
+        {
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inScaled = false;   // No pre-scaling
+            // Read in the resource
+            final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resourceId, options);
+            // Bind to the texture in OpenGL
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0]);
+
+            // Set filtering
+            //TODO Mipmapping testen: http://www.learnopengles.com/android-lesson-six-an-introduction-to-texture-filtering/
+//            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+//            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+
+            // Load the bitmap into the bound texture.
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+            // Recycle the bitmap, since its data has been loaded into OpenGL.
+            bitmap.recycle();
+        }
+        if (textureHandle[0] == 0) {
+            throw new RuntimeException("Error loading texture.");
+        }
+        mTextures.put(texture, textureHandle[0]);
     }
 }

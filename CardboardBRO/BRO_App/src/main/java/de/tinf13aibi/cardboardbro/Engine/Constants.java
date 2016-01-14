@@ -4,8 +4,8 @@ package de.tinf13aibi.cardboardbro.Engine;
  * Created by dth on 27.11.2015.
  */
 public interface Constants {
-//    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
-    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 40f, 0.0f, 1.0f };
+//    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 0.5f, 0.0f, 1.0f }; //TODO zum test
+    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 40f, 0.0f, 1.0f }; //TODO die richtige
     int COORDS_PER_VERTEX = 3;
 //    int CYCLE_SEGMENTS = 72; //360 / 72 = 5° pro Segment
 //    int CYCLE_SEGMENTS = 36; //360 / 36 = 10° pro Segment

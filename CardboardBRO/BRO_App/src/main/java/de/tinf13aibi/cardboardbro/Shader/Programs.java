@@ -6,5 +6,6 @@ package de.tinf13aibi.cardboardbro.Shader;
 public enum Programs {
     GridProgram,
     BodyProgram,
-    LineProgram
+    LineProgram,
+    BodyTexturedProgram
 }

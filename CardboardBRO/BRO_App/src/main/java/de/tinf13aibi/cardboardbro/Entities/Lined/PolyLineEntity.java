@@ -26,6 +26,8 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
 
     @Override
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
+        GLES20.glUseProgram(mProgram);
+
         fillParameters(mProgram); //muss erstmal hier sein da draw() nur in onDrawEye() aufgerufen wird und somit GLES20-Context vorhanden ist
 
         float[] modelView = new float[16];
@@ -34,7 +36,6 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
         Matrix.multiplyMM(modelView, 0, view, 0, mModel, 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
-        GLES20.glUseProgram(mProgram);
         GLES20.glUniform4fv(mColorParam, 1, mColor, 0);
         GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, modelViewProjection, 0);
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);

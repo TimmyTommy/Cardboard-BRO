@@ -27,9 +27,10 @@ public class StateMachine {
 
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
-//    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.SelectEntityToCreate; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;
@@ -51,9 +52,8 @@ public class StateMachine {
     }
 
     public void processAppStateOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace){
-        //Linien zuerst zeichnen sonst unsichtbar
+        //Linien zuerst zeichnen sonst teilweise unsichtbar
         mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
-
         mDrawing.drawEntityList(view, perspective, lightPosInEyeSpace);
         switch (mAppState) {
             case SelectAction:          mDrawing.getEntityActionButtons().draw(view, perspective, lightPosInEyeSpace); break;

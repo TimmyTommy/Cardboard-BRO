@@ -103,8 +103,8 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
         Matrix.translateM(mModel, 0, mBaseVert.x, mBaseVert.y, mBaseVert.z);
     }
 
-    public void setAttributes(Vec3d center, Vec3d baseNormal, float depth, float width, float height, float[] color){
-        setBaseVert(center);
+    public void setAttributes(Vec3d baseVert, Vec3d baseNormal, float depth, float width, float height, float[] color){
+        setBaseVert(baseVert);
         mBaseNormal = baseNormal;
         mDepth = depth;
         mWidth = width;

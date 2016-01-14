@@ -29,9 +29,9 @@ public class ButtonSet {
 
     public void rotateStep(){
         //Test: rotiere Buttons
-        if (mRotationPos < -10){
+        if (mRotationPos < -3){
             mRotationDir = true;
-        } else if (mRotationPos > 10) {
+        } else if (mRotationPos > 3) {
             mRotationDir = false;
         }
         int direction = mRotationDir ? 1 : -1;

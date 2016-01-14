@@ -146,6 +146,7 @@ public abstract class BaseEntity implements IEntity {
     }
 
     public void draw(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+        GLES20.glUseProgram(mProgram);
         fillParameters(mProgram); //muss erstmal hier sein da draw() nur in onDrawEye() aufgerufen wird und somit GLES20-Context vorhanden ist
 
         float[] modelView = new float[16];
@@ -154,7 +155,7 @@ public abstract class BaseEntity implements IEntity {
         Matrix.multiplyMM(modelView, 0, view, 0, mModel, 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
-        GLES20.glUseProgram(mProgram);
+//        GLES20.glUseProgram(mProgram);
         // Set ModelView, MVP, position, normals, and color.
         GLES20.glUniform3fv(mLightPosParam, 1, lightPosInEyeSpace, 0);
         GLES20.glUniformMatrix4fv(mModelParam, 1, false, mModel, 0);
@@ -171,7 +172,8 @@ public abstract class BaseEntity implements IEntity {
         return displayType;
     }
 
-    public void setDisplayType(EntityDisplayType displayType) {
+    public BaseEntity setDisplayType(EntityDisplayType displayType) {
         this.displayType = displayType;
+        return this;
     }
 }

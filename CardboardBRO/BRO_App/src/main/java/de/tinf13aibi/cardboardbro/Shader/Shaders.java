@@ -12,5 +12,8 @@ public enum Shaders {
     GridFragmentShader,
 //Line Shader
     LineVertexShader,
-    LineFragmentShader
+    LineFragmentShader,
+//Body Textured Shader
+    BodyTexturedVertexShader,
+    BodyTexturedFragmentShader
 }
