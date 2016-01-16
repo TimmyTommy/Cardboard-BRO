@@ -75,7 +75,7 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
         mTextureUniformHandle = GLES20.glGetUniformLocation(program, "u_Texture");
 
         mPositionHandle = GLES20.glGetAttribLocation(program, "a_Position");
-        mColorHandle = GLES20.glGetAttribLocation(program, "a_Color");
+//        mColorHandle = GLES20.glGetAttribLocation(program, "a_Color");
         mNormalHandle = GLES20.glGetAttribLocation(program, "a_Normal");
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(program, "a_TexCoordinate");
     }
@@ -105,12 +105,12 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
 
         GLES20.glVertexAttribPointer(mPositionHandle, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
         GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 0, mNormals);
-        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, mColors);
+//        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, mColors);
         GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false, 0, mTextureCoords);
 
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glEnableVertexAttribArray(mNormalHandle);
-        GLES20.glEnableVertexAttribArray(mColorHandle);
+//        GLES20.glEnableVertexAttribArray(mColorHandle);
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVerticesCount);
