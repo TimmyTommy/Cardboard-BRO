@@ -82,8 +82,6 @@ public class Drawing {
         Textures[] textures = new Textures[]{   Textures.TextureButtonBack, Textures.TextureButtonFreeLine, Textures.TextureButtonPolyLine, Textures.TextureButtonCylinder,
                                                 Textures.TextureButtonCuboid, Textures.TextureButtonSphere, Textures.TextureButtonText};
         for (int i=0; i<7; i++) {
-//            ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setNextState(appStates[i])
                     .setTextureHandle(ShaderCollection.getTexture(textures[i]));
@@ -91,14 +89,11 @@ public class Drawing {
 
             float y = -0.13f;
             Matrix.translateM(entity.getBaseModel(), 0, -0.18f + 0.06f * i, y, -0.3f);
-//            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
-            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.003f);
-//            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.025f);
+            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 
 //            float y = -0.065f;
 //            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
 //            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
-
             mEntityCreateButtons.addButton(entity);
         }
     }
@@ -107,23 +102,19 @@ public class Drawing {
         AppState[] appStates =  new AppState[]{AppState.SelectEntityToCreate, AppState.SelectEntityToMove, AppState.SelectEntityToDelete};
         Textures[] textures =   new Textures[]{Textures.TextureButtonCreateEntity, Textures.TextureButtonMoveEntity, Textures.TextureButtonDeleteEntity };
         for (int i=0; i<3; i++) {
-//            ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyProgram));
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setNextState(appStates[i])
                     .setTextureHandle(ShaderCollection.getTexture(textures[i]));
             entity.setDisplayType(EntityDisplayType.RelativeToCamera);
             float y = -0.13f;
             Matrix.translateM(entity.getBaseModel(), 0, -0.06f+0.06f*i, y, -0.3f);
-//            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
-            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.003f);
+            Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 
 //            float y = -0.065f;
 //            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
 //            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
-
             mEntityActionButtons.addButton(entity);
         }
-
     }
 
     private void setupTestObjects(){
