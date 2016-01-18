@@ -59,6 +59,7 @@ public class Drawing {
 
         setupEntityActionButtonSet();
         setupEntityCreateButtonSet();
+        setupKeyboardButtonSet();
         setupTestObjects();
 
         return this;
@@ -114,6 +115,66 @@ public class Drawing {
 //            Matrix.translateM(mEntity.getBaseModel(), 0, 0.06f-0.03f*i, y, -0.15f);
 //            Matrix.scaleM(mEntity.getBaseModel(), 0, 0.0125f, 0.0125f, 0.003f);
             mEntityActionButtons.addButton(entity);
+        }
+    }
+
+    private void setupKeyboardButtonSet(){
+//        char[] keyRow0 = new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0','\b'};
+//        char[] keyRow1 = new char[]{'Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', 'Ü'};
+//        char[] keyRow2 = new char[]{'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Ö', 'Ä'};
+//        char[] keyRow3 = new char[]{'<', '>', 'Y', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.'};
+//        char[] keyRow4 = new char[]{'+', '-', '*', '/',      ' '     , '?', '!',   '\n'  };
+
+        Textures[] texRow0 = new Textures[]{Textures.TextureKey1, Textures.TextureKey2, Textures.TextureKey3, Textures.TextureKey4,
+                                            Textures.TextureKey5, Textures.TextureKey6, Textures.TextureKey7, Textures.TextureKey8,
+                                            Textures.TextureKey9, Textures.TextureKey0, Textures.TextureKeyBackSpc};
+
+        Textures[] texRow1 = new Textures[]{Textures.TextureKeyQ, Textures.TextureKeyW, Textures.TextureKeyE, Textures.TextureKeyR,
+                                            Textures.TextureKeyT, Textures.TextureKeyZ, Textures.TextureKeyU, Textures.TextureKeyI,
+                                            Textures.TextureKeyO, Textures.TextureKeyP, Textures.TextureKeyÜ};
+
+        Textures[] texRow2 = new Textures[]{Textures.TextureKeyA, Textures.TextureKeyS, Textures.TextureKeyD, Textures.TextureKeyF,
+                                            Textures.TextureKeyG, Textures.TextureKeyH, Textures.TextureKeyJ, Textures.TextureKeyK,
+                                            Textures.TextureKeyL, Textures.TextureKeyÖ, Textures.TextureKeyÄ};
+
+        Textures[] texRow3 = new Textures[]{Textures.TextureKeySmallerThan, Textures.TextureKeyBiggerThan, Textures.TextureKeyY, Textures.TextureKeyX,
+                                            Textures.TextureKeyC, Textures.TextureKeyV, Textures.TextureKeyB, Textures.TextureKeyN,
+                                            Textures.TextureKeyM, Textures.TextureKeyComma, Textures.TextureKeyDot};
+
+        Textures[] texRow4 = new Textures[]{Textures.TextureKeyPlus, Textures.TextureKeyMinus, Textures.TextureKeyStar, Textures.TextureKeySlash,
+                                            Textures.TextureNone, Textures.TextureKeySpace, Textures.TextureNone,
+                                            Textures.TextureKeyQuestionMark, Textures.TextureKeyExclamationMark, Textures.TextureKeyEnter, Textures.TextureNone};
+
+        Textures[][] texKeyboard = new Textures[][]{texRow0, texRow1, texRow2, texRow3, texRow4};
+
+        for (int i = 0; i < texKeyboard.length; i++) {
+            Textures[] texRow = texKeyboard[i];
+            float y = 0.05f - 0.03f*i;
+
+            float halfLength = texRow.length/2;
+
+            for (int j = 0; j < texRow.length; j++) {
+                Textures tex = texRow[j];
+                ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
+                        .setTextureHandle(ShaderCollection.getTexture(tex))
+                        .setKey(tex.getValue());
+                entity.setDisplayType(EntityDisplayType.RelativeToCamera);
+
+                float x = -0.03f*halfLength + 0.03f*j;
+                if (tex == Textures.TextureKeySpace) {
+                    Matrix.translateM(entity.getBaseModel(), 0, x, y, -0.30f);
+                    Matrix.scaleM(entity.getBaseModel(), 0, 0.042f, 0.012f, 0.006f);
+                } else if (tex == Textures.TextureKeyEnter) {
+                    Matrix.translateM(entity.getBaseModel(), 0, x+0.015f, y, -0.30f);
+                    Matrix.scaleM(entity.getBaseModel(), 0, 0.028f, 0.012f, 0.006f);
+                } else {
+                    Matrix.translateM(entity.getBaseModel(), 0, x, y, -0.30f);
+                    Matrix.scaleM(entity.getBaseModel(), 0, 0.012f, 0.012f, 0.006f);
+                }
+                if (tex != Textures.TextureNone) {
+                    mKeyboardButtons.addButton(entity);
+                }
+            }
         }
     }
 

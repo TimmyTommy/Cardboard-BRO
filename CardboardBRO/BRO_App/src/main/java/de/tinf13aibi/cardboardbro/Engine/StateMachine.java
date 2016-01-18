@@ -27,10 +27,11 @@ public class StateMachine {
 
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.SelectEntityToCreate; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForKeyboardInput; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;
@@ -129,9 +130,11 @@ public class StateMachine {
 
         mDrawing.getEntityActionButtons().rotateStep();
         mDrawing.getEntityCreateButtons().rotateStep();
+//        mDrawing.getKeyboardButtons().rotateStep();
 
         mDrawing.getEntityActionButtons().setButtonsRelativeToCamera(mUser.getInvHeadView(), mUser.getPosition());
         mDrawing.getEntityCreateButtons().setButtonsRelativeToCamera(mUser.getInvHeadView(), mUser.getPosition());
+        mDrawing.getKeyboardButtons().setButtonsRelativeToCamera(mUser.getInvHeadView(), mUser.getPosition());
     }
 
     private void processInputAndAppStateSelectButton(InputAction inputAction, AppState appState){

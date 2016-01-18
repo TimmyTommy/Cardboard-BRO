@@ -171,6 +171,60 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         ShaderCollection.loadTexture(this, Textures.TextureButtonCuboid,    R.drawable.button_cuboid);
         ShaderCollection.loadTexture(this, Textures.TextureButtonSphere,    R.drawable.button_sphere);
         ShaderCollection.loadTexture(this, Textures.TextureButtonText,      R.drawable.button_text);
+
+        ShaderCollection.loadTexture(this, Textures.TextureNone,                R.drawable.button_text); //TODO ändern
+        ShaderCollection.loadTexture(this, Textures.TextureKey0,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey1,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey2,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey3,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey4,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey5,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey6,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey7,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey8,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKey9,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyBackSpc,          R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyQ,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyW,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyE,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyR,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyT,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyZ,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyU,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyI,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyO,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyP,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyÜ,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyA,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyS,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyD,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyF,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyG,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyH,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyJ,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyK,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyL,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyÖ,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyÄ,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyY,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyX,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyC,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyV,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyB,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyN,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyM,                R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeySmallerThan,      R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyBiggerThan,       R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyComma,            R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyDot,              R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyPlus,             R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyMinus,            R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyStar,             R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeySlash,            R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyQuestionMark,     R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyExclamationMark,  R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeySpace,            R.drawable.button_text);
+        ShaderCollection.loadTexture(this, Textures.TextureKeyEnter,            R.drawable.button_text);
     }
 
     private void initPrograms(){

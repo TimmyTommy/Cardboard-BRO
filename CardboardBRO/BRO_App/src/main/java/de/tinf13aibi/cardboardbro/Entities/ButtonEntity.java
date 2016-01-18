@@ -32,6 +32,7 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
     private int mNormalHandle;
     private int mTextureCoordinateHandle;
     private int mTextureHandle = 0;
+    private char mKey = ' ';
 
     @Override
     public ArrayList<Triangle> getAbsoluteTriangles(){
@@ -52,6 +53,15 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
         mTextureCoords = bbColors.asFloatBuffer();
         mTextureCoords.put(textureCoords);
         mTextureCoords.position(0);
+    }
+
+    public char getKey() {
+        return mKey;
+    }
+
+    public ButtonEntity setKey(char key) {
+        mKey = key;
+        return this;
     }
 
     public AppState getNextState() {
