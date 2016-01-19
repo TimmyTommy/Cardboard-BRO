@@ -172,7 +172,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         ShaderCollection.loadTexture(this, Textures.TextureButtonSphere,    R.drawable.button_sphere);
         ShaderCollection.loadTexture(this, Textures.TextureButtonText,      R.drawable.button_text);
 
-        ShaderCollection.loadTexture(this, Textures.TextureNone,                R.drawable.button_text); //TODO ändern
+        ShaderCollection.loadTexture(this, Textures.TextureNone,                R.drawable.blank);
         ShaderCollection.loadTexture(this, Textures.TextureKey0,                R.drawable.n0);
         ShaderCollection.loadTexture(this, Textures.TextureKey1,                R.drawable.n1);
         ShaderCollection.loadTexture(this, Textures.TextureKey2,                R.drawable.n2);
