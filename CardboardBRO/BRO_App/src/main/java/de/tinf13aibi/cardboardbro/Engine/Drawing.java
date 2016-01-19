@@ -149,7 +149,7 @@ public class Drawing {
 
         for (int i = 0; i < texKeyboard.length; i++) {
             Textures[] texRow = texKeyboard[i];
-            float y = 0.05f - 0.03f*i;
+            float y = 0.030f - 0.027f*i;
 
             float halfLength = texRow.length/2;
 
@@ -160,16 +160,16 @@ public class Drawing {
                         .setKey(tex.getValue());
                 entity.setDisplayType(EntityDisplayType.RelativeToCamera);
 
-                float x = -0.03f*halfLength + 0.03f*j;
+                float x = -0.027f*halfLength + 0.027f*j;
                 if (tex == Textures.TextureKeySpace) {
                     Matrix.translateM(entity.getBaseModel(), 0, x, y, -0.30f);
-                    Matrix.scaleM(entity.getBaseModel(), 0, 0.042f, 0.012f, 0.006f);
+                    Matrix.scaleM(entity.getBaseModel(), 0, 0.040f, 0.012f, 0.003f);
                 } else if (tex == Textures.TextureKeyEnter) {
-                    Matrix.translateM(entity.getBaseModel(), 0, x+0.015f, y, -0.30f);
-                    Matrix.scaleM(entity.getBaseModel(), 0, 0.028f, 0.012f, 0.006f);
+                    Matrix.translateM(entity.getBaseModel(), 0, x+0.0135f, y, -0.30f);
+                    Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.012f, 0.003f);
                 } else {
                     Matrix.translateM(entity.getBaseModel(), 0, x, y, -0.30f);
-                    Matrix.scaleM(entity.getBaseModel(), 0, 0.012f, 0.012f, 0.006f);
+                    Matrix.scaleM(entity.getBaseModel(), 0, 0.012f, 0.012f, 0.003f);
                 }
                 if (tex != Textures.TextureNone) {
                     mKeyboardButtons.addButton(entity);

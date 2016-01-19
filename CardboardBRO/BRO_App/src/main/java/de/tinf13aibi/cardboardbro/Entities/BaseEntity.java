@@ -44,8 +44,12 @@ public abstract class BaseEntity implements IEntity {
     protected float[] mBaseModel;
 
     public ArrayList<Vec3d> getAbsoluteCoords(){
+        int length = mCoords.length/3;
+        if (this instanceof ButtonEntity){
+            length = 6; //Nur FrontFace => 6 Punkte
+        }
         ArrayList<Vec3d> absoluteCoords = new ArrayList<>();
-        for (int i = 0; i<mCoords.length/3; i++){
+        for (int i = 0; i<length; i++){
             float[] coord = new float[4];
             System.arraycopy(mCoords, i*3, coord, 0, 3);
             coord[3] = 1;
