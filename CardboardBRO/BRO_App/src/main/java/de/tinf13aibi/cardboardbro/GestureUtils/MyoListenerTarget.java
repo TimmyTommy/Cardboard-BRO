@@ -9,6 +9,6 @@ import com.thalmic.myo.Quaternion;
 public interface MyoListenerTarget {
     void OnPoseChange(Pose previousPose, Pose newPose);
     void OnArmForwardUpdate(Quaternion armForward);
-    void OnArmCenterUpdate(Quaternion armForwardCenter);
+    void OnArmCenterUpdate(Quaternion armForwardCenter); //TODO verwenden
     void OnUpdateStatus(MyoStatus status);
 }

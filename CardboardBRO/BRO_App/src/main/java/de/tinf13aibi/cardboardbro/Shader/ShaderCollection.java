@@ -19,7 +19,7 @@ public class ShaderCollection {
     private static ShaderCollection mInstance = new ShaderCollection();
     private static HashMap<Shaders, Integer> mShaders = new HashMap<>();
     private static HashMap<Programs, Integer> mPrograms = new HashMap<>();
-    public static HashMap<Textures, Integer> mTextures = new HashMap<>();
+    private static HashMap<Textures, Integer> mTextures = new HashMap<>();
 
     public static ShaderCollection getInstance() {
         return mInstance;

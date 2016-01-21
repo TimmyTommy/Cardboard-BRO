@@ -22,37 +22,40 @@ import de.tinf13aibi.cardboardbro.UiMain.CardboardOverlayView;
 /**
  * Created by dthom on 09.01.2016.
  */
-public class StateMachine {
+public class StateMachine implements IState {
 //    private AppState mAppState = AppState.SelectAction;  //TODO: Bei Appstart default: SelectAction
 
 //    private AppState mAppState = AppState.WaitForBeginFreeLine; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForBeginPolyLinePoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForCylinderCenterPoint; //Zu Testzwecken manuell AppState setzen
-//    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
+    private AppState mAppState = AppState.WaitForCuboidBasePoint1; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.WaitForSphereCenterPoint; //Zu Testzwecken manuell AppState setzen
 //    private AppState mAppState = AppState.SelectEntityToCreate; //Zu Testzwecken manuell AppState setzen
-    private AppState mAppState = AppState.WaitForKeyboardInput; //Zu Testzwecken manuell AppState setzen
+//    private AppState mAppState = AppState.WaitForKeyboardInput; //Zu Testzwecken manuell AppState setzen
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;
     private User mUser;
     private Drawing mDrawing;
     private IEntity mEditingEntity;
+    private DrawingContext mDrawingContext;
 
-    public StateMachine(Vibrator vibrator, CardboardOverlayView overlayView){
-        mUser = new User();
-        mUser.createCrosshairs(ShaderCollection.getProgram(Programs.LineProgram));
+    public StateMachine(DrawingContext drawingContext){
+        mDrawingContext = drawingContext;
+        mUser = mDrawingContext.getUser();
+        mDrawing = mDrawingContext.getDrawing();
 
-        mDrawing = new Drawing().init();
-        mVibrator = vibrator;
-        mOverlayView = overlayView;
+        mVibrator = mDrawingContext.getMainActivity().getVibrator();
+        mOverlayView = mDrawingContext.getMainActivity().getOverlayView();
     }
 
-    public void setUserMoving(Boolean moving){
+    @Override
+    public void processUserMoving(Boolean moving) {
         mUser.setMoving(moving);
     }
 
-    public void processAppStateOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace){
+    @Override
+    public void processOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         //Linien zuerst zeichnen sonst teilweise unsichtbar
         mUser.drawCrosshairs(view, perspective, lightPosInEyeSpace);
         mDrawing.drawEntityList(view, perspective, lightPosInEyeSpace);
@@ -65,7 +68,8 @@ public class StateMachine {
         mDrawing.drawTempWorkingPlane(view, perspective, lightPosInEyeSpace);
     }
 
-    public void processInputActionAndAppState(InputAction inputAction){
+    @Override
+    public void processInputAction(InputAction inputAction){
         AppStateGroup appStateGroup = AppStateGroup.getFromAppState(mAppState);
         switch (appStateGroup) {
             case G_SelectButton: processInputAndAppStateSelectButton(inputAction, mAppState); break;
@@ -74,14 +78,18 @@ public class StateMachine {
             case G_DrawCylinder: processInputAndAppStateCylinder(inputAction, mAppState); break;
             case G_DrawCuboid:   processInputAndAppStateCuboid(inputAction, mAppState); break;
             case G_DrawSphere: processInputAndAppStateSphere(inputAction, mAppState); break;
-            case G_WriteText: break;
-            case G_MoveEntity: break;
-            case G_DeleteEntity: break;
+            case G_WriteText: break; //TODO
+            case G_MoveEntity: break; //TODO
+            case G_DeleteEntity: break; //TODO
             case G_Unknown: changeState(AppState.SelectAction, "Leave Unknown State"); break;
         }
     }
 
-    public void processAppStateOnNewFrame(){
+    @Override
+    public void processOnNewFrame(float[] headView, Vec3d armForwardVec){
+        mUser.setHeadView(headView);
+        mUser.setArmForward(armForwardVec);
+
         mUser.move();
         mUser.calcEyeLookingAt(mDrawing.getEntityListWithFloorAndCanvas());
 
@@ -482,13 +490,5 @@ public class StateMachine {
         }
         mEditingEntity = null;
         mDrawing.setTempWorkingPlane(null);
-    }
-
-    public Drawing getDrawing() {
-        return mDrawing;
-    }
-
-    public User getUser() {
-        return mUser;
     }
 }
