@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Engine.Constants;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
-import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**
  * Created by dth on 27.11.2015.

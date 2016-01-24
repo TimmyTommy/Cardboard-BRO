@@ -1,5 +1,6 @@
 package de.tinf13aibi.cardboardbro.Engine;
 
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
@@ -12,17 +13,25 @@ public class DrawingContext implements IState{
     private MainActivity mMainActivity;
     private User mUser = new User();
     private Drawing mDrawing = new Drawing();
-    private IState mState; //TODO: abstract BaseState implementieren in dem die Standard-Methoden
-                           //TODO: processOnNewFrame(), processOnDrawEye() und processInputAction(), processMovingAction() implementiert sind
-                           //TODO: alle anderen States davon Ableiten und Methoden processOnNewFrame(), processOnDrawEye() und processInputAction() überschreiben
-                           //TODO: processMovingAction() nicht überschreiben, da es überall gleich bleibt
+    private IEntity mEditingEntity;
+    private IState mState;
     private DrawingRenderer mDrawingRenderer;
 
     public DrawingContext(MainActivity mainActivity){
         mMainActivity = mainActivity;
-        mState = new StateMachine(this);
+        mState = new StateWaitForCuboidBasePoint1(this);
+
+//        mState = new StateMachine(this);
         // mState = new StateA();
         mDrawingRenderer = new DrawingRenderer(this);
+    }
+
+    public IEntity getEditingEntity() {
+        return mEditingEntity;
+    }
+
+    public void setEditingEntity(IEntity editingEntity) {
+        mEditingEntity = editingEntity;
     }
 
     public void setActiveDrawingContext(){

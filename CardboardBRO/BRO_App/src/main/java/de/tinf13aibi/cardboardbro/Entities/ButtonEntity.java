@@ -8,13 +8,11 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import de.tinf13aibi.cardboardbro.Engine.AppState;
 import de.tinf13aibi.cardboardbro.Engine.Constants;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
-import de.tinf13aibi.cardboardbro.Engine.AppState;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
-import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
-import de.tinf13aibi.cardboardbro.Shader.Textures;
 
 /**
  * Created by dth on 01.12.2015.

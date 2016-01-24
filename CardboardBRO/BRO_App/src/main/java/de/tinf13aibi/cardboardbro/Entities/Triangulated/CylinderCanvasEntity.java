@@ -7,9 +7,9 @@ import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
+import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
-import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
 
 /**
  * Created by dth on 27.11.2015.

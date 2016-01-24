@@ -9,7 +9,6 @@ import android.view.View;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
-
 import com.thalmic.myo.Hub;
 import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
@@ -18,14 +17,14 @@ import java.util.Date;
 
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
 import de.tinf13aibi.cardboardbro.Engine.InputAction;
-import de.tinf13aibi.cardboardbro.Shader.Programs;
-import de.tinf13aibi.cardboardbro.Shader.Shaders;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoData;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoDeviceListener;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoListenerTarget;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoStatus;
 import de.tinf13aibi.cardboardbro.R;
+import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
+import de.tinf13aibi.cardboardbro.Shader.Shaders;
 import de.tinf13aibi.cardboardbro.Shader.Textures;
 
 public class MainActivity extends CardboardActivity implements MyoListenerTarget {

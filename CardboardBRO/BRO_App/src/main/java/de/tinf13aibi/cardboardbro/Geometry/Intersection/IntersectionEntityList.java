@@ -2,10 +2,10 @@ package de.tinf13aibi.cardboardbro.Geometry.Intersection;
 
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IManySidedEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Straight;
 
 /**

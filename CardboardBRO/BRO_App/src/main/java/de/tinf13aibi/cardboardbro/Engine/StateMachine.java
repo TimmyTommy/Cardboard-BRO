@@ -5,17 +5,17 @@ import android.os.Vibrator;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
-import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
-import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.Lined.PolyLineEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.SphereEntity;
-import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionPlane;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Plane;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
+import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 import de.tinf13aibi.cardboardbro.UiMain.CardboardOverlayView;
 
@@ -299,7 +299,7 @@ public class StateMachine implements IState {
             if (mEditingEntity instanceof PolyLineEntity) {
                 mDrawing.getEntityList().remove(mEditingEntity);
             }
-            changeState(AppState.WaitForBeginFreeLine, "Delete Drawed FreeLine");
+            changeState(AppState.WaitForBeginFreeLine, "Delete Drawn FreeLine");
         }
         mEditingEntity = null;
     }
@@ -389,7 +389,7 @@ public class StateMachine implements IState {
             if (mEditingEntity instanceof CylinderEntity) {
                 mDrawing.getEntityList().remove(mEditingEntity);
             }
-            changeState(AppState.WaitForCylinderCenterPoint, "Delete Drawed Cylinder");
+            changeState(AppState.WaitForCylinderCenterPoint, "Delete Drawn Cylinder");
         }
         mEditingEntity = null;
         mDrawing.setTempWorkingPlane(null);
@@ -450,7 +450,7 @@ public class StateMachine implements IState {
             if (mEditingEntity instanceof CuboidEntity) {
                 mDrawing.getEntityList().remove(mEditingEntity);
             }
-            changeState(AppState.WaitForCuboidBasePoint1, "Delete Drawed Cuboid");
+            changeState(AppState.WaitForCuboidBasePoint1, "Delete Drawn Cuboid");
         }
         mEditingEntity = null;
         mDrawing.setTempWorkingPlane(null);
@@ -486,7 +486,7 @@ public class StateMachine implements IState {
             if (mEditingEntity instanceof SphereEntity) {
                 mDrawing.getEntityList().remove(mEditingEntity);
             }
-            changeState(AppState.WaitForSphereCenterPoint, "Delete Drawed Sphere");
+            changeState(AppState.WaitForSphereCenterPoint, "Delete Drawn Sphere");
         }
         mEditingEntity = null;
         mDrawing.setTempWorkingPlane(null);
