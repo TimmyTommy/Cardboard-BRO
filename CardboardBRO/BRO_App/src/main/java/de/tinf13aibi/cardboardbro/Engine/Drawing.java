@@ -78,9 +78,9 @@ public class Drawing {
     }
 
     private void setupEntityCreateButtonSet(){
-        AppState[] appStates = new AppState[]{  AppState.SelectAction, AppState.WaitForBeginFreeLine, AppState.WaitForBeginPolyLinePoint, AppState.WaitForSphereCenterPoint,
-                                                AppState.WaitForCylinderCenterPoint, AppState.WaitForCuboidBasePoint1, AppState.WaitForKeyboardInput};
-        Textures[] textures = new Textures[]{   Textures.TextureButtonBack, Textures.TextureButtonFreeLine, Textures.TextureButtonPolyLine, Textures.TextureButtonCylinder,
+        Class<?>[] appStates = new Class<?>[]{  StateSelectAction.class, StateWaitForBeginFreeLine.class, StateWaitForBeginPolyLinePoint.class, StateWaitForCylinderCenterPoint.class,
+                                                StateWaitForCuboidBasePoint1.class, StateWaitForSphereCenterPoint.class, StateWaitForKeyboardInput.class};
+        Textures[] textures =  new Textures[]{  Textures.TextureButtonBack, Textures.TextureButtonFreeLine, Textures.TextureButtonPolyLine, Textures.TextureButtonCylinder,
                                                 Textures.TextureButtonCuboid, Textures.TextureButtonSphere, Textures.TextureButtonText};
         for (int i=0; i<7; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
@@ -88,7 +88,8 @@ public class Drawing {
                     .setTextureHandle(ShaderCollection.getTexture(textures[i]));
             entity.setDisplayType(EntityDisplayType.RelativeToCamera);
 
-            float y = -0.13f;
+//            float y = -0.13f;
+            float y = 0;
             Matrix.translateM(entity.getBaseModel(), 0, -0.18f + 0.06f * i, y, -0.3f);
             Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 
@@ -100,14 +101,16 @@ public class Drawing {
     }
 
     private void setupEntityActionButtonSet(){
-        AppState[] appStates =  new AppState[]{AppState.SelectEntityToCreate, AppState.SelectEntityToMove, AppState.SelectEntityToDelete};
-        Textures[] textures =   new Textures[]{Textures.TextureButtonCreateEntity, Textures.TextureButtonMoveEntity, Textures.TextureButtonDeleteEntity };
+        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToCreate.class, StateSelectEntityToMove.class, StateSelectEntityToDelete.class};
+        Textures[] textures =  new Textures[]{Textures.TextureButtonCreateEntity, Textures.TextureButtonMoveEntity, Textures.TextureButtonDeleteEntity };
         for (int i=0; i<3; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setNextState(appStates[i])
                     .setTextureHandle(ShaderCollection.getTexture(textures[i]));
             entity.setDisplayType(EntityDisplayType.RelativeToCamera);
-            float y = -0.13f;
+
+//            float y = -0.13f;
+            float y = 0;
             Matrix.translateM(entity.getBaseModel(), 0, -0.06f+0.06f*i, y, -0.3f);
             Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 

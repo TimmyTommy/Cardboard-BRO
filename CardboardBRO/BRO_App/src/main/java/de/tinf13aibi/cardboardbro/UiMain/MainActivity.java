@@ -65,13 +65,12 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         //TODO Moving später wieder aktiviedern
-//                        mOverlayView.show3DToast("Accelerating");
 //                        mActiveDrawingContext.processUserMoving(true);
                         mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
-//                        mOverlayView.show3DToast("Slowing down");
-                        mActiveDrawingContext.processUserMoving(false);
+                        //TODO Moving später wieder aktiviedern
+//                        mActiveDrawingContext.processUserMoving(false);
 
                         Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
                         float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;

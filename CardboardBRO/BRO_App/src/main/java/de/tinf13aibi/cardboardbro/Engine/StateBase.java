@@ -32,7 +32,7 @@ public abstract class StateBase implements IState {
             if (intersectionPoint.entity != null){
                 if (intersectionPoint.entity instanceof ButtonEntity) {
                     ButtonEntity buttonEntity = (ButtonEntity)intersectionPoint.entity;
-//                    changeState(buttonEntity.getNextState(), "Change state"); //TODO button States ändern
+                    changeState(buttonEntity.getNextState(mDrawingContext), "Change state"); //TODO button States ändern
                 }
             }
         }
@@ -48,6 +48,11 @@ public abstract class StateBase implements IState {
     @Override
     public void processUserMoving(Boolean moving) {
         mUser.setMoving(moving);
+        if (moving) {
+            mOverlayView.show3DToast("Accelerating");
+        } else {
+            mOverlayView.show3DToast("Slowing down");
+        }
     }
 
     @Override

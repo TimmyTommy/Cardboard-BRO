@@ -3,13 +3,16 @@ package de.tinf13aibi.cardboardbro.Entities;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
-import de.tinf13aibi.cardboardbro.Engine.AppState;
 import de.tinf13aibi.cardboardbro.Engine.Constants;
+import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
+import de.tinf13aibi.cardboardbro.Engine.IState;
+import de.tinf13aibi.cardboardbro.Engine.StateSelectAction;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
@@ -18,8 +21,7 @@ import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
  * Created by dth on 01.12.2015.
  */
 public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
-
-    private AppState mNextState = AppState.Unknown;
+    private Class<?> mNextStateClass;
     private FloatBuffer mTextureCoords;
     private int mMVPMatrixHandle;
     private int mMVMatrixHandle;
@@ -62,12 +64,23 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
         return this;
     }
 
-    public AppState getNextState() {
-        return mNextState;
+    public IState getNextState(DrawingContext drawingContext) {
+        try {
+            return (IState)mNextStateClass.getConstructor(DrawingContext.class).newInstance(drawingContext);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return new StateSelectAction(drawingContext);
     }
 
-    public ButtonEntity setNextState(AppState nextState) {
-        mNextState = nextState;
+    public ButtonEntity setNextState(Class<?> nextStateClass) {
+        mNextStateClass = nextStateClass;
         return this;
     }
 

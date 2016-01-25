@@ -70,7 +70,7 @@ public class DrawingRenderer implements CardboardView.StereoRenderer{
 
     @Override
     public void onFinishFrame(Viewport viewport) {
-        Log.i("DrawingRenderer", "onFinishFrame");
+//        Log.i("DrawingRenderer", "onFinishFrame");
     }
 
     @Override

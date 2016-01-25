@@ -23,6 +23,17 @@ public class StateWaitForCylinderHeightPoint extends StateBase implements IState
         super.processOnNewFrame(headView, armForwardVec);
         mUser.calcArmPointingAt(mDrawing.getTempWorkingPlane());
         drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), false);
+
+//        CylinderEntity cylEnt = (CylinderEntity) mEntityList.get(mEntityList.size() - 1);
+//        Vec3d cylCenter = cylEnt.getCenter();
+//            Vec3d dir = VecMath.calcCrossProduct(new Vec3d(0, 1, 0), mUser.getArmForward());
+//            Vec3d pnt = VecMath.calcVecPlusVec(new Vec3d(cylCenter.x, 0, cylCenter.z), dir);
+//            Vec3d baseNormal = cylEnt.getBaseNormal().copy();
+//            Vec3d firstCycleDir = new Vec3d();
+//            Vec3d secondCycleDir = new Vec3d();
+//            VecMath.calcCrossedVectorsFromNormal(secondCycleDir, firstCycleDir, baseNormal);
+//            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylCenter, firstCycleDir);
+//            mTempWorkingPlane = VecMath.calcPlaneFromPointAndNormal(cylCenter, mUser.getArmForward());
     }
 
     @Override

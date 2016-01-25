@@ -18,17 +18,22 @@ public class IntersectionPlane extends IntersectionTriangle {
 
     public void calcPlaneLineIntersection(){
 //        triangleNormal = VecMath.calcNormalVector(triangle);
-        triangleNormal = triangle.getN1().copy();
-        float[] trs = new float[3];
-        float[] pos = new float[3];
-        if (VecMath.calcPlaneLineIntersection(pos, trs, triangle, straight)){
-            intersectionPos = new Vec3d(pos);
-            mTRS.assignFloatArray(trs);
-            distance = trs[0];
+        intersectionPos = null;
+        distance = -1;
+        if (triangle != null) {
+            triangleNormal = triangle.getN1().copy();
+            float[] trs = new float[3];
+            float[] pos = new float[3];
+            if (VecMath.calcPlaneLineIntersection(pos, trs, triangle, straight)) {
+                intersectionPos = new Vec3d(pos);
+                mTRS.assignFloatArray(trs);
+                distance = trs[0];
 //            calcDistance();
-        } else {
-            intersectionPos = null;
-            distance = -1;
+            }
+//            else {
+//                intersectionPos = null;
+//                distance = -1;
+//            }
         }
     }
 

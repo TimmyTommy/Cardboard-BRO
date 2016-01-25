@@ -91,13 +91,15 @@ public class User {
         return mArmPointingAt;
     }
 
-    public IntersectionTriangle calcArmPointingAt(Plane plane){
-        Straight line = new Straight(mPosition, mArmForward);
-        mArmPointingAt = new IntersectionPlane(line, plane);
-        calcCrosshairPos(mArmCrosshair, mArmPointingAt, mArmForward);
+    public void calcArmPointingAt(Plane plane){
+        if (plane!=null) {
+            Straight line = new Straight(mPosition, mArmForward);
+            mArmPointingAt = new IntersectionPlane(line, plane);
+            calcCrosshairPos(mArmCrosshair, mArmPointingAt, mArmForward);
 
-        mArmLine.setVerts(mPosition, mArmCrosshair.getPosition());
-        return mArmPointingAt;
+            mArmLine.setVerts(mPosition, mArmCrosshair.getPosition());
+//            return mArmPointingAt;
+        }
     }
 
     public float[] move(){

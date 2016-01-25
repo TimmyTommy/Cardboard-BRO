@@ -19,7 +19,7 @@ public class DrawingContext implements IState{
 
     public DrawingContext(MainActivity mainActivity){
         mMainActivity = mainActivity;
-        mState = new StateWaitForCuboidBasePoint1(this);
+        mState = new StateSelectEntityToCreate(this);
 
 //        mState = new StateMachine(this);
         // mState = new StateA();
