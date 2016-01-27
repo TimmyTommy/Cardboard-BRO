@@ -1,6 +1,10 @@
 package de.tinf13aibi.cardboardbro.UiMain;
 
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -27,7 +31,7 @@ import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 import de.tinf13aibi.cardboardbro.Shader.Shaders;
 import de.tinf13aibi.cardboardbro.Shader.Textures;
 
-public class MainActivity extends CardboardActivity implements MyoListenerTarget {
+public class MainActivity extends CardboardActivity implements MyoListenerTarget, SensorEventListener {
     private MyoData mMyoData = new MyoData();
     private DrawingContext mActiveDrawingContext;
 
@@ -56,6 +60,26 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 
     public DrawingContext getActiveDrawingContext() {
         return mActiveDrawingContext;
+    }
+
+    private void initOnStepListener(){
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        Sensor countSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        if (countSensor != null) {
+            sensorManager.registerListener(this, countSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        } else {
+            mOverlayView.show3DToast("Count sensor not available!");
+//            Toast.makeText(this, "Count sensor not available!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+//        mActiveDrawingContext.getUser().step(); //TODO noch verbessern
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     private void initOnTouchListener(){
@@ -129,6 +153,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         mActiveDrawingContext.setActiveDrawingContext();
 
         initOnTouchListener();
+        initOnStepListener();
         initializeMyoHub();
         OnUpdateStatus(MyoDeviceListener.getInstance().getStatus());
     }

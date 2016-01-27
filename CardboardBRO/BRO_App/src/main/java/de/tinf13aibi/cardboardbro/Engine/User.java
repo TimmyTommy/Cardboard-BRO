@@ -102,6 +102,21 @@ public class User {
         }
     }
 
+    public float[] step(){
+        Vec3d acceleration = VecMath.calcVecTimesScalar(getEyeForward(), 2);//0.3f); //
+
+        mVelocity.assignPoint3d(VecMath.calcVecPlusVec(mVelocity, VecMath.calcVecTimesScalar(acceleration, 1)));
+
+        mVelocity.assignPoint3d(VecMath.calcVecTimesScalar(mVelocity, 0.90f));
+        if (VecMath.calcVectorLength(mVelocity)<0.0001f){
+            mVelocity.assignPoint3d(new Vec3d());
+        }
+//        // Alle Kräfte entfernen
+//        clearForceAccum();
+
+        return getCamera();
+    }
+
     public float[] move(){
         Vec3d acceleration = VecMath.calcVecTimesScalar(getEyeForward(), mMoving ? 5:0);
         return move(acceleration);
