@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.MotionEvent;
@@ -21,6 +22,8 @@ import java.util.Date;
 
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
 import de.tinf13aibi.cardboardbro.Engine.InputAction;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoData;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoDeviceListener;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoListenerTarget;
@@ -130,7 +133,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
             hub.addListener(MyoDeviceListener.getInstance());
             hub.setLockingPolicy(Hub.LockingPolicy.NONE);
             if (hub.getConnectedDevices().size() == 0) {
-//                hub.attachToAdjacentMyo(); //TODO später aktivieren
+                hub.attachToAdjacentMyo(); //TODO später aktivieren
             }
         } catch (Exception e) {
             mOverlayView.show3DToast("Could not initialize MYO Listener");
@@ -184,6 +187,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
     @Override
     public void OnPoseChange(Pose previousPose, Pose newPose) {
         mMyoData.setPose(newPose);
+        mOverlayView.show3DToast("TODO: react on Status: " + newPose.toString());
         InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
         mActiveDrawingContext.processInputAction(inputAction);
     }
@@ -197,6 +201,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
     public void OnArmCenterUpdate(Quaternion armForwardCenter) {
         mOverlayView.show3DToast("TODO: react OnArmCenterUpdate");
         mMyoData.setArmForwardCenter(armForwardCenter);
+        mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
     }
 
     @Override

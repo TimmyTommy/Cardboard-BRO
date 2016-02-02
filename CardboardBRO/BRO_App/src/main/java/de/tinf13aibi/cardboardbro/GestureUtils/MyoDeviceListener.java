@@ -53,7 +53,7 @@ public class MyoDeviceListener extends AbstractDeviceListener {
 
     private void notifyArmCenter(Quaternion armForwardCenter) {
         for(MyoListenerTarget target : mTargets) {
-            target.OnArmForwardUpdate(armForwardCenter);
+            target.OnArmCenterUpdate(armForwardCenter);
         }
     }
 
@@ -178,7 +178,6 @@ public class MyoDeviceListener extends AbstractDeviceListener {
     public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
         super.onOrientationData(myo, timestamp, rotation);
         mArmForward = rotation;
-        calculateArmPosition(rotation);
         notifyArmForward(mArmForward);
     }
 
