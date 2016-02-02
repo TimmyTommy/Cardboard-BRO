@@ -164,8 +164,8 @@ public class MyoData {
         float[] forwardVec = new float[4];
 
         float[] anOp = new float[16];
-        Matrix.setRotateM(anOp, 0, deltaPitchDeg, 1, 0, 0);
-        Matrix.rotateM(anOp, 0, deltaYawDeg, 0, 1, 0);
+        Matrix.setRotateM(anOp, 0, deltaYawDeg, 0, 1, 0);
+        Matrix.rotateM(anOp, 0, deltaPitchDeg, 1, 0, 0);
 
         Matrix.multiplyMV(forwardVec, 0, anOp, 0, initVec, 0);
 
