@@ -92,22 +92,22 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         //TODO Moving später wieder aktiviedern
-//                        mActiveDrawingContext.processUserMoving(true);
+                        mActiveDrawingContext.processUserMoving(true);
                         mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
                         //TODO Moving später wieder aktiviedern
-//                        mActiveDrawingContext.processUserMoving(false);
+                        mActiveDrawingContext.processUserMoving(false);
 
                         Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
                         float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
 
-                        if (timeSeconds <= 1) { //Wechsel von FIST auf REST imitieren
-                            OnPoseChange(Pose.FIST, Pose.REST);
-                        } else if (timeSeconds > 1) {  //Wechsel von FINGERS_SPREAD auf REST imitieren
-                            OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
-                        }
-                        //TODO : MYO-Waveout imitieren
+//                        if (timeSeconds <= 1) { //Wechsel von FIST auf REST imitieren
+//                            OnPoseChange(Pose.FIST, Pose.REST);
+//                        } else if (timeSeconds > 1) {  //Wechsel von FINGERS_SPREAD auf REST imitieren
+//                            OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
+//                        }
+//                        //TODO : MYO-Waveout imitieren
                 }
                 return false;
             }
