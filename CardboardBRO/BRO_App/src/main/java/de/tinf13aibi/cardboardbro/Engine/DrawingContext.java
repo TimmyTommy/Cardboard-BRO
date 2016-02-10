@@ -19,11 +19,28 @@ public class DrawingContext implements IState{
 
     public DrawingContext(MainActivity mainActivity){
         mMainActivity = mainActivity;
-        mState = new StateSelectEntityToCreate(this);
-
-//        mState = new StateMachine(this);
-        // mState = new StateA();
+        mState = new StateSelectAction(this);
         mDrawingRenderer = new DrawingRenderer(this);
+    }
+
+    @Override
+    public void processOnNewFrame(float[] headView, Vec3d armForwardVec) {
+        if (isActiveDrawingContext()) mState.processOnNewFrame(headView, armForwardVec);
+    }
+
+    @Override
+    public void processOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
+        if (isActiveDrawingContext()) mState.processOnDrawEye(view, perspective, lightPosInEyeSpace);
+    }
+
+    @Override
+    public void processInputAction(InputAction inputAction) {
+        if (isActiveDrawingContext()) mState.processInputAction(inputAction);
+    }
+
+    @Override
+    public void processUserMoving(Boolean moving) {
+        if (isActiveDrawingContext()) mState.processUserMoving(moving);
     }
 
     public IEntity getEditingEntity() {
@@ -69,25 +86,5 @@ public class DrawingContext implements IState{
 
     public Drawing getDrawing() {
         return mDrawing;
-    }
-
-    @Override
-    public void processOnNewFrame(float[] headView, Vec3d armForwardVec) {
-        if (isActiveDrawingContext()) mState.processOnNewFrame(headView, armForwardVec);
-    }
-
-    @Override
-    public void processOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace) {
-        if (isActiveDrawingContext()) mState.processOnDrawEye(view, perspective, lightPosInEyeSpace);
-    }
-
-    @Override
-    public void processInputAction(InputAction inputAction) {
-        if (isActiveDrawingContext()) mState.processInputAction(inputAction);
-    }
-
-    @Override
-    public void processUserMoving(Boolean moving) {
-        if (isActiveDrawingContext()) mState.processUserMoving(moving);
     }
 }
