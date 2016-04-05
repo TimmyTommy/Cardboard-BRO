@@ -43,13 +43,13 @@ public class InsersectionEntity {
         ArrayList<Triangle> triangles = entity.getAbsoluteTriangles();
         for (Triangle triangle : triangles) {
             float angle = VecMath.calcAngleBetweenVecsDeg(triangle.getN1(), VecMath.calcVecTimesScalar(straight.dir, -1));
-            if (angle<90) {
+            //if (angle<90) { //TODO Nochmal drüber schauen: Manche Entities haben evtl falsche Normalen
                 IntersectionTriangle intersectionPoint = new IntersectionTriangle(straight, triangle, entity);
                 intersectionPoint.calcTriangleLineIntersection();
                 if (intersectionPoint.intersectionPos != null) {
                     intersectionPoints.add(intersectionPoint);
                 }
-            }
+            //}
         }
     }
 }

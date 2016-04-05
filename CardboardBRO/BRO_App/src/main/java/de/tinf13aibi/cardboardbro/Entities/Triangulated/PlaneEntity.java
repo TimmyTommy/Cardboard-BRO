@@ -17,7 +17,7 @@ import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
  * Created by dthom on 10.01.2016.
  */
 public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
-    private float[] mColor = new float[]{0, 0.7f, 0, 1};
+    private float[] mColor = new float[]{0, 1f, 0, 1};
     private Vec3d mBaseNormal = new Vec3d(0, 1, 0);
     private Vec3d mCenter = new Vec3d();
 

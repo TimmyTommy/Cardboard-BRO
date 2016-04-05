@@ -184,6 +184,7 @@ public class VecMath {
 
         float[] trs = new float[3];
         calcPlaneLineIntersection(intersectPointOut, trs, triangle, line);
+        //System.out.println("t: "+ trs[0]);
         return trs[0] > 0 && isInRange(trs[1], 0, 1) && isInRange(trs[2], 0, 1) && isInRange(trs[1]+trs[2], 0, 1);
     }
 
