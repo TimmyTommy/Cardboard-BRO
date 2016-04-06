@@ -11,6 +11,9 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/BRO_App" />
+            <option value="$PROJECT_DIR$/BRO_App/libs" />
+            <option value="$PROJECT_DIR$/BRO_App/libs/common" />
+            <option value="$PROJECT_DIR$/BRO_App/libs/core" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BRO_App/BRO_App.iml" filepath="$PROJECT_DIR$/BRO_App/BRO_App.iml" />
       <module fileurl="file://$PROJECT_DIR$/CardboardBRO.iml" filepath="$PROJECT_DIR$/CardboardBRO.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/common/common.iml" filepath="$PROJECT_DIR$/libs/common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/core/core.iml" filepath="$PROJECT_DIR$/libs/core/core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/libs.iml" filepath="$PROJECT_DIR$/libs/libs.iml" />
     </modules>
   </component>
 </project>

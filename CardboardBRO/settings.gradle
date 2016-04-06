@@ -1,1 +1,4 @@
 include ':BRO_App'
+
+include ':BRO_App:libs:common'
+include ':BRO_App:libs:core'

@@ -25,7 +25,11 @@ dependencies {
             url '../BRO_App/libs/myosdk'
         }
     }
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    //compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    compile project(':BRO_App:libs:core')
+    compile project(':BRO_App:libs:common')
+
     compile 'com.thalmic:myosdk:0.10.0@aar'
     compile 'com.android.support:appcompat-v7:23.1.1'
 }
