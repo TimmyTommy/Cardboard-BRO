@@ -7,5 +7,6 @@ public enum InputAction {
     DoNothing,
     DoSelect,
     DoStateBack,
+    DoCenter,
     DoUndo
 }

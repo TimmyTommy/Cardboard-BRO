@@ -9,8 +9,12 @@ import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.view.InputDevice;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+
+import de.tinf13aibi.cardboardbro.UiMain.InputManagerCompat.InputDeviceListener;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
 import com.google.vrtoolkit.cardboard.CardboardView;
@@ -34,13 +38,16 @@ import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 import de.tinf13aibi.cardboardbro.Shader.Shaders;
 import de.tinf13aibi.cardboardbro.Shader.Textures;
 
-public class MainActivity extends CardboardActivity implements MyoListenerTarget, SensorEventListener {
+public class MainActivity extends CardboardActivity implements InputDeviceListener, MyoListenerTarget, SensorEventListener {
     private MyoData mMyoData = new MyoData();
     private DrawingContext mActiveDrawingContext;
 
     private Vibrator mVibrator;
     private CardboardOverlayView mOverlayView;
     private CardboardView mCardboardView;
+
+    private InputManagerCompat mInputManager;
+    private InputDevice mInputDevice;
 
     private Date mClickTime; //TODO: nur temporär zum imitieren von "MYO-Gesten"
 
@@ -157,8 +164,11 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 
         initOnTouchListener();
         initOnStepListener();
-        initializeMyoHub();
+        //initializeMyoHub();
         OnUpdateStatus(MyoDeviceListener.getInstance().getStatus());
+
+        mInputManager = InputManagerCompat.Factory.getInputManager(this);
+        mInputManager.registerInputDeviceListener(this, null);
     }
 
     @Override
@@ -189,7 +199,7 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         mMyoData.setPose(newPose);
         mOverlayView.show3DToast("TODO: react on Status: " + newPose.toString());
         InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
-        mActiveDrawingContext.processInputAction(inputAction);
+//        mActiveDrawingContext.processInputAction(inputAction);
     }
 
     @Override
@@ -199,9 +209,9 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
 
     @Override
     public void OnArmCenterUpdate(Quaternion armForwardCenter) {
-        mOverlayView.show3DToast("TODO: react OnArmCenterUpdate");
-        mMyoData.setArmForwardCenter(armForwardCenter);
-        mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
+//        mOverlayView.show3DToast("TODO: react OnArmCenterUpdate");
+//        mMyoData.setArmForwardCenter(armForwardCenter);
+//        mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
     }
 
     @Override
@@ -313,4 +323,148 @@ public class MainActivity extends CardboardActivity implements MyoListenerTarget
         ShaderCollection.addProgram(Programs.BodyTexturedProgram, Shaders.BodyTexturedVertexShader, Shaders.BodyTexturedFragmentShader);
     }
 
+    private InputAction getInputActionByKey(int keyCode, KeyEvent event){
+        if (event.getRepeatCount() == 0) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_BUTTON_X:
+                    return InputAction.DoSelect;
+                case KeyEvent.KEYCODE_BUTTON_B:
+                    return InputAction.DoStateBack;
+                case KeyEvent.KEYCODE_BUTTON_A:
+                    return InputAction.DoUndo;
+                case KeyEvent.KEYCODE_BUTTON_SELECT:
+                    return InputAction.DoCenter;
+                default:
+                    return InputAction.DoNothing;
+            }
+        }
+        return InputAction.DoNothing;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        InputAction inputAction = getInputActionByKey(keyCode, event);
+        //mActiveDrawingContext.processInputAction(inputAction);
+        return true;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        InputAction inputAction = getInputActionByKey(keyCode, event);
+        if (inputAction == InputAction.DoCenter) {
+            mMyoData.setArmForwardCenter(mMyoData.getArmForward());
+            mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
+        } else {
+            mActiveDrawingContext.processInputAction(inputAction);
+        }
+        return true;
+    }
+
+    private static float getCenteredAxis(MotionEvent event, InputDevice device,
+                                         int axis, int historyPos) {
+        final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
+        if (range != null) {
+            final float flat = range.getFlat();
+            final float value = historyPos < 0 ? event.getAxisValue(axis)
+                    : event.getHistoricalAxisValue(axis, historyPos);
+
+            // Ignore axis values that are within the 'flat' region of the
+            // joystick axis center.
+            // A joystick at rest does not always report an absolute position of
+            // (0,0).
+            if (Math.abs(value) > flat) {
+                return value;
+            }
+        }
+        return 0;
+    }
+
+    private void processJoystickInput(MotionEvent event, int historyPos) {
+        // Get joystick position.
+        // Many game pads with two joysticks report the position of the
+        // second
+        // joystick
+        // using the Z and RZ axes so we also handle those.
+        // In a real game, we would allow the user to configure the axes
+        // manually.
+        if (null == mInputDevice) {
+            mInputDevice = event.getDevice();
+        }
+        float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
+        if (x == 0) {
+            x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+        }
+        if (x == 0) {
+            x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+        }
+
+        float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+        if (y == 0) {
+            y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+        }
+        if (y == 0) {
+            y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+        }
+
+        if (y!=0 && x!=0){
+            mActiveDrawingContext.processUserMoving(true);
+        } else {
+            mActiveDrawingContext.processUserMoving(false);
+        }
+
+
+        // Set heading. TODO
+
+//        setHeading(x, y);
+//        GameView.this.step(historyPos < 0 ? event.getEventTime() : event
+//                .getHistoricalEventTime(historyPos));
+    }
+
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        mInputManager.onGenericMotionEvent(event); //TODO evtl Weglassen
+        int eventSource = event.getSource();
+        if ((((eventSource & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
+                ((eventSource & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK))
+                && event.getAction() == MotionEvent.ACTION_MOVE) {
+            int id = event.getDeviceId();
+            if (-1 != id) {
+                final int historySize = event.getHistorySize();
+                for (int i = 0; i < historySize; i++) {
+                    processJoystickInput(event, i);
+                }
+                processJoystickInput(event, -1);
+            }
+        }
+        return true;
+
+        //return super.onGenericMotionEvent(event);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+//        if (hasFocus) {
+//            //mInputManager.onResume(); //TODO
+//        } else {
+//            //mInputManager.onPause();
+//        }
+        //super.onWindowFocusChanged(hasFocus);
+    }
+
+    @Override
+    public void onInputDeviceAdded(int deviceId) {
+        //TODO
+        mInputDevice = InputDevice.getDevice(deviceId);
+    }
+
+    @Override
+    public void onInputDeviceChanged(int deviceId) {
+        //TODO
+        mInputDevice = InputDevice.getDevice(deviceId);
+    }
+
+    @Override
+    public void onInputDeviceRemoved(int deviceId) {
+        //TODO
+    }
 }
