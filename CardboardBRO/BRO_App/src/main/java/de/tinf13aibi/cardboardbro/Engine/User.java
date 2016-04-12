@@ -42,7 +42,7 @@ public class User {
 
     private Date mLastUpdate = new Date();
 
-    private Boolean mMoving = false;
+    private Vec3d mAcceleration = new Vec3d();
 
     public void drawCrosshairs(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         if (mEyeCrosshair != null) {
@@ -111,14 +111,17 @@ public class User {
         if (VecMath.calcVectorLength(mVelocity)<0.0001f){
             mVelocity.assignPoint3d(new Vec3d());
         }
-//        // Alle Kräfte entfernen
-//        clearForceAccum();
 
         return getCamera();
     }
 
     public float[] move(){
-        Vec3d acceleration = VecMath.calcVecTimesScalar(getEyeForward(), mMoving ? 5:0);
+        float[] forwardVec = new float[]{0,0,0,0};
+        if (mAcceleration.getLength()>0) {
+            Matrix.multiplyMV(forwardVec, 0, mInvHeadView, 0, mAcceleration.toFloatArray4d(), 0);
+        }
+        Vec3d acceleration = VecMath.calcVecTimesScalar(new Vec3d(forwardVec), 5);
+
         return move(acceleration);
     }
 
@@ -159,13 +162,10 @@ public class User {
 
         // Neue Geschwindigkeit berechnen
         mVelocity.assignPoint3d(VecMath.calcVecPlusVec(mVelocity, VecMath.calcVecTimesScalar(acceleration, timeSeconds)));
-
         mVelocity.assignPoint3d(VecMath.calcVecTimesScalar(mVelocity, 0.90f));
         if (VecMath.calcVectorLength(mVelocity)<0.0001f){
             mVelocity.assignPoint3d(new Vec3d());
         }
-//        // Alle Kräfte entfernen
-//        clearForceAccum();
 
         return getCamera();
     }
@@ -247,12 +247,12 @@ public class User {
         return mArmCrosshair;
     }
 
-    public Boolean getMoving() {
-        return mMoving;
+    public Vec3d getAcceleration() {
+        return mAcceleration;
     }
 
-    public void setMoving(Boolean moving) {
-        mMoving = moving;
+    public void setAcceleration(Vec3d acceleration) {
+        mAcceleration = acceleration;
     }
 
     public void setArmForward(Vec3d armForward) {

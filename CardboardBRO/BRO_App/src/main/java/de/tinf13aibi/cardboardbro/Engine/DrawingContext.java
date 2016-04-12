@@ -39,8 +39,8 @@ public class DrawingContext implements IState{
     }
 
     @Override
-    public void processUserMoving(Boolean moving) {
-        if (isActiveDrawingContext()) mState.processUserMoving(moving);
+    public void processUserMoving(Vec3d acceleration) {
+        if (isActiveDrawingContext()) mState.processUserMoving(acceleration);
     }
 
     public IEntity getEditingEntity() {
@@ -53,6 +53,7 @@ public class DrawingContext implements IState{
 
     public void setActiveDrawingContext(){
         mMainActivity.getCardboardView().setRenderer(mDrawingRenderer);
+        mMainActivity.getCardboardView().setTransitionViewEnabled(true);
         mMainActivity.setCardboardView(mMainActivity.getCardboardView());
     }
 

@@ -1,5 +1,7 @@
 package de.tinf13aibi.cardboardbro.Geometry.Simple;
 
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
+
 /**
  * Created by dthom on 15.12.2015.
  */
@@ -59,5 +61,13 @@ public class Vec3d {
         x = vec3D.x;
         y = vec3D.y;
         z = vec3D.z;
+    }
+
+    public float getLength(){
+        return VecMath.calcVectorLength(this);
+    }
+
+    public String toString(){
+        return "X: " + x + " Y: " + y + " Z: " + z;
     }
 }

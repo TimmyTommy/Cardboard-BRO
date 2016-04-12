@@ -46,9 +46,9 @@ public abstract class StateBase implements IState {
     }
 
     @Override
-    public void processUserMoving(Boolean moving) {
-        mUser.setMoving(moving);
-        if (moving) {
+    public void processUserMoving(Vec3d acceleration) {
+        mUser.setAcceleration(acceleration);
+        if (acceleration.getLength()>0) {
             mOverlayView.show3DToast("Accelerating");
         } else {
             mOverlayView.show3DToast("Slowing down");

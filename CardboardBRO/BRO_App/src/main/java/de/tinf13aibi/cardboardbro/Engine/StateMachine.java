@@ -43,8 +43,8 @@ public class StateMachine implements IState {
     }
 
     @Override
-    public void processUserMoving(Boolean moving) {
-        mUser.setMoving(moving);
+    public void processUserMoving(Vec3d acceleration) {
+        mUser.setAcceleration(acceleration);
     }
 
     @Override

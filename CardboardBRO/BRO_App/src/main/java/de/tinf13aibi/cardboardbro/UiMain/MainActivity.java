@@ -49,7 +49,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     private InputManagerCompat mInputManager;
     private InputDevice mInputDevice;
 
-    private Date mClickTime; //TODO: nur temporär zum imitieren von "MYO-Gesten"
+//    private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
 
 
     public CardboardView getCardboardView(){
@@ -98,23 +98,19 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        //TODO Moving später wieder aktiviedern
-                        mActiveDrawingContext.processUserMoving(true);
-                        mClickTime = new Date();
+                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, -1));
+//                        mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
-                        //TODO Moving später wieder aktiviedern
-                        mActiveDrawingContext.processUserMoving(false);
+                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, 0));
 
-                        Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
-                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
-
+//                        Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
+//                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
 //                        if (timeSeconds <= 1) { //Wechsel von FIST auf REST imitieren
 //                            OnPoseChange(Pose.FIST, Pose.REST);
 //                        } else if (timeSeconds > 1) {  //Wechsel von FINGERS_SPREAD auf REST imitieren
 //                            OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
 //                        }
-//                        //TODO : MYO-Waveout imitieren
                 }
                 return false;
             }
@@ -154,17 +150,15 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-        mOverlayView.show3DToast("Push the button to move around.");
 
         mCardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-        mCardboardView.setRestoreGLStateEnabled(false);
 
         mActiveDrawingContext = new DrawingContext(this);
         mActiveDrawingContext.setActiveDrawingContext();
 
         initOnTouchListener();
-        initOnStepListener();
-        //initializeMyoHub();
+        //initOnStepListener();
+        initializeMyoHub();
         OnUpdateStatus(MyoDeviceListener.getInstance().getStatus());
 
         mInputManager = InputManagerCompat.Factory.getInputManager(this);
@@ -197,8 +191,8 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     @Override
     public void OnPoseChange(Pose previousPose, Pose newPose) {
         mMyoData.setPose(newPose);
-        mOverlayView.show3DToast("TODO: react on Status: " + newPose.toString());
-        InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
+//        mOverlayView.show3DToast("Pose: " + newPose.toString());
+//        InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
 //        mActiveDrawingContext.processInputAction(inputAction);
     }
 
@@ -209,7 +203,6 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     @Override
     public void OnArmCenterUpdate(Quaternion armForwardCenter) {
-//        mOverlayView.show3DToast("TODO: react OnArmCenterUpdate");
 //        mMyoData.setArmForwardCenter(armForwardCenter);
 //        mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
     }
@@ -217,7 +210,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     @Override
     public void OnUpdateStatus(MyoStatus status) {
         mMyoData.setMyoStatus(status);
-        mOverlayView.show3DToast("TODO: react on Status: " + status.getValue());
+        mOverlayView.show3DToast("Status: " + status.getValue());
     }
 
     private InputAction getInputActionByPoseChange(Pose previousPose, Pose newPose){
@@ -360,18 +353,11 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         return true;
     }
 
-    private static float getCenteredAxis(MotionEvent event, InputDevice device,
-                                         int axis, int historyPos) {
+    private static float getCenteredAxis(MotionEvent event, InputDevice device, int axis, int historyPos) {
         final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
         if (range != null) {
             final float flat = range.getFlat();
-            final float value = historyPos < 0 ? event.getAxisValue(axis)
-                    : event.getHistoricalAxisValue(axis, historyPos);
-
-            // Ignore axis values that are within the 'flat' region of the
-            // joystick axis center.
-            // A joystick at rest does not always report an absolute position of
-            // (0,0).
+            final float value = historyPos < 0 ? event.getAxisValue(axis) : event.getHistoricalAxisValue(axis, historyPos);
             if (Math.abs(value) > flat) {
                 return value;
             }
@@ -380,13 +366,6 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     }
 
     private void processJoystickInput(MotionEvent event, int historyPos) {
-        // Get joystick position.
-        // Many game pads with two joysticks report the position of the
-        // second
-        // joystick
-        // using the Z and RZ axes so we also handle those.
-        // In a real game, we would allow the user to configure the axes
-        // manually.
         if (null == mInputDevice) {
             mInputDevice = event.getDevice();
         }
@@ -397,7 +376,6 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         if (x == 0) {
             x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
         }
-
         float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
         if (y == 0) {
             y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
@@ -405,19 +383,8 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         if (y == 0) {
             y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
         }
-
-        if (y!=0 && x!=0){
-            mActiveDrawingContext.processUserMoving(true);
-        } else {
-            mActiveDrawingContext.processUserMoving(false);
-        }
-
-
-        // Set heading. TODO
-
-//        setHeading(x, y);
-//        GameView.this.step(historyPos < 0 ? event.getEventTime() : event
-//                .getHistoricalEventTime(historyPos));
+        //System.out.println("x: " + x + " y: " + y);
+        mActiveDrawingContext.processUserMoving(new Vec3d(-y, 0, x)); //Gedrehten Controller beachten
     }
 
     @Override
@@ -437,34 +404,27 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             }
         }
         return true;
-
-        //return super.onGenericMotionEvent(event);
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-//        if (hasFocus) {
-//            //mInputManager.onResume(); //TODO
-//        } else {
-//            //mInputManager.onPause();
-//        }
-        //super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            mInputManager.onResume();
+        } else {
+            mInputManager.onPause();
+        }
     }
 
     @Override
     public void onInputDeviceAdded(int deviceId) {
-        //TODO
         mInputDevice = InputDevice.getDevice(deviceId);
     }
 
     @Override
     public void onInputDeviceChanged(int deviceId) {
-        //TODO
         mInputDevice = InputDevice.getDevice(deviceId);
     }
 
     @Override
-    public void onInputDeviceRemoved(int deviceId) {
-        //TODO
-    }
+    public void onInputDeviceRemoved(int deviceId) {}
 }
