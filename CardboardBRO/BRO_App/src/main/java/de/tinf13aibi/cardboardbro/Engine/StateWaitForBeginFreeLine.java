@@ -27,7 +27,7 @@ public class StateWaitForBeginFreeLine extends StateBase implements IState {
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
+            case DoBeginSelect: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
             case DoStateBack: drawFreeLineAbort(true); break;
         }
     }

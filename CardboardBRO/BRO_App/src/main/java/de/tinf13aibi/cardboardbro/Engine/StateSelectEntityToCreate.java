@@ -32,7 +32,7 @@ public class StateSelectEntityToCreate extends StateBase implements IState {
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
             case DoStateBack: changeState(new StateSelectAction(mDrawingContext), "Go Back"); break;
-            case DoSelect: selectButton(mUser.getArmPointingAt()); break;
+            case DoEndSelect: selectButton(mUser.getArmPointingAt()); break;
         }
     }
 }

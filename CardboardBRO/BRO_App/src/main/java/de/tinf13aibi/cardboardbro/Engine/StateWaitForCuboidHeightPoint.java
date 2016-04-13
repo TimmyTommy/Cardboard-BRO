@@ -28,7 +28,7 @@ public class StateWaitForCuboidHeightPoint extends StateBase implements IState {
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+            case DoEndSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
             case DoStateBack: drawCuboidAbort(false); break;
         }
     }

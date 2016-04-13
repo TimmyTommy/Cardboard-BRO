@@ -5,7 +5,8 @@ package de.tinf13aibi.cardboardbro.Engine;
  */
 public enum InputAction {
     DoNothing,
-    DoSelect,
+    DoBeginSelect,
+    DoEndSelect,
     DoStateBack,
     DoCenter,
     DoUndo

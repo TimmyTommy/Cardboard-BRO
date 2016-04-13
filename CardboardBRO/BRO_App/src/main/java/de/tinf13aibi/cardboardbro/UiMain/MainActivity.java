@@ -6,7 +6,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.GLES20;
-import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.InputDevice;
@@ -22,12 +21,9 @@ import com.thalmic.myo.Hub;
 import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
 
-import java.util.Date;
-
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
 import de.tinf13aibi.cardboardbro.Engine.InputAction;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
-import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoData;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoDeviceListener;
 import de.tinf13aibi.cardboardbro.GestureUtils.MyoListenerTarget;
@@ -217,7 +213,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         if (newPose == Pose.REST) {
             switch (previousPose) {
                 case FIST:
-                    return InputAction.DoSelect;
+                    return InputAction.DoEndSelect;
                 case FINGERS_SPREAD:
                     return InputAction.DoStateBack;
                 case WAVE_OUT:
@@ -320,7 +316,11 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         if (event.getRepeatCount() == 0) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_BUTTON_X:
-                    return InputAction.DoSelect;
+                    if (event.getAction()== KeyEvent.ACTION_UP){
+                        return InputAction.DoEndSelect;
+                    } else if (event.getAction()== KeyEvent.ACTION_DOWN) {
+                        return InputAction.DoBeginSelect;
+                    }
                 case KeyEvent.KEYCODE_BUTTON_B:
                     return InputAction.DoStateBack;
                 case KeyEvent.KEYCODE_BUTTON_A:
@@ -337,7 +337,10 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         InputAction inputAction = getInputActionByKey(keyCode, event);
-        //mActiveDrawingContext.processInputAction(inputAction);
+        if (inputAction == InputAction.DoBeginSelect) {
+            mActiveDrawingContext.processInputAction(inputAction);
+        }
+
         return true;
     }
 

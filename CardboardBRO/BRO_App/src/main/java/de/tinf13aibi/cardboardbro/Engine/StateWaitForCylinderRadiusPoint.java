@@ -27,7 +27,7 @@ public class StateWaitForCylinderRadiusPoint extends StateBase implements IState
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
+            case DoEndSelect: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
             case DoStateBack: drawCylinderAbort(false); break;
         }
     }

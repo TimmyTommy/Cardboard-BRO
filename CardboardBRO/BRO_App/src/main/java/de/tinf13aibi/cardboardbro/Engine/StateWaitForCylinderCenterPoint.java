@@ -28,7 +28,7 @@ public class StateWaitForCylinderCenterPoint extends StateBase implements IState
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+            case DoEndSelect: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
             case DoStateBack: drawCylinderAbort(true); break;
         }
     }

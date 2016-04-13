@@ -27,7 +27,7 @@ public class StateWaitForBeginPolyLinePoint extends StateBase implements IState 
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
+            case DoEndSelect: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
             case DoStateBack: drawPolyLineLeave(); break;
         }
     }

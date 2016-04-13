@@ -18,7 +18,6 @@ import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 import de.tinf13aibi.cardboardbro.UiMain.CardboardOverlayView;
-import de.tinf13aibi.cardboardbro.UiMain.MainActivity;
 
 /**
  * Created by dthom on 09.01.2016.
@@ -68,78 +67,78 @@ public class StateMachine implements IState {
             case SelectAction:
                 switch (inputAction){
                     case DoStateBack: changeState(AppState.SelectAction, "Go Back"); break;
-                    case DoSelect:  selectButton(mUser.getArmPointingAt()); break;
+                    case DoEndSelect:  selectButton(mUser.getArmPointingAt()); break;
                 }
                 break;
             case WaitForBeginFreeLine:
                 switch (inputAction){
-                    case DoSelect: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
+                    case DoEndSelect: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
                     case DoStateBack: drawFreeLineAbort(true); break;
                 }
                 break;
             case WaitForEndFreeLine:
                 switch (inputAction){
-                    case DoSelect: drawFreeLineEnd(mUser.getArmCrosshair().getPosition()); break;
+                    case DoEndSelect: drawFreeLineEnd(mUser.getArmCrosshair().getPosition()); break;
                     case DoStateBack: drawFreeLineAbort(false); break;
                 }
                 break;
             case WaitForBeginPolyLinePoint:
                 switch (inputAction){
-                    case DoSelect: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
+                    case DoEndSelect: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
                     case DoStateBack: drawPolyLineLeave(); break;
                 }
                 break;
             case WaitForNextPolyLinePoint:
                 switch (inputAction){
-                    case DoSelect: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
+                    case DoEndSelect: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoStateBack: drawPolyLineEnd(); break;
                 }
                 break;
             case WaitForCylinderCenterPoint:
                 switch (inputAction){
-                    case DoSelect: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+                    case DoEndSelect: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
                     case DoStateBack: drawCylinderAbort(true); break;
                 }
                 break;
             case WaitForCylinderRadiusPoint:
                 switch (inputAction){
-                    case DoSelect: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
+                    case DoEndSelect: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoStateBack: drawCylinderAbort(false); break;
                 }
                 break;
             case WaitForCylinderHeightPoint:
                 switch (inputAction){
-                    case DoSelect: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+                    case DoEndSelect: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoStateBack: drawCylinderAbort(false); break;
                 }
                 break;
             case WaitForCuboidBasePoint1:
                 switch (inputAction){
-                    case DoSelect: drawCuboidBeginBasePoint1(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+                    case DoEndSelect: drawCuboidBeginBasePoint1(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
                     case DoStateBack: drawCuboidAbort(true); break;
                 }
                 break;
             case WaitForCuboidBasePoint2:
                 switch (inputAction){
-                    case DoSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
+                    case DoEndSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
                     case DoStateBack: drawCuboidAbort(false); break;
                 }
                 break;
             case WaitForCuboidHeightPoint:
                 switch (inputAction){
-                    case DoSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+                    case DoEndSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoStateBack: drawCuboidAbort(false); break;
                 }
                 break;
             case WaitForSphereCenterPoint:
                 switch (inputAction){
-                    case DoSelect: drawSphereBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+                    case DoEndSelect: drawSphereBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
                     case DoStateBack: drawSphereAbort(true); break;
                 }
                 break;
             case WaitForSphereRadiusPoint:
                 switch (inputAction){
-                    case DoSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
+                    case DoEndSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
                     case DoStateBack: drawSphereAbort(false); break;
                 }
                 break;
@@ -214,7 +213,7 @@ public class StateMachine implements IState {
 //            case SelectAction:
 //                switch (inputAction){
 //                    case DoStateBack: changeState(AppState.SelectAction, "Go Back"); break;
-//                    case DoSelect:  selectButton(mUser.getArmPointingAt()); break;
+//                    case DoEndSelect:  selectButton(mUser.getArmPointingAt()); break;
 //                }
 //                break;
 //        }
@@ -224,13 +223,13 @@ public class StateMachine implements IState {
 //        switch (appState){
 //            case WaitForBeginFreeLine:
 //                switch (inputAction){
-//                    case DoSelect: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
+//                    case DoEndSelect: drawFreeLineBegin(mUser.getArmCrosshair().getPosition()); break;
 //                    case DoStateBack: drawFreeLineAbort(true); break;
 //                }
 //                break;
 //            case WaitForEndFreeLine:
 //                switch (inputAction){
-//                    case DoSelect: drawFreeLineEnd(mUser.getArmCrosshair().getPosition()); break;
+//                    case DoEndSelect: drawFreeLineEnd(mUser.getArmCrosshair().getPosition()); break;
 //                    case DoStateBack: drawFreeLineAbort(false); break;
 //                }
 //                break;
@@ -241,13 +240,13 @@ public class StateMachine implements IState {
 //        switch (appState){
 //            case WaitForBeginPolyLinePoint:
 //                switch (inputAction){
-//                    case DoSelect: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
+//                    case DoEndSelect: drawPolyLineBegin(mUser.getArmCrosshair().getPosition()); break;
 //                    case DoStateBack: drawPolyLineLeave(); break;
 //                }
 //                break;
 //            case WaitForNextPolyLinePoint:
 //                switch (inputAction){
-//                    case DoSelect: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
+//                    case DoEndSelect: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
 //                    case DoStateBack: drawPolyLineEnd(); break;
 //                }
 //                break;
@@ -258,19 +257,19 @@ public class StateMachine implements IState {
 //        switch (appState){
 //            case WaitForCylinderCenterPoint:
 //                switch (inputAction){
-//                    case DoSelect: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+//                    case DoEndSelect: drawCylinderBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
 //                    case DoStateBack: drawCylinderAbort(true); break;
 //                }
 //                break;
 //            case WaitForCylinderRadiusPoint:
 //                switch (inputAction){
-//                    case DoSelect: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
+//                    case DoEndSelect: drawCylinderRadius(mUser.getArmCrosshair().getPosition(), true); break;
 //                    case DoStateBack: drawCylinderAbort(false); break;
 //                }
 //                break;
 //            case WaitForCylinderHeightPoint:
 //                switch (inputAction){
-//                    case DoSelect: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+//                    case DoEndSelect: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
 //                    case DoStateBack: drawCylinderAbort(false); break;
 //                }
 //                break;
@@ -281,19 +280,19 @@ public class StateMachine implements IState {
 //        switch (appState){
 //            case WaitForCuboidBasePoint1:
 //                switch (inputAction){
-//                    case DoSelect: drawCuboidBeginBasePoint1(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+//                    case DoEndSelect: drawCuboidBeginBasePoint1(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
 //                    case DoStateBack: drawCuboidAbort(true); break;
 //                }
 //                break;
 //            case WaitForCuboidBasePoint2:
 //                switch (inputAction){
-//                    case DoSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
+//                    case DoEndSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
 //                    case DoStateBack: drawCuboidAbort(false); break;
 //                }
 //                break;
 //            case WaitForCuboidHeightPoint:
 //                switch (inputAction){
-//                    case DoSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+//                    case DoEndSelect: drawCuboidEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
 //                    case DoStateBack: drawCuboidAbort(false); break;
 //                }
 //                break;
@@ -304,13 +303,13 @@ public class StateMachine implements IState {
 //        switch (appState){
 //            case WaitForSphereCenterPoint:
 //                switch (inputAction){
-//                    case DoSelect: drawSphereBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
+//                    case DoEndSelect: drawSphereBeginCenter(mUser.getArmCrosshair().getPosition(), mUser.getArmCrosshair().getNormal()); break;
 //                    case DoStateBack: drawSphereAbort(true); break;
 //                }
 //                break;
 //            case WaitForSphereRadiusPoint:
 //                switch (inputAction){
-//                    case DoSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
+//                    case DoEndSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
 //                    case DoStateBack: drawSphereAbort(false); break;
 //                }
 //                break;

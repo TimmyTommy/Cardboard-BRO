@@ -36,7 +36,7 @@ public class StateWaitForKeyboardInput extends StateBase implements IState {
     public void processInputAction(InputAction inputAction) {
         switch (inputAction) {
             case DoStateBack: changeState(new StateSelectAction(mDrawingContext), "Go Back"); break;
-            case DoSelect: selectKeyButton(mUser.getArmPointingAt()); break; //TODO select Key-Button
+            case DoEndSelect: selectKeyButton(mUser.getArmPointingAt()); break; //TODO select Key-Button
         }
     }
 

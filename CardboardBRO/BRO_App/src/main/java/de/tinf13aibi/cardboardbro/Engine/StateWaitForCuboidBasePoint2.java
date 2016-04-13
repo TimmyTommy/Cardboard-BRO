@@ -29,7 +29,7 @@ public class StateWaitForCuboidBasePoint2 extends StateBase implements IState {
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
+            case DoEndSelect: drawCuboidBeginBasePoint2(mUser.getArmPointingAt(), true); break;
             case DoStateBack: drawCuboidAbort(false); break;
         }
     }

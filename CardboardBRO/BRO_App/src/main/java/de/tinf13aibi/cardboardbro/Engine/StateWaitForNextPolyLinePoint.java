@@ -26,7 +26,7 @@ public class StateWaitForNextPolyLinePoint extends StateBase implements IState {
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction) {
-            case DoSelect: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
+            case DoEndSelect: drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), true); break;
             case DoStateBack: drawPolyLineEnd(); break;
         }
     }

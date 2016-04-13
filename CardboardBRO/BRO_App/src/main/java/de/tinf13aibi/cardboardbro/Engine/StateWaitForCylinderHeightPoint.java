@@ -39,7 +39,7 @@ public class StateWaitForCylinderHeightPoint extends StateBase implements IState
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
+            case DoEndSelect: drawCylinderEndHeight(mUser.getArmCrosshair().getPosition(), true); break;
             case DoStateBack: drawCylinderAbort(false); break;
         }
     }

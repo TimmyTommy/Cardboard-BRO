@@ -26,7 +26,7 @@ public class StateSelectEntityToDelete extends StateBase implements IState {
     public void processInputAction(InputAction inputAction) {
         switch (inputAction) {
             case DoStateBack: changeState(new StateSelectAction(mDrawingContext), "Go Back"); break;
-            case DoSelect: deleteEntityPointingAt(mUser.getArmPointingAt()); break;
+            case DoEndSelect: deleteEntityPointingAt(mUser.getArmPointingAt()); break;
         }
     }
 

@@ -27,7 +27,7 @@ public class StateWaitForSphereRadiusPoint extends StateBase implements IState {
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction){
-            case DoSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
+            case DoEndSelect: drawSphereEndRadius(mUser.getArmCrosshair().getPosition(), true); break;
             case DoStateBack: drawSphereAbort(false); break;
         }
     }
