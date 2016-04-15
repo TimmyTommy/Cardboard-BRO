@@ -76,11 +76,11 @@ public class ButtonSet {
         Matrix.multiplyMM(finalOp, 0, anOp, 0, finalOp, 0);
         for (int i = 0; i < mButtonEntities.size(); i++) {
             IEntity entity = mButtonEntities.get(i);
-            if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
+            //if (entity.getDisplayType() == EntityDisplayType.RelativeToCamera) {
                 entity.resetModelToBase();
                 Matrix.multiplyMM(entity.getModel(), 0, finalOp, 0, entity.getModel(), 0);
                 entity.changedModel();
-            }
+            //}
         }
     }
 

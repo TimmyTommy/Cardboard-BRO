@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
+import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.UiMain.InputManagerCompat.InputDeviceListener;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;

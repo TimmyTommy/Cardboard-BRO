@@ -2,6 +2,7 @@ package de.tinf13aibi.cardboardbro.Engine;
 
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
+import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
@@ -35,7 +36,7 @@ public class StateWaitForKeyboardInput extends StateBase implements IState {
     @Override
     public void processInputAction(InputAction inputAction) {
         switch (inputAction) {
-            case DoStateBack: changeState(new StateSelectAction(mDrawingContext), "Go Back"); break;
+            case DoStateBack: endTextInput(mText); break;//changeState(new StateSelectAction(mDrawingContext), "Go Back"); break;
             case DoEndSelect: selectKeyButton(mUser.getArmPointingAt()); break; //TODO select Key-Button
         }
     }
@@ -58,5 +59,20 @@ public class StateWaitForKeyboardInput extends StateBase implements IState {
                 }
             }
         }
+    }
+
+    private void endTextInput(String text){
+        String trimmedText = text.trim();
+        if (trimmedText.length()>0){
+            createTextEntity(trimmedText);
+            changeState(new StateWaitForPlaceTextPoint(mDrawingContext), "Write Text");
+        } else {
+            changeState(new StateSelectEntityToCreate(mDrawingContext), "Leave Text Input Mode");
+        }
+    }
+
+    private void createTextEntity(String text){
+        mDrawingContext.setEditingEntity(new TextEntity(text, mDrawingContext.getUser().getInvHeadView(), new Vec3d()));
+        mDrawing.getEntityList().add(mDrawingContext.getEditingEntity());
     }
 }

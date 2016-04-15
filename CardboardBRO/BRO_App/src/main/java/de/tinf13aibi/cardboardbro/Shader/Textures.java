@@ -70,7 +70,7 @@ public enum Textures {
     TextureKeyDot('.'),
     TextureKeyPlus('+'),
     TextureKeyMinus('-'),
-    TextureKeyStar('+'),
+    TextureKeyStar('*'),
     TextureKeySlash('/'),
     TextureKeyQuestionMark('?'),
     TextureKeyExclamationMark('!'),
@@ -88,9 +88,13 @@ public enum Textures {
         return mCharValue;
     }
 
-//    public static Textures parseValue(char value) {
-//        for(Textures v : values())
-//            if(v.getValue().equalsIgnoreCase(value)) return v;
-//        throw new IllegalArgumentException();
-//    }
+    public static Textures parseValue(char value) {
+        for(Textures v : values()) {
+            if (v.getValue() == value){
+                return v;
+            }
+        }
+        return TextureNone;
+        //throw new IllegalArgumentException();
+    }
 }

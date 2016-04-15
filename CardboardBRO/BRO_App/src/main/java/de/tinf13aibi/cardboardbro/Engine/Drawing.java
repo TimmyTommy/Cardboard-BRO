@@ -9,6 +9,7 @@ import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CubeEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderCanvasEntity;
@@ -251,7 +252,7 @@ public class Drawing {
         mEntityList.add(cuboidEntity);
 
         SphereEntity sphereEntity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        sphereEntity.setAttributes(new Vec3d(4, 2, 0), new Vec3d(0,1,0), 1, new float[]{1, 0.5f, 0, 1});
+        sphereEntity.setAttributes(new Vec3d(4, 2, 0), new Vec3d(0, 1, 0), 1, new float[]{1, 0.5f, 0, 1});
         mEntityList.add(sphereEntity);
 
 //Test Polyline

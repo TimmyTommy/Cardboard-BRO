@@ -42,7 +42,6 @@ public abstract class StateBase implements IState {
         mDrawingContext.setState(state);
         mVibrator.vibrate(50);
 //        mOverlayView.show3DToast(message + " -> " + state.getClass());
-//        mAppState = appState;
     }
 
     @Override
