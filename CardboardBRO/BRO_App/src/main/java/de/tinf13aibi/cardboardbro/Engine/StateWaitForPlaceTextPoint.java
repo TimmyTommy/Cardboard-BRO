@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Engine;
 
+import java.util.ArrayList;
+
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Entities.Lined.PolyLineEntity;
 import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
@@ -20,9 +23,13 @@ public class StateWaitForPlaceTextPoint extends StateBase implements IState {
     @Override
     public void processOnNewFrame(float[] headView, Vec3d armForwardVec) {
         super.processOnNewFrame(headView, armForwardVec);
-        mUser.calcArmPointingAt(mDrawing.getEntityListWithFloorAndCanvas());
+
+        ArrayList<IEntity> entities = mDrawing.getEntityListWithFloorAndCanvas();
+        entities.remove(mDrawingContext.getEditingEntity());
+        mUser.calcArmPointingAt(entities);
+        //mUser.calcArmPointingAt(mDrawing.getEntityListWithFloorAndCanvas());
+
         drawTextEntityOnPosition(mUser.getArmCrosshair().getPosition(), false);
-//        drawPolyLineNextPoint(mUser.getArmCrosshair().getPosition(), false);
     }
 
     @Override
@@ -33,8 +40,7 @@ public class StateWaitForPlaceTextPoint extends StateBase implements IState {
     private void drawTextEntityOnPosition(Vec3d pos, Boolean fix) {
         if (mDrawingContext.getEditingEntity() instanceof TextEntity) {
             TextEntity textEntity = (TextEntity) mDrawingContext.getEditingEntity();
-            textEntity.setPosition(pos);
-            textEntity.setFacing(mUser.getInvHeadView());
+            textEntity.updatePosition(mUser.getInvHeadView(), pos);
             if (fix) {
                 changeState(new StateWaitForKeyboardInput(mDrawingContext), "Keyboard Input");
             }

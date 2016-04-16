@@ -10,7 +10,12 @@ import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.IManySidedEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
+import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
+import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 import de.tinf13aibi.cardboardbro.Shader.Programs;
 import de.tinf13aibi.cardboardbro.Shader.ShaderCollection;
 import de.tinf13aibi.cardboardbro.Shader.Textures;
@@ -18,19 +23,24 @@ import de.tinf13aibi.cardboardbro.Shader.Textures;
 /**
  * Created by dthom on 15.04.2016.
  */
-public class TextEntity extends BaseEntity implements IEntity {
+public class TextEntity extends BaseEntity implements IManySidedEntity {
     private String mText = "";
     private Vec3d mPosition = new Vec3d();
     private float[] mFacing = new float[16];
-
-    private ArrayList<TextCharEntity> mTextCharArray = new ArrayList<>();
+    private CuboidEntity mHitBox;
+    //private ArrayList<TextCharEntity> mTextCharArray = new ArrayList<>();
 
     private ButtonSet mCharSet = new ButtonSet();
 
-    public void setColor(float red, float green, float blue, float alpha) {
-        for (TextCharEntity entity : mTextCharArray) {
-            entity.setColor(red, green, blue, alpha);
-        }
+//    public void setColor(float red, float green, float blue, float alpha) {
+//        for (TextCharEntity entity : mTextCharArray) {
+//            entity.setColor(red, green, blue, alpha);
+//        }
+//    }
+
+    @Override
+    public CuboidEntity getHitBox() {
+        return mHitBox;
     }
 
     @Override
@@ -46,7 +56,28 @@ public class TextEntity extends BaseEntity implements IEntity {
         mText = text;
         mFacing = facing;
         mPosition = pos;
+        mHitBox = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         transformTextToTextCharEntities(text);
+    }
+
+    private void calcHitbox(){
+        Vec3d min = new Vec3d(100, 100, 100);
+        Vec3d max = new Vec3d(-100, -100, -100);
+        for (Triangle triangle : mTriangles) {
+            Vec3d tmin = triangle.getMinPoint();
+            Vec3d tmax = triangle.getMaxPoint();
+
+            min.x = min.x<tmin.x ? min.x : tmin.x;
+            min.y = min.y<tmin.y ? min.y : tmin.y;
+            min.z = min.z<tmin.z ? min.z : tmin.z;
+
+            max.x = max.x>tmax.x ? max.x : tmax.x;
+            max.y = max.y>tmax.y ? max.y : tmax.y;
+            max.z = max.z>tmax.z ? max.z : tmax.z;
+        }
+
+        Vec3d delta = VecMath.calcVecMinusVec(max, min);
+        mHitBox.setAttributes(min, new Vec3d(0,1,0), delta.z, delta.x, delta.y, new float[]{0.5f, 0.5f, 1, 0.5f});
     }
 
     private void transformTextToTextCharEntities(String text){
@@ -79,7 +110,11 @@ public class TextEntity extends BaseEntity implements IEntity {
     }
 
     public void updatePosition(float[] facing, Vec3d position){
+        mPosition = position;
+        mFacing = facing;
         mCharSet.setButtonsRelativeToCamera(facing, position);
+        calcAbsoluteTriangles();
+        calcHitbox();
     }
 
     public Vec3d getPosition() {
@@ -97,5 +132,20 @@ public class TextEntity extends BaseEntity implements IEntity {
 
     public void setFacing(float[] facing) {
         mFacing = facing;
+        updatePosition(mFacing, mPosition);
+    }
+
+    @Override
+    public ArrayList<Triangle> getAbsoluteTriangles(){
+        return super.getAbsoluteTriangles();
+    }
+
+    @Override
+    protected void calcAbsoluteTriangles(){
+        mTriangles.clear();
+        ArrayList<IEntity> entities = mCharSet.getButtonEntities();
+        for (IEntity entity : entities) {
+            mTriangles.addAll( ((ITriangulatedEntity)entity).getAbsoluteTriangles() );
+        }
     }
 }

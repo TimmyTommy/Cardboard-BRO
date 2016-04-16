@@ -109,4 +109,30 @@ public class Triangle {
     public Vec3d getV1V3() {
         return v1v3;
     }
+
+    public Vec3d getMinPoint(){
+        Vec3d min = p1.copy();
+        min.x = min.x<p2.x ? min.x : p2.x;
+        min.y = min.y<p2.y ? min.y : p2.y;
+        min.z = min.z<p2.z ? min.z : p2.z;
+
+        min.x = min.x<p3.x ? min.x : p3.x;
+        min.y = min.y<p3.y ? min.y : p3.y;
+        min.z = min.z<p3.z ? min.z : p3.z;
+
+        return min;
+    }
+
+    public Vec3d getMaxPoint(){
+        Vec3d max = p1.copy();
+        max.x = max.x>p2.x ? max.x : p2.x;
+        max.y = max.y>p2.y ? max.y : p2.y;
+        max.z = max.z>p2.z ? max.z : p2.z;
+
+        max.x = max.x>p3.x ? max.x : p3.x;
+        max.y = max.y>p3.y ? max.y : p3.y;
+        max.z = max.z>p3.z ? max.z : p3.z;
+
+        return max;
+    }
 }
