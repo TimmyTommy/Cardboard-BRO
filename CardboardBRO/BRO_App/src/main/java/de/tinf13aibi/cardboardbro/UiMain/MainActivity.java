@@ -159,6 +159,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
                 }
             })
             .setIcon(android.R.drawable.ic_dialog_alert)
+            .setCancelable(false)
             .show();
     }
 
