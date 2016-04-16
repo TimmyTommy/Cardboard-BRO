@@ -1,6 +1,8 @@
 package de.tinf13aibi.cardboardbro.UiMain;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -45,6 +47,8 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     private InputManagerCompat mInputManager;
     private InputDevice mInputDevice;
+
+    private InputMethod mInputMethod = InputMethod.None;
 
 //    private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
 
@@ -140,10 +144,30 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         }
     }
 
+    private void showAskInputMethodDialog(){
+        new AlertDialog.Builder(this)
+            .setTitle("Eingabemethode")
+            .setMessage("Welche Eingabemethode möchten Sie verwenden?")
+            .setPositiveButton("Nur MYO", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    mInputMethod = InputMethod.MyoOnly;
+                }
+            })
+            .setNegativeButton("MYO + Controller", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    mInputMethod = InputMethod.MyoAndController;
+                }
+            })
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.common_ui);
+
+        showAskInputMethodDialog();
 
         mVibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
@@ -188,9 +212,11 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     @Override
     public void OnPoseChange(Pose previousPose, Pose newPose) {
         mMyoData.setPose(newPose);
-//        mOverlayView.show3DToast("Pose: " + newPose.toString());
-//        InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
-//        mActiveDrawingContext.processInputAction(inputAction);
+        if (mInputMethod == InputMethod.MyoOnly) {
+            mOverlayView.show3DToast("Pose: " + newPose.toString());
+            InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
+            mActiveDrawingContext.processInputAction(inputAction);
+        }
     }
 
     @Override
@@ -200,8 +226,10 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     @Override
     public void OnArmCenterUpdate(Quaternion armForwardCenter) {
-//        mMyoData.setArmForwardCenter(armForwardCenter);
-//        mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
+        if (mInputMethod == InputMethod.MyoOnly){
+            mMyoData.setArmForwardCenter(armForwardCenter);
+            mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
+        }
     }
 
     @Override
@@ -220,6 +248,10 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
                 case WAVE_OUT:
                     return InputAction.DoUndo;
             }
+        } else if (newPose == Pose.FIST) {
+            return InputAction.DoBeginSelect;
+        } else if (previousPose == Pose.FIST) {
+            return InputAction.DoEndSelect;
         }
         return InputAction.DoNothing;
     }
@@ -337,22 +369,25 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        InputAction inputAction = getInputActionByKey(keyCode, event);
-        if (inputAction == InputAction.DoBeginSelect) {
-            mActiveDrawingContext.processInputAction(inputAction);
+        if (mInputMethod == InputMethod.MyoAndController) {
+            InputAction inputAction = getInputActionByKey(keyCode, event);
+            if (inputAction == InputAction.DoBeginSelect) {
+                mActiveDrawingContext.processInputAction(inputAction);
+            }
         }
-
         return true;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        InputAction inputAction = getInputActionByKey(keyCode, event);
-        if (inputAction == InputAction.DoCenter) {
-            mMyoData.setArmForwardCenter(mMyoData.getArmForward());
-            mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
-        } else {
-            mActiveDrawingContext.processInputAction(inputAction);
+        if (mInputMethod == InputMethod.MyoAndController) {
+            InputAction inputAction = getInputActionByKey(keyCode, event);
+            if (inputAction == InputAction.DoCenter) {
+                mMyoData.setArmForwardCenter(mMyoData.getArmForward());
+                mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
+            } else {
+                mActiveDrawingContext.processInputAction(inputAction);
+            }
         }
         return true;
     }
@@ -388,23 +423,26 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
         }
         //System.out.println("x: " + x + " y: " + y);
+
         mActiveDrawingContext.processUserMoving(new Vec3d(-y, 0, x)); //Gedrehten Controller beachten
     }
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        mInputManager.onGenericMotionEvent(event); //TODO evtl Weglassen
-        int eventSource = event.getSource();
-        if ((((eventSource & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
-                ((eventSource & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK))
-                && event.getAction() == MotionEvent.ACTION_MOVE) {
-            int id = event.getDeviceId();
-            if (-1 != id) {
-                final int historySize = event.getHistorySize();
-                for (int i = 0; i < historySize; i++) {
-                    processJoystickInput(event, i);
+        if (mInputMethod == InputMethod.MyoAndController) {
+            mInputManager.onGenericMotionEvent(event); //TODO evtl Weglassen
+            int eventSource = event.getSource();
+            if ((((eventSource & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
+                    ((eventSource & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK))
+                    && event.getAction() == MotionEvent.ACTION_MOVE) {
+                int id = event.getDeviceId();
+                if (-1 != id) {
+                    final int historySize = event.getHistorySize();
+                    for (int i = 0; i < historySize; i++) {
+                        processJoystickInput(event, i);
+                    }
+                    processJoystickInput(event, -1);
                 }
-                processJoystickInput(event, -1);
             }
         }
         return true;
