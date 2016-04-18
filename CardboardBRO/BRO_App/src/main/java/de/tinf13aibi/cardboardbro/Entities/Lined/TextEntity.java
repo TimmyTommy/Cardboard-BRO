@@ -26,6 +26,7 @@ import de.tinf13aibi.cardboardbro.Shader.Textures;
 public class TextEntity extends BaseEntity implements IManySidedEntity {
     private String mText = "";
     private Vec3d mPosition = new Vec3d();
+    private float mSize = 1;
     private float[] mFacing = new float[16];
     private CuboidEntity mHitBox;
     //private ArrayList<TextCharEntity> mTextCharArray = new ArrayList<>();
@@ -77,7 +78,7 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
         }
 
         Vec3d delta = VecMath.calcVecMinusVec(max, min);
-        mHitBox.setAttributes(min, new Vec3d(0,1,0), delta.z, delta.x, delta.y, new float[]{0.5f, 0.5f, 1, 0.5f});
+        mHitBox.setAttributes(min, new Vec3d(0, 1, 0), delta.z, delta.x, delta.y, new float[]{0.5f, 0.5f, 1, 0.5f});
     }
 
     private void transformTextToTextCharEntities(String text){
@@ -97,9 +98,10 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setTextureHandle(ShaderCollection.getTexture(tex));
 
-            float x = -2f*text.length()/2 + 2f * i;
+            float x = -2f*mSize*text.length()/2 + 2f* mSize * i;
 
             Matrix.translateM(entity.getBaseModel(), 0, x, 0, 0);
+            Matrix.scaleM(entity.getBaseModel(), 0, mSize, mSize, mSize);
 
             if (tex != Textures.TextureNone) {
                 mCharSet.addButton(entity);
@@ -115,6 +117,12 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
         mCharSet.setButtonsRelativeToCamera(facing, position);
         calcAbsoluteTriangles();
         calcHitbox();
+    }
+
+    public void updateSize(float size){
+        float limitedSize = size > 5 ? 5 : size;
+        mSize = limitedSize;
+        transformTextToTextCharEntities(mText);
     }
 
     public Vec3d getPosition() {
@@ -133,6 +141,14 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
     public void setFacing(float[] facing) {
         mFacing = facing;
         updatePosition(mFacing, mPosition);
+    }
+
+    public float getSize() {
+        return mSize;
+    }
+
+    public String getText() {
+        return mText;
     }
 
     @Override

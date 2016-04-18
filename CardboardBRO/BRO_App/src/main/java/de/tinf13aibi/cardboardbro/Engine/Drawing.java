@@ -9,7 +9,6 @@ import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
-import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CubeEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderCanvasEntity;
@@ -80,7 +79,7 @@ public class Drawing {
 
     private void setupEntityCreateButtonSet(){
         Class<?>[] appStates = new Class<?>[]{  StateSelectAction.class, StateWaitForBeginFreeLine.class, StateWaitForBeginPolyLinePoint.class, StateWaitForCylinderCenterPoint.class,
-                                                StateWaitForCuboidBasePoint1.class, StateWaitForSphereCenterPoint.class, StateWaitForKeyboardInput.class};
+                                                StateWaitForCuboidBasePoint1.class, StateWaitForSphereCenterPoint.class, StateWaitForTextInput.class};
         Textures[] textures =  new Textures[]{  Textures.TextureButtonBack, Textures.TextureButtonFreeLine, Textures.TextureButtonPolyLine, Textures.TextureButtonCylinder,
                                                 Textures.TextureButtonCuboid, Textures.TextureButtonSphere, Textures.TextureButtonText};
         for (int i=0; i<7; i++) {

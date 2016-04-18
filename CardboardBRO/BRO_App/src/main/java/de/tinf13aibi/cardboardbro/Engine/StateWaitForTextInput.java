@@ -9,10 +9,10 @@ import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 /**
  * Created by dthom on 24.01.2016.
  */
-public class StateWaitForKeyboardInput extends StateBase implements IState {
+public class StateWaitForTextInput extends StateBase implements IState {
     private String mText = "";
 
-    public StateWaitForKeyboardInput(DrawingContext drawingContext) {
+    public StateWaitForTextInput(DrawingContext drawingContext) {
         super(drawingContext);
     }
 
@@ -65,7 +65,7 @@ public class StateWaitForKeyboardInput extends StateBase implements IState {
         String trimmedText = text.trim();
         if (trimmedText.length()>0){
             createTextEntity(trimmedText);
-            changeState(new StateWaitForPlaceTextPoint(mDrawingContext), "Write Text");
+            changeState(new StateWaitForTextPlacePoint(mDrawingContext), "Write Text");
         } else {
             changeState(new StateSelectEntityToCreate(mDrawingContext), "Leave Text Input Mode");
         }
