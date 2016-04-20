@@ -119,8 +119,7 @@ public class User {
         return getCamera();
     }
 
-    public float[] move(){
-
+    private Vec3d calcMovementByControllerInput(){
         //2D Movement über 2D-Blickrichtung + Analogstick
         float[] forwardVec = new float[]{0,0,0,0};
         if (mAcceleration2D.getLength()>0) {
@@ -137,15 +136,24 @@ public class User {
         Vec3d accelerationY = VecMath.calcVecTimesScalar(mAccelerationY, 5);
         acceleration.y = accelerationY.y;
 
+        return acceleration;
+    }
+
+    private Vec3d calcMovementByCardboardButton(){
         //3D Movement über 3D-Blickrichtung + Button am Cardboard
         float[] forwardVec2 = new float[]{0,0,0,0};
         if (mAcceleration3D.getLength()>0) {
             Matrix.multiplyMV(forwardVec2, 0, mInvHeadView, 0, mAcceleration3D.toFloatArray4d(), 0);
         }
-        Vec3d acceleration3D = VecMath.calcVecTimesScalar(new Vec3d(forwardVec2), 5);
+        return VecMath.calcVecTimesScalar(new Vec3d(forwardVec2), 5);
+    }
+
+    public float[] move(){
+        Vec3d acceleration = calcMovementByCardboardButton();
+        Vec3d acceleration3D = calcMovementByControllerInput();
 
         acceleration = VecMath.calcVecPlusVec(acceleration, acceleration3D);
-
+        
         return move(acceleration);
     }
 
