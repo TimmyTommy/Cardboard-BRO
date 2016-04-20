@@ -41,6 +41,18 @@ public class SphereEntity extends BaseEntity implements IManySidedEntity {
         return super.getAbsoluteTriangles();
     }
 
+    @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        setCenter(position);
+        mBaseNormal = baseNormal;
+        recreateGeometry(fix);
+    }
+
+    @Override
+    public Vec3d getBaseVert() {
+        return mCenter;
+    }
+
     private void calcHitbox(){
         Vec3d depthDir = new Vec3d();
         Vec3d widthDir = new Vec3d();

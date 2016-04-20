@@ -38,6 +38,18 @@ public class CylinderEntity extends BaseEntity implements IManySidedEntity {
     }
 
     @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        setCenter(position);
+        mBaseNormal = baseNormal;
+        recreateGeometry(fix);
+    }
+
+    @Override
+    public Vec3d getBaseVert() {
+        return mCenter;
+    }
+
+    @Override
     public CuboidEntity getHitBox() {
         return mHitBox;
     }

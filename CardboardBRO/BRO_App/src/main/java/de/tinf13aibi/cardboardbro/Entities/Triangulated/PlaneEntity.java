@@ -57,6 +57,25 @@ public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
         return super.getAbsoluteTriangles();
     }
 
+    @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        //TODO
+        setCenter(position);
+        mBaseNormal = baseNormal;
+        GeometryStruct geometry = GeomFactory.createPlaneGeom(new Vec3d(0, 0, 0), mBaseNormal, mColor);
+        fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+    }
+
+    @Override
+    public Vec3d getBaseVert() {
+        return mCenter;
+    }
+
+    @Override
+    public Vec3d getBaseNormal() {
+        return mBaseNormal;
+    }
+
     public PlaneEntity(int program, Vec3d center, Vec3d baseNormal, float[] color){
         super(program);
 

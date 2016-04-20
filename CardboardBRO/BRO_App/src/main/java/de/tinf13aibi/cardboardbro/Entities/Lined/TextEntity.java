@@ -157,6 +157,24 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
     }
 
     @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        //TODO
+        updatePosition(mFacing, position);
+        //mBaseNormal = baseNormal;
+        //recreateGeometry(fix);
+    }
+
+    @Override
+    public Vec3d getBaseVert() {
+        return new Vec3d();
+    }
+
+    @Override
+    public Vec3d getBaseNormal() {
+        return new Vec3d();
+    }
+
+    @Override
     protected void calcAbsoluteTriangles(){
         mTriangles.clear();
         ArrayList<IEntity> entities = mCharSet.getButtonEntities();

@@ -20,6 +20,21 @@ public class CylinderCanvasEntity extends BaseEntity implements ITriangulatedEnt
         return super.getAbsoluteTriangles();
     }
 
+    @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        //TODO
+    }
+
+    @Override
+    public Vec3d getBaseVert() {
+        return new Vec3d();
+    }
+
+    @Override
+    public Vec3d getBaseNormal() {
+        return new Vec3d();
+    }
+
     public CylinderCanvasEntity(int program){
         super(program);
         GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), new Vec3d(0, 1, 0), Constants.CANVAS_CYL_RADIUS, Constants.CANVAS_CYL_HEIGHT, GeometryDatabase.CANVAS_CYL_COLOR, true);

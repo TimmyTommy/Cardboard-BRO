@@ -16,6 +16,7 @@ import de.tinf13aibi.cardboardbro.Engine.StateSelectAction;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryDatabase;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
+import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
 /**
  * Created by dth on 01.12.2015.
@@ -37,6 +38,21 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
     @Override
     public ArrayList<Triangle> getAbsoluteTriangles(){
         return super.getAbsoluteTriangles();
+    }
+
+    @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        //TODO
+    }
+
+    @Override
+    public Vec3d getBaseVert() {
+        return new Vec3d();
+    }
+
+    @Override
+    public Vec3d getBaseNormal() {
+        return new Vec3d();
     }
 
     public ButtonEntity(int program){

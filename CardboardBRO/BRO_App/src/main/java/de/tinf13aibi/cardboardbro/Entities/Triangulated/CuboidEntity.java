@@ -28,6 +28,13 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
         return super.getAbsoluteTriangles();
     }
 
+    @Override
+    public void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix) {
+        setBaseVert(position);
+        mBaseNormal = baseNormal;
+        recreateGeometry(fix);
+    }
+
     private void recreateGeometry(boolean fix){
         GeometryStruct geometry = GeomFactory.createCuboidGeom(new Vec3d(0, 0, 0), mBaseNormal, mDepth, mWidth, mHeight, mColor, false);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);

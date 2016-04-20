@@ -153,7 +153,7 @@ public class User {
         Vec3d acceleration3D = calcMovementByControllerInput();
 
         acceleration = VecMath.calcVecPlusVec(acceleration, acceleration3D);
-        
+
         return move(acceleration);
     }
 
