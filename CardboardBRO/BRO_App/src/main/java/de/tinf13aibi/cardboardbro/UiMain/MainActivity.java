@@ -3,6 +3,7 @@ package de.tinf13aibi.cardboardbro.UiMain;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -23,6 +24,7 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.thalmic.myo.Hub;
 import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
+import com.thalmic.myo.scanner.ScanActivity;
 
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
 import de.tinf13aibi.cardboardbro.Engine.InputAction;
@@ -99,11 +101,11 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, -1));
+                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, -1), InputAction.DoMoveIn3D);
 //                        mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
-                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, 0));
+                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, 0), InputAction.DoMoveIn3D);
 
 //                        Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
 //                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
@@ -167,6 +169,9 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.common_ui);
+
+        Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+        startActivity(intent);
 
         showAskInputMethodDialog();
 
@@ -357,10 +362,14 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
                     }
                 case KeyEvent.KEYCODE_BUTTON_B:
                     return InputAction.DoStateBack;
-                case KeyEvent.KEYCODE_BUTTON_A:
-                    return InputAction.DoUndo;
+//                case KeyEvent.KEYCODE_BUTTON_A:
+//                    return InputAction.DoUndo;
                 case KeyEvent.KEYCODE_BUTTON_SELECT:
                     return InputAction.DoCenter;
+                case KeyEvent.KEYCODE_BUTTON_A:
+                    return InputAction.DoMoveUp;
+                case KeyEvent.KEYCODE_BUTTON_Y:
+                    return InputAction.DoMoveDown;
                 default:
                     return InputAction.DoNothing;
             }
@@ -374,6 +383,10 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             InputAction inputAction = getInputActionByKey(keyCode, event);
             if (inputAction == InputAction.DoBeginSelect) {
                 mActiveDrawingContext.processInputAction(inputAction);
+            } else if (inputAction == InputAction.DoMoveDown){
+                mActiveDrawingContext.processUserMoving(new Vec3d(0, -1, 0), inputAction);
+            } else if (inputAction == InputAction.DoMoveUp){
+                mActiveDrawingContext.processUserMoving(new Vec3d(0, 1, 0), inputAction);
             }
         }
         return true;
@@ -386,6 +399,10 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             if (inputAction == InputAction.DoCenter) {
                 mMyoData.setArmForwardCenter(mMyoData.getArmForward());
                 mMyoData.setCenterHeadViewMat(mActiveDrawingContext.getUser().getInvHeadView());
+            } else if (inputAction == InputAction.DoMoveDown){
+                mActiveDrawingContext.processUserMoving(new Vec3d(), inputAction);
+            } else if (inputAction == InputAction.DoMoveUp){
+                mActiveDrawingContext.processUserMoving(new Vec3d(), inputAction);
             } else {
                 mActiveDrawingContext.processInputAction(inputAction);
             }
@@ -425,7 +442,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         }
         //System.out.println("x: " + x + " y: " + y);
 
-        mActiveDrawingContext.processUserMoving(new Vec3d(-y, 0, x)); //Gedrehten Controller beachten
+        mActiveDrawingContext.processUserMoving(new Vec3d(-y, 0, x), InputAction.DoMoveInPlane); //Gedrehten Controller beachten
     }
 
     @Override

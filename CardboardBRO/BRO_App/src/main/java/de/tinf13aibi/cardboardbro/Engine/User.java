@@ -42,7 +42,11 @@ public class User {
 
     private Date mLastUpdate = new Date();
 
-    private Vec3d mAcceleration = new Vec3d();
+    private Vec3d mAcceleration3D = new Vec3d();
+
+    private Vec3d mAcceleration2D = new Vec3d();
+
+    private Vec3d mAccelerationY = new Vec3d();
 
     public void drawCrosshairs(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         if (mEyeCrosshair != null) {
@@ -116,16 +120,36 @@ public class User {
     }
 
     public float[] move(){
+
+        //2D Movement über 2D-Blickrichtung + Analogstick
         float[] forwardVec = new float[]{0,0,0,0};
-        if (mAcceleration.getLength()>0) {
-            Matrix.multiplyMV(forwardVec, 0, mInvHeadView, 0, mAcceleration.toFloatArray4d(), 0);
+        if (mAcceleration2D.getLength()>0) {
+            Matrix.multiplyMV(forwardVec, 0, mInvHeadView, 0, mAcceleration2D.toFloatArray4d(), 0);
         }
-        Vec3d acceleration = VecMath.calcVecTimesScalar(new Vec3d(forwardVec), 5);
+        Vec3d acceleration = new Vec3d(forwardVec);
+        acceleration.y = 0;
+        if (acceleration.getLength()>0) {
+            Vec3d normalizedAcceleration = VecMath.calcNormalizedVector(acceleration);
+            acceleration = VecMath.calcVecTimesScalar(normalizedAcceleration, 5);
+        }
+
+        //Y-Movement über Controller-Buttons
+        Vec3d accelerationY = VecMath.calcVecTimesScalar(mAccelerationY, 5);
+        acceleration.y = accelerationY.y;
+
+        //3D Movement über 3D-Blickrichtung + Button am Cardboard
+        float[] forwardVec2 = new float[]{0,0,0,0};
+        if (mAcceleration3D.getLength()>0) {
+            Matrix.multiplyMV(forwardVec2, 0, mInvHeadView, 0, mAcceleration3D.toFloatArray4d(), 0);
+        }
+        Vec3d acceleration3D = VecMath.calcVecTimesScalar(new Vec3d(forwardVec2), 5);
+
+        acceleration = VecMath.calcVecPlusVec(acceleration, acceleration3D);
 
         return move(acceleration);
     }
 
-    public float[] move(Vec3d acceleration){
+    private float[] move(Vec3d acceleration){
         Date timeDelta = new Date(new Date().getTime()-mLastUpdate.getTime());
         float timeSeconds = timeDelta.getTime() * 0.001f;
         mLastUpdate = new Date();
@@ -247,12 +271,28 @@ public class User {
         return mArmCrosshair;
     }
 
-    public Vec3d getAcceleration() {
-        return mAcceleration;
+    public Vec3d getAcceleration3D() {
+        return mAcceleration3D;
     }
 
-    public void setAcceleration(Vec3d acceleration) {
-        mAcceleration = acceleration;
+    public void setAcceleration3D(Vec3d mAcceleration3D) {
+        this.mAcceleration3D = mAcceleration3D;
+    }
+
+    public Vec3d getAcceleration2D() {
+        return mAcceleration2D;
+    }
+
+    public void setAcceleration2D(Vec3d acceleration) {
+        mAcceleration2D = acceleration;
+    }
+
+    public Vec3d getAccelerationY() {
+        return mAccelerationY;
+    }
+
+    public void setAccelerationY(Vec3d mAccelerationY) {
+        this.mAccelerationY = mAccelerationY;
     }
 
     public void setArmForward(Vec3d armForward) {

@@ -39,8 +39,8 @@ public class DrawingContext implements IState{
     }
 
     @Override
-    public void processUserMoving(Vec3d acceleration) {
-        if (isActiveDrawingContext()) mState.processUserMoving(acceleration);
+    public void processUserMoving(Vec3d acceleration, InputAction inputAction) {
+        if (isActiveDrawingContext()) mState.processUserMoving(acceleration, inputAction);
     }
 
     public IEntity getEditingEntity() {

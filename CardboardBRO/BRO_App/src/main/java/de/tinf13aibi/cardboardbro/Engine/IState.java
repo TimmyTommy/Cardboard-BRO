@@ -9,5 +9,5 @@ public interface IState {
     void processOnNewFrame(float[] headView, Vec3d armForwardVec);
     void processOnDrawEye(float[] view, float[] perspective, float[] lightPosInEyeSpace);
     void processInputAction(InputAction inputAction);
-    void processUserMoving(Vec3d acceleration);
+    void processUserMoving(Vec3d acceleration, InputAction inputAction);
 }

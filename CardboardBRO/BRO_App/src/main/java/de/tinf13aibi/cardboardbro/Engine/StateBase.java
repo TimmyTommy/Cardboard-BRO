@@ -45,8 +45,19 @@ public abstract class StateBase implements IState {
     }
 
     @Override
-    public void processUserMoving(Vec3d acceleration) {
-        mUser.setAcceleration(acceleration);
+    public void processUserMoving(Vec3d acceleration, InputAction inputAction) {
+        switch (inputAction){
+            case DoMoveIn3D:
+                mUser.setAcceleration3D(acceleration);
+                break;
+            case DoMoveDown:
+            case DoMoveUp:
+                mUser.setAccelerationY(acceleration);
+                break;
+            case DoMoveInPlane:
+                mUser.setAcceleration2D(acceleration);
+                break;
+        }
         if (acceleration.getLength()>0) {
             mOverlayView.show3DToast("Accelerating");
         } else {

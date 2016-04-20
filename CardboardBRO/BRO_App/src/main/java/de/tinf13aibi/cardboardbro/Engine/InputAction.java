@@ -9,5 +9,9 @@ public enum InputAction {
     DoEndSelect,
     DoStateBack,
     DoCenter,
+    DoMoveIn3D,
+    DoMoveInPlane,
+    DoMoveUp,
+    DoMoveDown,
     DoUndo
 }
