@@ -101,9 +101,9 @@ public class Drawing {
     }
 
     private void setupEntityActionButtonSet(){
-        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToMove.class, StateSelectEntityToCreate.class, StateSelectEntityToDelete.class};
-        Textures[] textures =  new Textures[]{Textures.TextureButtonMoveEntity, Textures.TextureButtonCreateEntity, Textures.TextureButtonDeleteEntity };
-        for (int i=0; i<3; i++) {
+        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToMove.class, StateSelectEntityToMove.class, StateSelectEntityToCreate.class, StateSelectEntityToDelete.class};
+        Textures[] textures =  new Textures[]{Textures.TextureButtonMoveEntity, Textures.TextureButtonCopyEntity, Textures.TextureButtonCreateEntity, Textures.TextureButtonDeleteEntity };
+        for (int i=0; i<4; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setNextState(appStates[i])
                     .setTextureHandle(ShaderCollection.getTexture(textures[i]));

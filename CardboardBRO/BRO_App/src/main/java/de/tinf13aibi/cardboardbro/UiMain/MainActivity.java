@@ -278,6 +278,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     private void initTextures(){
         ShaderCollection.loadTexture(this, Textures.TextureButtonCreateEntity,  R.drawable.button_create);
+        ShaderCollection.loadTexture(this, Textures.TextureButtonCopyEntity,    R.drawable.button_copy);
         ShaderCollection.loadTexture(this, Textures.TextureButtonMoveEntity,    R.drawable.button_move);
         ShaderCollection.loadTexture(this, Textures.TextureButtonDeleteEntity,  R.drawable.button_delete);
 
