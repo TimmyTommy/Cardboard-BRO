@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IManySidedEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
@@ -103,6 +104,13 @@ public class SphereEntity extends BaseEntity implements IManySidedEntity {
 
     public Vec3d getBaseNormal() {
         return mBaseNormal;
+    }
+
+    @Override
+    public ITriangulatedEntity clone() {
+        SphereEntity ent = new SphereEntity(mProgram);
+        ent.setAttributes(getBaseVert(), getBaseNormal(), getRadius(), getColor());
+        return ent;
     }
 
     public void setBaseNormal(Vec3d baseNormal) {

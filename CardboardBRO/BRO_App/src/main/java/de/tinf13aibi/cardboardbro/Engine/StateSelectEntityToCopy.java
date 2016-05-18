@@ -2,6 +2,7 @@ package de.tinf13aibi.cardboardbro.Engine;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 
@@ -34,12 +35,13 @@ public class StateSelectEntityToCopy  extends StateBase implements IState {
 
     private void grabEntityPointingAt(IntersectionTriangle intersectionPoint){
         if (intersectionPoint != null) {
-            IEntity entity = intersectionPoint.entity;
-            if (entity != null) {
+            if (intersectionPoint.entity instanceof ITriangulatedEntity) {
                 //TODO Clone
-                entity = BaseEntity.clone(entity);
+                ITriangulatedEntity entity = (ITriangulatedEntity)intersectionPoint.entity;
+                entity = entity.clone();
+                mDrawing.getEntityList().add(entity);
                 mDrawingContext.setEditingEntity(entity);
-                changeState(new StateWaitForEntityPlacePoint(mDrawingContext), "Grabbed Entity");
+                changeState(new StateWaitForEntityPlaceCopyPoint(mDrawingContext), "Grabbed Entity");
             }
         }
     }

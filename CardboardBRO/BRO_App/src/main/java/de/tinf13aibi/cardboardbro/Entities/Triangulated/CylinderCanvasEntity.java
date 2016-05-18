@@ -35,6 +35,12 @@ public class CylinderCanvasEntity extends BaseEntity implements ITriangulatedEnt
         return new Vec3d();
     }
 
+    @Override
+    public ITriangulatedEntity clone() {
+        CylinderCanvasEntity ent = new CylinderCanvasEntity(mProgram);
+        return ent;
+    }
+
     public CylinderCanvasEntity(int program){
         super(program);
         GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), new Vec3d(0, 1, 0), Constants.CANVAS_CYL_RADIUS, Constants.CANVAS_CYL_HEIGHT, GeometryDatabase.CANVAS_CYL_COLOR, true);

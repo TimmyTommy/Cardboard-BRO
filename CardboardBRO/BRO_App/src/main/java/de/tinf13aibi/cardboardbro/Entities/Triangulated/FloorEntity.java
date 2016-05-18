@@ -32,6 +32,12 @@ public class FloorEntity extends BaseEntity implements ITriangulatedEntity {
         return new Vec3d();
     }
 
+    @Override
+    public ITriangulatedEntity clone() {
+        //TODO
+        return null;
+    }
+
     public FloorEntity(int program){
         super(program);
         fillBuffers(GeometryDatabase.FLOOR_COORDS, GeometryDatabase.FLOOR_NORMALS, GeometryDatabase.FLOOR_COLORS);

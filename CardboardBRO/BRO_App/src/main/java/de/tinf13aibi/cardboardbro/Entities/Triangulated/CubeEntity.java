@@ -39,6 +39,13 @@ public class CubeEntity extends BaseEntity implements ITriangulatedEntity {
         return new Vec3d();
     }
 
+    @Override
+    public ITriangulatedEntity clone() {
+        CubeEntity ent = new CubeEntity(mProgram);
+        ent.setPositionAndOrientation(getBaseVert(), getBaseNormal(), true);
+        return ent;
+    }
+
     public CubeEntity(int program){
         super(program);
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);

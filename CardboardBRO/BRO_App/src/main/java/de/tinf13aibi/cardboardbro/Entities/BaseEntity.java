@@ -3,7 +3,6 @@ package de.tinf13aibi.cardboardbro.Entities;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -46,24 +45,6 @@ public abstract class BaseEntity implements IEntity {
 
     public int getProgram() {
         return mProgram;
-    }
-
-    public static IEntity clone(IEntity entity){
-        int prog = ((BaseEntity)entity).getProgram();
-        IEntity ent = null;
-        try {
-            ent = entity.getClass().getConstructor(Integer.class).newInstance(prog);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return ent;
-        //return new StateSelectAction(drawingContext);
     }
 
     public ArrayList<Vec3d> getAbsoluteCoords(){

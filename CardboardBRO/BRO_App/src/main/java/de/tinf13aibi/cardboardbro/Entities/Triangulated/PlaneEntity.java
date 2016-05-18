@@ -76,6 +76,12 @@ public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
         return mBaseNormal;
     }
 
+    @Override
+    public ITriangulatedEntity clone() {
+        PlaneEntity ent = new PlaneEntity(mProgram, new Vec3d(0, 0, 0), getBaseNormal(), mColor);
+        return ent;
+    }
+
     public PlaneEntity(int program, Vec3d center, Vec3d baseNormal, float[] color){
         super(program);
 

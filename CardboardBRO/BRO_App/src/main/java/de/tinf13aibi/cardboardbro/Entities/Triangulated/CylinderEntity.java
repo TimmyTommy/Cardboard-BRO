@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IManySidedEntity;
+import de.tinf13aibi.cardboardbro.Entities.Interfaces.ITriangulatedEntity;
 import de.tinf13aibi.cardboardbro.Geometry.GeomFactory;
 import de.tinf13aibi.cardboardbro.Geometry.GeometryStruct;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Triangle;
@@ -111,6 +112,13 @@ public class CylinderEntity extends BaseEntity implements IManySidedEntity {
 
     public Vec3d getBaseNormal() {
         return mBaseNormal;
+    }
+
+    @Override
+    public ITriangulatedEntity clone() {
+        CylinderEntity ent = new CylinderEntity(mProgram);
+        ent.setAttributes(getBaseVert(), getBaseNormal(), getRadius(), getHeight(), getColor());
+        return ent;
     }
 
     public void setBaseNormal(Vec3d baseNormal) {

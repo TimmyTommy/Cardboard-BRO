@@ -13,4 +13,5 @@ public interface ITriangulatedEntity extends IEntity{
     void setPositionAndOrientation(Vec3d position, Vec3d baseNormal, boolean fix);
     Vec3d getBaseVert();
     Vec3d getBaseNormal();
+    ITriangulatedEntity clone();
 }

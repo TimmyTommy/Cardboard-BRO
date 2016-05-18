@@ -95,6 +95,13 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
         return mBaseNormal;
     }
 
+    @Override
+    public ITriangulatedEntity clone() {
+        CuboidEntity ent = new CuboidEntity(mProgram);
+        ent.setAttributes(getBaseVert(), getBaseNormal(), getDepth(), getWidth(), getHeight(), getColor());
+        return ent;
+    }
+
     public void setBaseNormal(Vec3d baseNormal) {
         mBaseNormal = baseNormal;
         recreateGeometry(true);

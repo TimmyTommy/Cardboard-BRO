@@ -175,6 +175,12 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
     }
 
     @Override
+    public ITriangulatedEntity clone() {
+        TextEntity ent = new TextEntity(mText, mFacing, mPosition);
+        return ent;
+    }
+
+    @Override
     protected void calcAbsoluteTriangles(){
         mTriangles.clear();
         ArrayList<IEntity> entities = mCharSet.getButtonEntities();

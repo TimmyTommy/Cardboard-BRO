@@ -55,6 +55,12 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
         return new Vec3d();
     }
 
+    @Override
+    public ITriangulatedEntity clone() {
+        //TODO
+        return null;
+    }
+
     public ButtonEntity(int program){
         super(program);
 //        fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);

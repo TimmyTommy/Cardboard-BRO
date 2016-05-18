@@ -101,7 +101,7 @@ public class Drawing {
     }
 
     private void setupEntityActionButtonSet(){
-        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToMove.class, StateSelectEntityToMove.class, StateSelectEntityToCreate.class, StateSelectEntityToDelete.class};
+        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToMove.class, StateSelectEntityToCopy.class, StateSelectEntityToCreate.class, StateSelectEntityToDelete.class};
         Textures[] textures =  new Textures[]{Textures.TextureButtonMoveEntity, Textures.TextureButtonCopyEntity, Textures.TextureButtonCreateEntity, Textures.TextureButtonDeleteEntity };
         for (int i=0; i<4; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
@@ -111,7 +111,7 @@ public class Drawing {
 
 //            float y = -0.13f;
             float y = 0;
-            Matrix.translateM(entity.getBaseModel(), 0, -0.06f+0.06f*i, y, -0.3f);
+            Matrix.translateM(entity.getBaseModel(), 0, -0.09f+0.06f*i, y, -0.3f);
             Matrix.scaleM(entity.getBaseModel(), 0, 0.025f, 0.025f, 0.006f);
 
 //            float y = -0.065f;
