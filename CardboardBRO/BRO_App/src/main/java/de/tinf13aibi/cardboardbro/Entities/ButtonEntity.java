@@ -3,6 +3,10 @@ package de.tinf13aibi.cardboardbro.Entities;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -157,5 +161,22 @@ public class ButtonEntity extends BaseEntity implements ITriangulatedEntity {
         GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVerticesCount);
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
     }
 }

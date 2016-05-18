@@ -3,6 +3,10 @@ package de.tinf13aibi.cardboardbro.Entities.Lined;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Engine.Constants;
@@ -42,6 +46,47 @@ public class PolyLineEntity extends BaseEntity implements IEntity {
         GLES20.glLineWidth(5);
         GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, mPolyLinePoints.size());
         GLES20.glLineWidth(1);
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        json.put("mColor", new JSONArray(mColor));
+
+        JSONArray jsonArray = new JSONArray();
+        for (Vec3d point: mPolyLinePoints) {
+            jsonArray.put(point.toJsonArray());
+        }
+        json.put("mPolyLinePoints", jsonArray);
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
+
+        JSONArray jsonColor = jsonEntity.optJSONArray("mColor");
+        for (int i = 0; i < jsonColor.length(); i++) {
+            mColor[i] = (float)jsonColor.optDouble(i);
+        }
+
+        mPolyLinePoints.clear();
+        JSONArray jsonPoints = jsonEntity.optJSONArray("mPolyLinePoints");
+        for (int i = 0; i < jsonPoints.length(); i++) {
+            JSONArray jsonPoint = jsonPoints.optJSONArray(i);
+            Vec3d point = new Vec3d(jsonPoint);
+            mPolyLinePoints.add(point);
+        }
+
+        mCoords = transformPointsToCoords(mPolyLinePoints);
+        fillBufferVertices(mCoords);
     }
 
     private float[] transformPointsToCoords(ArrayList<Vec3d> points){

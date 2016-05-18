@@ -3,6 +3,10 @@ package de.tinf13aibi.cardboardbro.Entities.Lined;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import de.tinf13aibi.cardboardbro.Engine.Constants;
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
@@ -12,13 +16,13 @@ import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
  * Created by dth on 27.11.2015.
  */
 public class LineEntity extends BaseEntity implements IEntity {
-    private float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    private float mColor[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
     public void setColor(float red, float green, float blue, float alpha) {
-        color[0] = red;
-        color[1] = green;
-        color[2] = blue;
-        color[3] = alpha;
+        mColor[0] = red;
+        mColor[1] = green;
+        mColor[2] = blue;
+        mColor[3] = alpha;
     }
 
     @Override
@@ -33,13 +37,42 @@ public class LineEntity extends BaseEntity implements IEntity {
         Matrix.multiplyMM(modelView, 0, view, 0, mModel, 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
-        GLES20.glUniform4fv(mColorParam, 1, color, 0);
+        GLES20.glUniform4fv(mColorParam, 1, mColor, 0);
         GLES20.glUniformMatrix4fv(mModelViewProjectionParam, 1, false, modelViewProjection, 0);
         GLES20.glVertexAttribPointer(mPositionParam, Constants.COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, mVertices);
 
         GLES20.glLineWidth(3);
         GLES20.glDrawArrays(GLES20.GL_LINES, 0, mVerticesCount);
         GLES20.glLineWidth(1);
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        json.put("mCoords", super.getCoordsToJson());
+
+        json.put("mColor", new JSONArray(mColor));
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
+        setCoordsFromJson(jsonEntity.optJSONArray("mCoords"));
+
+        JSONArray jsonColor = jsonEntity.optJSONArray("mColor");
+        for (int i = 0; i < jsonColor.length(); i++) {
+            mColor[i] = (float)jsonColor.optDouble(i);
+        }
+
+        fillBufferVertices(mCoords);
     }
 
     public void setVerts(Vec3d from, Vec3d to) {

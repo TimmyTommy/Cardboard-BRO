@@ -2,6 +2,11 @@ package de.tinf13aibi.cardboardbro.Engine;
 
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
@@ -9,6 +14,11 @@ import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Entities.ButtonSet;
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.CrosshairEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.LineEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.PolyLineEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.TextCharEntity;
+import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CubeEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CuboidEntity;
 import de.tinf13aibi.cardboardbro.Entities.Triangulated.CylinderCanvasEntity;
@@ -33,6 +43,73 @@ public class Drawing {
     private Plane mTempWorkingPlane;
     private CylinderCanvasEntity mCylinderCanvasEntity;
     private FloorEntity mFloorEntity;
+
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("mEntityList", getEntityListToJsonObject());
+
+
+        return json;
+    }
+
+    public JSONArray getEntityListToJsonObject() throws JSONException {
+        JSONArray json = new JSONArray();
+        for (IEntity entity : mEntityList) {
+            json.put(entity.toJsonObject());
+        }
+        return json;
+    }
+
+    private IEntity loadEntityFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        String className = jsonEntity.optString("class");
+        IEntity entity = null;
+        if (className != null) {
+            if (className.equals(CubeEntity.class.toString())){
+                entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            } else if (className.equals(CuboidEntity.class.toString())){
+                entity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            } else if (className.equals(CylinderEntity.class.toString())){
+                entity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            } else if (className.equals(SphereEntity.class.toString())){
+                entity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            } else if (className.equals(LineEntity.class.toString())){
+                entity = new LineEntity(ShaderCollection.getProgram(Programs.LineProgram));
+            } else if (className.equals(PolyLineEntity.class.toString())){
+                entity = new PolyLineEntity(ShaderCollection.getProgram(Programs.LineProgram));
+            } else if (className.equals(TextEntity.class.toString())){
+                entity = new TextEntity();
+            } else if (className.equals(CylinderCanvasEntity.class.toString())){
+                entity = new CylinderCanvasEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+            } else if (className.equals(FloorEntity.class.toString())){
+                entity = new FloorEntity(ShaderCollection.getProgram(Programs.GridProgram));
+            } else if (className.equals(CrosshairEntity.class.toString())){
+                entity = new CrosshairEntity(ShaderCollection.getProgram(Programs.LineProgram));
+            }
+            if (entity != null) {
+                entity.loadFromJsonObject(jsonEntity);
+            }
+        }
+        return entity;
+    }
+
+    private void loadEntityListFromJsonObject(JSONArray jsonEntityList) throws JSONException {
+        mEntityList.clear();
+        for (int i = 0; i<jsonEntityList.length(); i++) {
+            JSONObject jsonEntity = jsonEntityList.getJSONObject(i);
+            IEntity entity = loadEntityFromJsonObject(jsonEntity);
+            if (entity != null){
+                mEntityList.add(entity);
+            }
+        }
+    }
+
+    public void loadFromJson(JSONObject jsonDrawing) throws JSONException {
+        JSONArray jsonEntityList = jsonDrawing.optJSONArray("mEntityList");
+        if (jsonEntityList != null) {
+            loadEntityListFromJsonObject(jsonEntityList);
+        }
+    }
 
     public void drawEntityList(float[] view, float[] perspective, float[] lightPosInEyeSpace){
         for (int i = 0; i < mEntityList.size(); i++) {

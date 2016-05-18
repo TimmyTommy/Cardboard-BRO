@@ -2,6 +2,10 @@ package de.tinf13aibi.cardboardbro.Entities.Triangulated;
 
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
@@ -42,6 +46,7 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
             calcAbsoluteTriangles();
         }
     }
+
     public CuboidEntity(int program){
         super(program);
         recreateGeometry(true);
@@ -124,6 +129,44 @@ public class CuboidEntity extends BaseEntity implements ITriangulatedEntity {
         mWidth = width;
         mHeight = height;
         mColor = color;
+        recreateGeometry(true);
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        json.put("mWidth", mWidth);
+        json.put("mDepth", mDepth);
+        json.put("mHeight", mHeight);
+        json.put("mBaseVert", mBaseVert.toJsonArray());
+        json.put("mBaseNormal", mBaseNormal.toJsonArray());
+        json.put("mColor", new JSONArray(mColor));
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
+
+        mWidth = (float)jsonEntity.optDouble("mWidth");
+        mDepth = (float)jsonEntity.optDouble("mDepth");
+        mHeight = (float)jsonEntity.optDouble("mHeight");
+
+        mBaseVert = new Vec3d(jsonEntity.optJSONArray("mBaseVert"));
+        mBaseNormal = new Vec3d(jsonEntity.optJSONArray("mBaseNormal"));
+
+        JSONArray jsonColor = jsonEntity.optJSONArray("mColor");
+        for (int i = 0; i < jsonColor.length(); i++) {
+            mColor[i] = (float)jsonColor.optDouble(i);
+        }
+
         recreateGeometry(true);
     }
 }

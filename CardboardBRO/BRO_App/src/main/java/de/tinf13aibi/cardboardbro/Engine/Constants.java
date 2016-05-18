@@ -22,4 +22,5 @@ public interface Constants {
     float TIME_DELTA = 0.3f;
     float FLOOR_DEPTH = 0f;
 
+    boolean DEBUG_FLAG = false;
 }

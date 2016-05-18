@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Entities.Interfaces;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.EntityDisplayType;
@@ -16,4 +19,6 @@ public interface IEntity {
     EntityDisplayType getDisplayType();
     void resetModelToBase();
     ArrayList<Vec3d> getAbsoluteCoords();
+    JSONObject toJsonObject() throws JSONException;
+    void loadFromJsonObject(JSONObject jsonEntity) throws JSONException;
 }

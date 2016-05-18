@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Entities.Triangulated;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Engine.Constants;
@@ -41,10 +44,35 @@ public class CylinderCanvasEntity extends BaseEntity implements ITriangulatedEnt
         return ent;
     }
 
-    public CylinderCanvasEntity(int program){
-        super(program);
+    private void recreateGeometry(boolean fix){
         GeometryStruct geometry = GeomFactory.createCylinderGeom(new Vec3d(0, 0, 0), new Vec3d(0, 1, 0), Constants.CANVAS_CYL_RADIUS, Constants.CANVAS_CYL_HEIGHT, GeometryDatabase.CANVAS_CYL_COLOR, true);
         fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
-        calcAbsoluteTriangles();
+        if (fix) {
+            calcAbsoluteTriangles();
+        }
+    }
+
+    public CylinderCanvasEntity(int program){
+        super(program);
+        recreateGeometry(true);
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
+
+        recreateGeometry(true);
     }
 }

@@ -1,6 +1,7 @@
 package de.tinf13aibi.cardboardbro.Engine;
 
 import android.os.Vibrator;
+import android.util.Log;
 
 import de.tinf13aibi.cardboardbro.Entities.ButtonEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Intersection.IntersectionTriangle;
@@ -41,6 +42,7 @@ public abstract class StateBase implements IState {
     protected void changeState(IState state, String message){ //TODO funktion abändern
         mDrawingContext.setState(state);
         mVibrator.vibrate(50);
+        Log.i("CHANGE_STATE", message + " -> " + state.getClass());
 //        mOverlayView.show3DToast(message + " -> " + state.getClass());
     }
 

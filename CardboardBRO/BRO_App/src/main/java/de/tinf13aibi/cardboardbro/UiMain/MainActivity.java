@@ -11,11 +11,13 @@ import android.hardware.SensorManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
+import de.tinf13aibi.cardboardbro.Engine.Constants;
 import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.UiMain.InputManagerCompat.InputDeviceListener;
 
@@ -26,6 +28,12 @@ import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
 import com.thalmic.myo.scanner.ScanActivity;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
@@ -53,6 +61,9 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     private InputDevice mInputDevice;
 
     private InputMethod mInputMethod = InputMethod.None;
+
+    private String mConfigDir;
+    private File mConfigFile;
 
     private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
 
@@ -103,19 +114,23 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, -1), InputAction.DoMoveIn3D);
+                        if (!Constants.DEBUG_FLAG) {
+                            mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, -1), InputAction.DoMoveIn3D);
+                        }
                         mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
                         mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, 0), InputAction.DoMoveIn3D);
 
-//                        Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
-//                        float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
-//                        if (timeSeconds <= 1) { //Wechsel von FIST auf REST imitieren
-//                            OnPoseChange(Pose.FIST, Pose.REST);
-//                        } else if (timeSeconds > 1) {  //Wechsel von FINGERS_SPREAD auf REST imitieren
-//                            OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
-//                        }
+                        if (Constants.DEBUG_FLAG) {
+                            Date diffBetweenDownAndUp = new Date(new Date().getTime() - mClickTime.getTime());
+                            float timeSeconds = diffBetweenDownAndUp.getTime() * 0.001f;
+                            if (timeSeconds <= 1) { //Wechsel von FIST auf REST imitieren
+                                OnPoseChange(Pose.FIST, Pose.REST);
+                            } else if (timeSeconds > 1) {  //Wechsel von FINGERS_SPREAD auf REST imitieren
+                                OnPoseChange(Pose.FINGERS_SPREAD, Pose.REST);
+                            }
+                        }
                 }
                 return false;
             }
@@ -172,6 +187,8 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.common_ui);
 
+        initializeFiles();
+
         Intent intent = new Intent(MainActivity.this, ScanActivity.class);
         startActivity(intent);
 
@@ -184,12 +201,27 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         mCardboardView.setOnCardboardBackButtonListener(new Runnable() {
             @Override
             public void run() {
-                onBackPressed();
+                try {
+                    saveDrawing();
+                    onBackPressed();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
         mActiveDrawingContext = new DrawingContext(this);
         mActiveDrawingContext.setActiveDrawingContext();
+//        try {
+//            JSONObject jsonDrawingContext = loadDrawingContext(mConfigFile);
+//            mActiveDrawingContext.loadFromJson(jsonDrawingContext);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         initOnTouchListener();
         //initOnStepListener();
@@ -198,6 +230,54 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
         mInputManager = InputManagerCompat.Factory.getInputManager(this);
         mInputManager.registerInputDeviceListener(this, null);
+    }
+
+    public void loadDrawingContext() {
+        if (mConfigFile.exists()){
+            try {
+                String jsonFileString = FileManager.getStringFromFile(mConfigFile.getAbsolutePath());
+                JSONObject jsonObject = new JSONObject(jsonFileString);
+                mActiveDrawingContext.loadFromJson(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private JSONObject loadDrawingContext(File file) throws JSONException, IOException {
+        JSONObject jsonObject = new JSONObject();
+        if (file.exists()){
+            String jsonFileString = FileManager.getStringFromFile(file.getAbsolutePath());
+            jsonObject = new JSONObject(jsonFileString);
+        }
+        return jsonObject;
+    }
+
+    private String getSaveFileDir(String folder) {
+        String fileDirPath = getFilesDir().getAbsolutePath();
+        File file = new File(fileDirPath + "/" + folder);
+        file.mkdir();
+        if (!file.isDirectory()) {
+            mOverlayView.show3DToast("Die benötigten Ordner für die Anwendung konnten nicht angelegt werden.");
+        }
+        return file.getAbsolutePath();
+    }
+
+    private void initializeFiles() {
+        mConfigDir = getSaveFileDir("config/");
+        mConfigFile = new File(mConfigDir, "Config.json");
+    }
+
+    private void saveDrawing() throws JSONException, IOException {
+        JSONObject json = mActiveDrawingContext.toJsonObject();
+//        JSONObject json = new JSONObject();
+//        json.put("blabla", "blabla");
+//        json.put("1hkj", 12345);
+        String jsonString = json.toString(2);
+        FileOutputStream fOut = new FileOutputStream(mConfigFile);
+        fOut.write(jsonString.getBytes());
     }
 
     @Override
@@ -227,7 +307,9 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     public void OnPoseChange(Pose previousPose, Pose newPose) {
         mMyoData.setPose(newPose);
         if (mInputMethod == InputMethod.MyoOnly) {
-            mOverlayView.show3DToast("Pose: " + newPose.toString());
+            if (newPose == Pose.FIST || newPose == Pose.FINGERS_SPREAD || newPose == Pose.DOUBLE_TAP || newPose == Pose.REST) {
+                mOverlayView.show3DToast("Geste: " + newPose.toString());
+            }
             InputAction inputAction = getInputActionByPoseChange(previousPose, newPose);
             mActiveDrawingContext.processInputAction(inputAction);
         }

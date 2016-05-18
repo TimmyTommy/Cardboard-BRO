@@ -3,6 +3,9 @@ package de.tinf13aibi.cardboardbro.Entities;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -42,6 +45,39 @@ public abstract class BaseEntity implements IEntity {
 
     protected float[] mModel;
     protected float[] mBaseModel;
+
+    protected JSONArray getModelToJson() throws JSONException {
+        return new JSONArray(mModel);
+    }
+
+    protected JSONArray getBaseModelToJson() throws JSONException {
+        return new JSONArray(mBaseModel);
+    }
+
+    protected JSONArray getCoordsToJson() throws JSONException {
+        return new JSONArray(mCoords);
+    }
+
+    protected void setModelFromJson(JSONArray json) throws JSONException {
+        mModel = new float[json.length()];
+        for (int i = 0; i < json.length(); i++) {
+            mModel[i] = (float)json.optDouble(i);
+        }
+    }
+
+    protected void setBaseModelFromJson(JSONArray json) throws JSONException {
+        mBaseModel = new float[json.length()];
+        for (int i = 0; i < json.length(); i++) {
+            mBaseModel[i] = (float)json.optDouble(i);
+        }
+    }
+
+    protected void setCoordsFromJson(JSONArray json) throws JSONException {
+        mCoords = new float[json.length()];
+        for (int i = 0; i < json.length(); i++) {
+            mCoords[i] = (float)json.optDouble(i);
+        }
+    }
 
     public int getProgram() {
         return mProgram;

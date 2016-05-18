@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Geometry.Simple;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import de.tinf13aibi.cardboardbro.Geometry.VecMath;
 
 /**
@@ -18,6 +21,12 @@ public class Vec3d {
         x = 0;
         y = 0;
         z = 0;
+    }
+
+    public Vec3d(JSONArray json){
+        x = (float)json.optDouble(0);
+        y = (float)json.optDouble(1);
+        z = (float)json.optDouble(2);
     }
 
     public Vec3d(float x, float y, float z){
@@ -61,6 +70,10 @@ public class Vec3d {
         x = vec3D.x;
         y = vec3D.y;
         z = vec3D.z;
+    }
+
+    public JSONArray toJsonArray() throws JSONException {
+        return new JSONArray(toFloatArray());
     }
 
     public float getLength(){

@@ -2,6 +2,10 @@ package de.tinf13aibi.cardboardbro.Entities.Triangulated;
 
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
@@ -49,6 +53,25 @@ public class CubeEntity extends BaseEntity implements ITriangulatedEntity {
     public CubeEntity(int program){
         super(program);
         fillBuffers(GeometryDatabase.CUBE_COORDS, GeometryDatabase.CUBE_NORMALS, GeometryDatabase.CUBE_COLORS);
+        calcAbsoluteTriangles();
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
+
         calcAbsoluteTriangles();
     }
 }

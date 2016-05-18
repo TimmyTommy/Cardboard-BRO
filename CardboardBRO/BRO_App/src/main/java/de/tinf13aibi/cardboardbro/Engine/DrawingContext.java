@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Engine;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import de.tinf13aibi.cardboardbro.Entities.Interfaces.IEntity;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
 import de.tinf13aibi.cardboardbro.Shader.Programs;
@@ -21,6 +24,19 @@ public class DrawingContext implements IState{
         mMainActivity = mainActivity;
         mState = new StateSelectAction(this);
         mDrawingRenderer = new DrawingRenderer(this);
+    }
+
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("mDrawing", mDrawing.toJsonObject());
+        return json;
+    }
+
+    public void loadFromJson(JSONObject jsonDrawingContext) throws JSONException {
+        JSONObject jsonDrawing = jsonDrawingContext.optJSONObject("mDrawing");
+        if (jsonDrawing != null) {
+            mDrawing.loadFromJson(jsonDrawing);
+        }
     }
 
     @Override

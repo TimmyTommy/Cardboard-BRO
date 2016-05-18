@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Entities.Lined;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
@@ -25,6 +28,16 @@ public class TextCharEntity extends BaseEntity implements IEntity {
         for (PolyLineEntity entity : mLineArray) {
             entity.draw(view, perspective, lightPosInEyeSpace);
         }
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        return null;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+
     }
 
     public TextCharEntity(int program, char chr){

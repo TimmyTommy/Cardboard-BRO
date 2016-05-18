@@ -29,8 +29,10 @@ public class DrawingRenderer implements CardboardView.StereoRenderer{
         headTransform.getHeadView(headView, 0);
 
         Vec3d armForwardVec = mDrawingContext.getMainActivity().getMyoData().getArmForwardVec();
+        if (Constants.DEBUG_FLAG) {
+            armForwardVec = mDrawingContext.getUser().getEyeForward(); //TODO: ArmForward (Armrichtung) von MYO zuweisen
+        }
 
-//        Vec3d armForwardVec = mDrawingContext.getUser().getEyeForward(); //TODO: ArmForward (Armrichtung) von MYO zuweisen
         mDrawingContext.processOnNewFrame(headView, armForwardVec);
 
         checkGLError("onReadyToDraw");
@@ -65,6 +67,8 @@ public class DrawingRenderer implements CardboardView.StereoRenderer{
 
         mDrawingContext.initUser();
         mDrawingContext.initDrawing();
+
+        mDrawingContext.getMainActivity().loadDrawingContext();
 
         checkGLError("onSurfaceCreated");
     }

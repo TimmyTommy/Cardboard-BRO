@@ -1,5 +1,8 @@
 package de.tinf13aibi.cardboardbro.Entities.Lined;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Entities.BaseEntity;
@@ -33,6 +36,18 @@ public class CrosshairEntity extends BaseEntity implements IEntity {
         for (LineEntity lineEntity : mLines) {
             lineEntity.draw(view, perspective, lightPosInEyeSpace);
         }
+    }
+
+    @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("class", this.getClass().toString());
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        //TODO
     }
 
     private void calcCrossVectors(Vec3d normal){

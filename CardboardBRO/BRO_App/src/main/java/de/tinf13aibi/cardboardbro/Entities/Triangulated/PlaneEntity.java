@@ -3,6 +3,10 @@ package de.tinf13aibi.cardboardbro.Entities.Triangulated;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import de.tinf13aibi.cardboardbro.Engine.Constants;
@@ -53,6 +57,42 @@ public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
     }
 
     @Override
+    public JSONObject toJsonObject() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        json.put("class", this.getClass().toString());
+        json.put("mModel", super.getModelToJson());
+        json.put("mBaseModel", super.getBaseModelToJson());
+
+        json.put("mCenter", mCenter.toJsonArray());
+        json.put("mBaseNormal", mBaseNormal.toJsonArray());
+        json.put("mColor", new JSONArray(mColor));
+
+        return json;
+    }
+
+    @Override
+    public void loadFromJsonObject(JSONObject jsonEntity) throws JSONException {
+        setModelFromJson(jsonEntity.optJSONArray("mModel"));
+        setBaseModelFromJson(jsonEntity.optJSONArray("mBaseModel"));
+
+        mCenter = new Vec3d(jsonEntity.optJSONArray("mCenter"));
+        mBaseNormal = new Vec3d(jsonEntity.optJSONArray("mBaseNormal"));
+
+        JSONArray jsonColor = jsonEntity.optJSONArray("mColor");
+        for (int i = 0; i < jsonColor.length(); i++) {
+            mColor[i] = (float)jsonColor.optDouble(i);
+        }
+
+        recreateGeometry();
+    }
+
+    private void recreateGeometry(){
+        GeometryStruct geometry = GeomFactory.createPlaneGeom(new Vec3d(0, 0, 0), mBaseNormal, mColor);
+        fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+    }
+
+    @Override
     public ArrayList<Triangle> getAbsoluteTriangles(){
         return super.getAbsoluteTriangles();
     }
@@ -62,8 +102,7 @@ public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
         //TODO
         setCenter(position);
         mBaseNormal = baseNormal;
-        GeometryStruct geometry = GeomFactory.createPlaneGeom(new Vec3d(0, 0, 0), mBaseNormal, mColor);
-        fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+        recreateGeometry();
     }
 
     @Override
@@ -89,8 +128,7 @@ public class PlaneEntity extends BaseEntity implements ITriangulatedEntity {
         mBaseNormal = baseNormal;
         mColor = color;
 
-        GeometryStruct geometry = GeomFactory.createPlaneGeom(new Vec3d(0, 0, 0), mBaseNormal, mColor);
-        fillBuffers(geometry.vertices, geometry.normals, geometry.colors);
+        recreateGeometry();
     }
 
     public void setCenter(Vec3d center) {
