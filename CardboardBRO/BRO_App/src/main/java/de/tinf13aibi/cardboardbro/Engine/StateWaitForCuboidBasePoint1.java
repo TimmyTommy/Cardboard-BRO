@@ -37,7 +37,7 @@ public class StateWaitForCuboidBasePoint1 extends StateBase implements IState {
         mDrawing.setTempWorkingPlane(VecMath.calcPlaneFromPointAndNormal(point, baseNormal));
         mDrawingContext.setEditingEntity(new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram)));
 
-        float[] color = new float[]{0.7f, 0.7f, 0.5f, 1};
+        float[] color = new float[]{0.8f, 0.8f, 0.8f, 1};
         ((CuboidEntity) mDrawingContext.getEditingEntity()).setAttributes(point, baseNormal, 0.01f, 0.01f, 0.01f, color);
         mDrawing.getEntityList().add(mDrawingContext.getEditingEntity());
 

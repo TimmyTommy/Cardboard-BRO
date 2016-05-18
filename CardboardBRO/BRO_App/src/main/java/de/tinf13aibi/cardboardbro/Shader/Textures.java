@@ -7,6 +7,7 @@ public enum Textures {
     TextureNone(' '),
 
     TextureButtonCreateEntity(' '),
+    TextureButtonCopyEntity(' '),
     TextureButtonMoveEntity(' '),
     TextureButtonDeleteEntity(' '),
 

@@ -78,10 +78,10 @@ public class Drawing {
     }
 
     private void setupEntityCreateButtonSet(){
-        Class<?>[] appStates = new Class<?>[]{  StateSelectAction.class, StateWaitForBeginFreeLine.class, StateWaitForBeginPolyLinePoint.class, StateWaitForCylinderCenterPoint.class,
-                                                StateWaitForCuboidBasePoint1.class, StateWaitForSphereCenterPoint.class, StateWaitForTextInput.class};
-        Textures[] textures =  new Textures[]{  Textures.TextureButtonBack, Textures.TextureButtonFreeLine, Textures.TextureButtonPolyLine, Textures.TextureButtonCylinder,
-                                                Textures.TextureButtonCuboid, Textures.TextureButtonSphere, Textures.TextureButtonText};
+        Class<?>[] appStates = new Class<?>[]{  StateSelectAction.class, StateWaitForBeginFreeLine.class, StateWaitForBeginPolyLinePoint.class, StateWaitForCuboidBasePoint1.class,
+                                                StateWaitForCylinderCenterPoint.class, StateWaitForSphereCenterPoint.class, StateWaitForTextInput.class};
+        Textures[] textures =  new Textures[]{  Textures.TextureButtonBack, Textures.TextureButtonFreeLine, Textures.TextureButtonPolyLine, Textures.TextureButtonCuboid,
+                                                Textures.TextureButtonCylinder, Textures.TextureButtonSphere, Textures.TextureButtonText};
         for (int i=0; i<7; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setNextState(appStates[i])
@@ -101,9 +101,9 @@ public class Drawing {
     }
 
     private void setupEntityActionButtonSet(){
-        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToCreate.class, StateSelectEntityToMove.class, StateSelectEntityToDelete.class};
-        Textures[] textures =  new Textures[]{Textures.TextureButtonCreateEntity, Textures.TextureButtonMoveEntity, Textures.TextureButtonDeleteEntity };
-        for (int i=0; i<3; i++) {
+        Class<?>[] appStates = new Class<?>[]{StateSelectEntityToMove.class, StateSelectEntityToMove.class, StateSelectEntityToCreate.class, StateSelectEntityToDelete.class};
+        Textures[] textures =  new Textures[]{Textures.TextureButtonMoveEntity, Textures.TextureButtonCopyEntity, Textures.TextureButtonCreateEntity, Textures.TextureButtonDeleteEntity };
+        for (int i=0; i<4; i++) {
             ButtonEntity entity = new ButtonEntity(ShaderCollection.getProgram(Programs.BodyTexturedProgram))
                     .setNextState(appStates[i])
                     .setTextureHandle(ShaderCollection.getTexture(textures[i]));
@@ -185,69 +185,75 @@ public class Drawing {
         BaseEntity entity;
 
         entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 1, 1, 1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+        //Matrix.translateM(entity.getModel(), 0, 1, 1, 1.25f);
+        //Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
         entity.changedModel();
         mEntityList.add(entity);
 
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, -1, 2, 1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 1, 2, -1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 0, 1, -1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 1, 3, 1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, -1, 0, 1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 1, 0, -1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 0, 0, -1.25f);
-        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
-        entity.changedModel();
-        mEntityList.add(entity);
-
-        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        Matrix.translateM(entity.getModel(), 0, 0.05f, 0, -0.50f);
-        Matrix.scaleM(entity.getModel(), 0, 0.055f, 0.055f, 0.055f);
-        entity.changedModel();
-        mEntityList.add(entity);
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 1, 1, 1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, -1, 2, 1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 1, 2, -1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 0, 1, -1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 1, 3, 1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, -1, 0, 1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 1, 0, -1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 0, 0, -1.25f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.1f, 0.1f, 0.1f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
+//
+//        entity = new CubeEntity(ShaderCollection.getProgram(Programs.BodyProgram));
+//        Matrix.translateM(entity.getModel(), 0, 0.05f, 0, -0.50f);
+//        Matrix.scaleM(entity.getModel(), 0, 0.055f, 0.055f, 0.055f);
+//        entity.changedModel();
+//        mEntityList.add(entity);
 
         CylinderEntity cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         cylEntity.setAttributes(new Vec3d(1f, 1, -5.0f), new Vec3d(0, 1, 0), 0.5f, 2, new float[]{1, 0, 0, 1});
         mEntityList.add(cylEntity);
 
         cylEntity = new CylinderEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0, 1, 0), 1, -1, new float[]{0, 0, 1, 1});
+        cylEntity.setAttributes(new Vec3d(-1f, 0, -5.0f), new Vec3d(0, 1, 0), 1, 1, new float[]{0.8f, 0.8f, 0.8f, 1});
         mEntityList.add(cylEntity);
 
         CuboidEntity cuboidEntity = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
-        cuboidEntity.setAttributes(new Vec3d(2f, 0, -5.0f), new Vec3d(0,1,0), -1, -2, -1, new float[]{1, 1, 0, 1});
+        cuboidEntity.setAttributes(new Vec3d(2f, 0, -5.0f), new Vec3d(0,1,0), 1, 2, 1, new float[]{1, 1, 0, 1});
         mEntityList.add(cuboidEntity);
 
         SphereEntity sphereEntity = new SphereEntity(ShaderCollection.getProgram(Programs.BodyProgram));

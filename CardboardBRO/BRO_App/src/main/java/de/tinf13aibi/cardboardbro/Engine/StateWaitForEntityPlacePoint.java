@@ -60,7 +60,8 @@ public class StateWaitForEntityPlacePoint extends StateBase implements IState {
     private void moveEntityToPosition(Vec3d pos, Vec3d baseNormal, Boolean fix) {
         if (mDrawingContext.getEditingEntity() instanceof ITriangulatedEntity) {
             ITriangulatedEntity entity = (ITriangulatedEntity)mDrawingContext.getEditingEntity();
-            Vec3d normal = VecMath.calcVecTimesScalar(baseNormal, -1);
+            //Vec3d normal = VecMath.calcVecTimesScalar(baseNormal, -1);
+            Vec3d normal = VecMath.calcNormalizedVector(baseNormal);
             entity.setPositionAndOrientation(pos, normal, fix);
             //TODO: if instance of TextEntity...
             //textEntity.updatePosition(mUser.getInvHeadView(), pos);

@@ -5,7 +5,7 @@ package de.tinf13aibi.cardboardbro.Engine;
  */
 public interface Constants {
 //    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 0.5f, 0.0f, 1.0f }; //TODO zum test
-    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 40f, 0.0f, 1.0f }; //TODO die richtige
+    float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 15f, 0.0f, 1.0f }; //TODO die richtige
     int COORDS_PER_VERTEX = 3;
 //    int CYCLE_SEGMENTS = 72; //360 / 72 = 5° pro Segment
 //    int CYCLE_SEGMENTS = 36; //360 / 36 = 10° pro Segment
@@ -14,12 +14,12 @@ public interface Constants {
     int HALFCYCLE_SEGMENTS = CYCLE_SEGMENTS/2;
 
     float Z_NEAR = 0.1f;
-    float Z_FAR = 1000.0f;
-    float CANVAS_CYL_RADIUS = 50.0f;
-    float CANVAS_CYL_HEIGHT = 65.0f;
-    float CANVAS_CYL_DEPTH = -15.0f;
+    float Z_FAR = 500.0f;
+    float CANVAS_CYL_RADIUS = 10.0f;
+    float CANVAS_CYL_HEIGHT = 15.0f;
+    float CANVAS_CYL_DEPTH = -0.1f;
 
     float TIME_DELTA = 0.3f;
-    float FLOOR_DEPTH = -10f;
+    float FLOOR_DEPTH = 0f;
 
 }
