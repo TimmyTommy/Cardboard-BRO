@@ -24,6 +24,9 @@ public class CubeEntity extends BaseEntity implements ITriangulatedEntity {
         //TODO
         Matrix.setIdentityM(mModel, 0);
         Matrix.translateM(mModel, 0, position.x, position.y, position.z);
+        if (fix) {
+            calcAbsoluteTriangles();
+        }
     }
 
     @Override

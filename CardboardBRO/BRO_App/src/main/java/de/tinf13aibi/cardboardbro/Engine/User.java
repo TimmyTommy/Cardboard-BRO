@@ -194,7 +194,7 @@ public class User {
 
         // Neue Geschwindigkeit berechnen
         mVelocity.assignPoint3d(VecMath.calcVecPlusVec(mVelocity, VecMath.calcVecTimesScalar(acceleration, timeSeconds)));
-        mVelocity.assignPoint3d(VecMath.calcVecTimesScalar(mVelocity, 0.90f));
+        mVelocity.assignPoint3d(VecMath.calcVecTimesScalar(mVelocity, 0.85f));
         if (VecMath.calcVectorLength(mVelocity)<0.0001f){
             mVelocity.assignPoint3d(new Vec3d());
         }

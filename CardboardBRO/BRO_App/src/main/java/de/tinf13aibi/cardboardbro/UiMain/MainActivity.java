@@ -26,6 +26,8 @@ import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
 import com.thalmic.myo.scanner.ScanActivity;
 
+import java.util.Date;
+
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
 import de.tinf13aibi.cardboardbro.Engine.InputAction;
 import de.tinf13aibi.cardboardbro.Geometry.Simple.Vec3d;
@@ -52,7 +54,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     private InputMethod mInputMethod = InputMethod.None;
 
-//    private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
+    private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
 
 
     public CardboardView getCardboardView(){
@@ -102,7 +104,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, -1), InputAction.DoMoveIn3D);
-//                        mClickTime = new Date();
+                        mClickTime = new Date();
                         break;
                     case MotionEvent.ACTION_UP:
                         mActiveDrawingContext.processUserMoving(new Vec3d(0, 0, 0), InputAction.DoMoveIn3D);
