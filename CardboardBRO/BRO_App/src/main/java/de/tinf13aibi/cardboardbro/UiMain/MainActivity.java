@@ -179,6 +179,12 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         mOverlayView = (CardboardOverlayView) findViewById(R.id.overlay);
 
         mCardboardView = (CardboardView) findViewById(R.id.cardboard_view);
+        mCardboardView.setOnCardboardBackButtonListener(new Runnable() {
+            @Override
+            public void run() {
+                onBackPressed();
+            }
+        });
 
         mActiveDrawingContext = new DrawingContext(this);
         mActiveDrawingContext.setActiveDrawingContext();
