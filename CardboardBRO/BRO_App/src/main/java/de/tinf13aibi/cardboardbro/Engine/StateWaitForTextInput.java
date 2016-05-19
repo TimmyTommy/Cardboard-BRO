@@ -72,7 +72,7 @@ public class StateWaitForTextInput extends StateBase implements IState {
     }
 
     private void createTextEntity(String text){
-        mDrawingContext.setEditingEntity(new TextEntity(text, mDrawingContext.getUser().getInvHeadView(), new Vec3d()));
+        mDrawingContext.setEditingEntity(new TextEntity(text, mDrawingContext.getUser().getInvHeadView().clone(), new Vec3d()));
         mDrawing.getEntityList().add(mDrawingContext.getEditingEntity());
     }
 }

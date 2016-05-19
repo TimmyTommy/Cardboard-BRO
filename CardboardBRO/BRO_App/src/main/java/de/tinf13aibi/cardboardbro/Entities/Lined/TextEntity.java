@@ -30,7 +30,7 @@ import de.tinf13aibi.cardboardbro.Shader.Textures;
 public class TextEntity extends BaseEntity implements IManySidedEntity {
     private String mText = "";
     private Vec3d mPosition = new Vec3d();
-    private float mSize = 1;
+    private float mSize = 0.1f;
     private float[] mFacing = new float[16];
     private CuboidEntity mHitBox;
     //private ArrayList<TextCharEntity> mTextCharArray = new ArrayList<>();
@@ -91,12 +91,13 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
 
     public TextEntity(){
         super();
+        mHitBox = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
     }
 
     public TextEntity(String text, float[] facing, Vec3d pos){
         super();
         mText = text;
-        mFacing = facing;
+        setFacing(facing);
         mPosition = pos;
         mHitBox = new CuboidEntity(ShaderCollection.getProgram(Programs.BodyProgram));
         transformTextToTextCharEntities(text);
@@ -154,7 +155,7 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
 
     public void updatePosition(float[] facing, Vec3d position){
         mPosition = position;
-        mFacing = facing;
+        setFacing(facing);
         mCharSet.setButtonsRelativeToCamera(facing, position);
         calcAbsoluteTriangles();
         calcHitbox();
@@ -180,8 +181,8 @@ public class TextEntity extends BaseEntity implements IManySidedEntity {
     }
 
     public void setFacing(float[] facing) {
-        mFacing = facing;
-        updatePosition(mFacing, mPosition);
+        System.arraycopy(facing, 0, mFacing, 0, facing.length);
+        //updatePosition(mFacing, mPosition);
     }
 
     public float getSize() {

@@ -26,6 +26,7 @@ import com.thalmic.myo.Pose;
 import com.thalmic.myo.Quaternion;
 import com.thalmic.myo.scanner.ScanActivity;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,6 +69,8 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     private File mSaveFile;
 
     private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
+
+    public JSONArray mLogFile = new JSONArray();
 
 
     public CardboardView getCardboardView(){
@@ -249,10 +252,10 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     }
 
     private String getSaveFileDir(String folder) {
-        String fileDirPath = getFilesDir().getAbsolutePath();
+        //String fileDirPath = getFilesDir().getAbsolutePath();
         //Log.i("Pfad: ", getExternalFilesDir("folder").getAbsolutePath());
         //File file = new File(fileDirPath + "/" + folder);
-        File file = getExternalFilesDir("savefile");
+        File file = getExternalFilesDir(folder);
         file.mkdir();
         if (!file.isDirectory()) {
             mOverlayView.show3DToast("Die benötigten Ordner für die Anwendung konnten nicht angelegt werden.");
@@ -261,7 +264,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     }
 
     private void initializeFiles() {
-        mFileDir = getSaveFileDir("config/");
+        mFileDir = getSaveFileDir("savefile");
         mLoadFile = new File(mFileDir, "LoadFile"+".json");
     }
 
