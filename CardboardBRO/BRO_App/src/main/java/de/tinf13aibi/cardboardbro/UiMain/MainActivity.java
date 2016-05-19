@@ -78,7 +78,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         if (mLogFile == null){
             mLogFile = new JSONArray();
         }
-        mLogFile.put(date + " " + className + " : " + message);
+        mLogFile.put(date + " ; " + className + " ; " + message);
     }
 
     public CardboardView getCardboardView(){
