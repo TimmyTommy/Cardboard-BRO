@@ -11,14 +11,12 @@ import android.hardware.SensorManager;
 import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
 import de.tinf13aibi.cardboardbro.Engine.Constants;
-import de.tinf13aibi.cardboardbro.Entities.Lined.TextEntity;
 import de.tinf13aibi.cardboardbro.UiMain.InputManagerCompat.InputDeviceListener;
 
 import com.google.vrtoolkit.cardboard.CardboardActivity;
@@ -34,7 +32,10 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormatSymbols;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import de.tinf13aibi.cardboardbro.Engine.DrawingContext;
 import de.tinf13aibi.cardboardbro.Engine.InputAction;
@@ -62,8 +63,9 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     private InputMethod mInputMethod = InputMethod.None;
 
-    private String mConfigDir;
-    private File mConfigFile;
+    private String mFileDir;
+    private File mLoadFile;
+    private File mSaveFile;
 
     private Date mClickTime; //nur temporär zum imitieren von "MYO-Gesten"
 
@@ -203,7 +205,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             public void run() {
                 try {
                     saveDrawing();
-                    onBackPressed();
+                    //onBackPressed();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -215,7 +217,7 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         mActiveDrawingContext = new DrawingContext(this);
         mActiveDrawingContext.setActiveDrawingContext();
 //        try {
-//            JSONObject jsonDrawingContext = loadDrawingContext(mConfigFile);
+//            JSONObject jsonDrawingContext = loadDrawingContext(mLoadFile);
 //            mActiveDrawingContext.loadFromJson(jsonDrawingContext);
 //        } catch (JSONException e) {
 //            e.printStackTrace();
@@ -233,9 +235,9 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     }
 
     public void loadDrawingContext() {
-        if (mConfigFile.exists()){
+        if (mLoadFile.exists()){
             try {
-                String jsonFileString = FileManager.getStringFromFile(mConfigFile.getAbsolutePath());
+                String jsonFileString = FileManager.getStringFromFile(mLoadFile.getAbsolutePath());
                 JSONObject jsonObject = new JSONObject(jsonFileString);
                 mActiveDrawingContext.loadFromJson(jsonObject);
             } catch (JSONException e) {
@@ -246,18 +248,11 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
         }
     }
 
-    private JSONObject loadDrawingContext(File file) throws JSONException, IOException {
-        JSONObject jsonObject = new JSONObject();
-        if (file.exists()){
-            String jsonFileString = FileManager.getStringFromFile(file.getAbsolutePath());
-            jsonObject = new JSONObject(jsonFileString);
-        }
-        return jsonObject;
-    }
-
     private String getSaveFileDir(String folder) {
         String fileDirPath = getFilesDir().getAbsolutePath();
-        File file = new File(fileDirPath + "/" + folder);
+        //Log.i("Pfad: ", getExternalFilesDir("folder").getAbsolutePath());
+        //File file = new File(fileDirPath + "/" + folder);
+        File file = getExternalFilesDir("savefile");
         file.mkdir();
         if (!file.isDirectory()) {
             mOverlayView.show3DToast("Die benötigten Ordner für die Anwendung konnten nicht angelegt werden.");
@@ -266,18 +261,19 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     }
 
     private void initializeFiles() {
-        mConfigDir = getSaveFileDir("config/");
-        mConfigFile = new File(mConfigDir, "Config.json");
+        mFileDir = getSaveFileDir("config/");
+        mLoadFile = new File(mFileDir, "LoadFile"+".json");
     }
 
     private void saveDrawing() throws JSONException, IOException {
         JSONObject json = mActiveDrawingContext.toJsonObject();
-//        JSONObject json = new JSONObject();
-//        json.put("blabla", "blabla");
-//        json.put("1hkj", 12345);
         String jsonString = json.toString(2);
-        FileOutputStream fOut = new FileOutputStream(mConfigFile);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", new DateFormatSymbols(Locale.GERMANY));
+        String date = format.format(new Date());
+        mSaveFile = new File(mFileDir, "save_"+date+".json");
+        FileOutputStream fOut = new FileOutputStream(mSaveFile);
         fOut.write(jsonString.getBytes());
+        mOverlayView.show3DToast("Saved File as: " + mSaveFile.getName());
     }
 
     @Override
