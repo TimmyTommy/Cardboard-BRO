@@ -43,6 +43,7 @@ public abstract class StateBase implements IState {
         mDrawingContext.setState(state);
         mVibrator.vibrate(50);
         Log.i("CHANGE_STATE", message + " -> " + state.getClass());
+        mDrawingContext.addLogEntry(state.getClass().getSimpleName(), message);
 //        mOverlayView.show3DToast(message + " -> " + state.getClass());
     }
 

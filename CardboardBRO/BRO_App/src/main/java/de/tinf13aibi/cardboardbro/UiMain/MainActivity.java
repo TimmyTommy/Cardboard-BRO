@@ -72,6 +72,14 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
 
     public JSONArray mLogFile = new JSONArray();
 
+    public void addLogEntry(String className, String message){
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss,SSS", new DateFormatSymbols(Locale.GERMANY));
+        String date = format.format(new Date());
+        if (mLogFile == null){
+            mLogFile = new JSONArray();
+        }
+        mLogFile.put(date + " " + className + " : " + message);
+    }
 
     public CardboardView getCardboardView(){
         return mCardboardView;
@@ -242,13 +250,19 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
             try {
                 String jsonFileString = FileManager.getStringFromFile(mLoadFile.getAbsolutePath());
                 JSONObject jsonObject = new JSONObject(jsonFileString);
+                mLogFile = jsonObject.optJSONArray("log");
+                if (mLogFile == null){
+                    mLogFile = new JSONArray();
+                }
                 mActiveDrawingContext.loadFromJson(jsonObject);
+                addLogEntry(this.getClass().getSimpleName(), "Loaded File");
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        addLogEntry(this.getClass().getSimpleName(), "LoadFile not Found");
     }
 
     private String getSaveFileDir(String folder) {
@@ -269,7 +283,11 @@ public class MainActivity extends CardboardActivity implements InputDeviceListen
     }
 
     private void saveDrawing() throws JSONException, IOException {
+        addLogEntry(this.getClass().getSimpleName(), "Saved File");
         JSONObject json = mActiveDrawingContext.toJsonObject();
+        if (mLogFile != null) {
+            json.put("log", mLogFile);
+        }
         String jsonString = json.toString(2);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", new DateFormatSymbols(Locale.GERMANY));
         String date = format.format(new Date());

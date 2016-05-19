@@ -20,6 +20,10 @@ public class DrawingContext implements IState{
     private IState mState;
     private DrawingRenderer mDrawingRenderer;
 
+    public void addLogEntry(String className, String message){
+        mMainActivity.addLogEntry(className, message);
+    }
+
     public DrawingContext(MainActivity mainActivity){
         mMainActivity = mainActivity;
         mState = new StateSelectAction(this);

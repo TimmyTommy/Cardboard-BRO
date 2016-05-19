@@ -60,6 +60,8 @@ public class DrawingRenderer implements CardboardView.StereoRenderer{
     @Override
     public void onSurfaceCreated(EGLConfig eglConfig) {
         Log.i("DrawingRenderer", "onSurfaceCreated");
+        mDrawingContext.addLogEntry(this.getClass().getSimpleName(), "onSurfaceCreated");
+
         GLES20.glClearColor(0.1f, 0.1f, 0.1f, 0.5f); // Dark background so text shows up well.
         GLES20.glEnable(GLES20.GL_CULL_FACE);
 
@@ -81,11 +83,13 @@ public class DrawingRenderer implements CardboardView.StereoRenderer{
     @Override
     public void onSurfaceChanged(int width, int height) {
         Log.i("DrawingRenderer", "onSurfaceChanged");
+        mDrawingContext.addLogEntry(this.getClass().getSimpleName(), "onSurfaceChanged");
     }
 
     @Override
     public void onRendererShutdown() {
         Log.i("DrawingRenderer", "onRendererShutdown");
+        mDrawingContext.addLogEntry(this.getClass().getSimpleName(), "onRendererShutdown");
     }
 
     private static void checkGLError(String label) {
